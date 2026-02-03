@@ -3,6 +3,7 @@
 
 container="/cvmfs/unpacked.cern.ch/registry.hub.docker.com/coffeateam/coffea-dask-almalinux9:2025.10.2-py3.12"
 
+apptainer exec -B $HOME,/uscmst1b_scratch,$(realpath $HOME),/uscms_data/d1/,$(realpath .),/cvmfs,/etc/condor/,/usr/local/bin/cmslpc-local-conf.py "$container" /bin/bash 
 if [[ -n "$SINGULARITY_NAME" ]] || [[ -n "$APPTAINER_NAME" ]]; then
     echo "Inside container: $APPTAINER_NAME"
     if [ -f "$HOME/.bashrc" ]; then
