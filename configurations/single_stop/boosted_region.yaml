@@ -1,0 +1,308 @@
+common_cleanup: &common_cleanup
+  - module_name: GoldenLumi
+  #- module_name: VetoMap
+  #  input_col: Jet
+  #- module_name: VetoMapFilter
+  #  input_col: Jet
+  #  output_col: Jet
+  #- module_name: NoiseFilter
+
+  #- module_name: NObjFilter
+  #  input_col: GoodFatJet
+  #  selection_name: least_one_fatjet
+  #  min_count: 1
+
+
+#common_presel_objects: &common_presel_objects
+#  - module_name: JetFilter
+#    input_col: FatJet
+#    output_col: GoodKinematicFatJet
+#    max_abs_eta: 2.4
+#    include_jet_id: True 
+
+#common_corrections: &common_corrections
+  #- module_name: JetScaleCorrections
+  #  input_col: Jet
+  #  output_col: Jet
+  #- module_name: JetResolutionCorrections
+  #  input_col: Jet
+  #  genjet_col: GenJet
+  #  output_col: Jet
+
+#common_pre_sel_weights: &common_pre_sel_weights
+  #- module_name: BJetShapeSF
+  #  input_col: GoodJet
+  #- module_name: PileupSF
+  # - module_name: L1PrefiringSF
+  #- module_name: PosNegGenWeight
+  #- module_name: PileupJetIdSF
+  #  input_col: GoodJet
+  #  working_point: M
+
+#common_categories: &common_categories
+  #- module_name: SimpleCategory
+  #  input_col: HT
+  #  cat_name: HT_Cat
+  #  start: 0
+  #  stop: 3000
+  #  bins: 60
+
+  # - module_name: SimpleCategory
+  #   input_col: NJet
+  #   cat_name: NJet_Category
+  #   start: 4
+  #   stop: 7
+  #   bins: 3
+
+
+
+common_objects: &common_objects
+  - module_name: ElectronMaker
+    input_col: Electron
+    output_col: GoodElectron
+    working_point: "loose"
+    min_pt: 10
+    max_abs_eta: 2.4
+    max_mini_iso: 0.1
+
+  - module_name: MuonMaker
+    input_col: Muon
+    output_col: GoodMuon
+    id_working_point: "looseId"
+    min_pt: 30
+    max_abs_eta: 2.4
+    max_mini_iso: 0.1
+
+  - module_name: JetFilter
+    input_col: Jet
+    output_col: GoodJet
+    include_pu_id: False
+    include_jet_id: True 
+    min_pt: 50
+    max_abs_eta: 2.4
+
+  - module_name: BQuarkMaker
+    input_col: GoodJet
+    output_col: MedB
+    working_point: M
+
+  - module_name: HT
+    input_col: GoodJet
+
+  - module_name: Count
+    input_col: GoodJet
+    output_col: NJet
+
+  - module_name: JetFilter
+    input_col: FatJet
+    output_col: GoodKinematicFatJet
+    max_abs_eta: 2.4
+    include_jet_id: True 
+
+  - module_name: JetFilterBoosted
+    input_col: GoodKinematicFatJet
+    output_col: GoodFatJet
+  
+  - module_name: PromoteIndex
+    input_col: GoodFatJet
+    output_col: FirstGoodFatJet
+
+  #- module_name: DijetMaker
+  #  input_col_1: GoodFatJet
+  #  input_col_2: MedB 
+  #  output_col: Dijet
+
+  #- module_name: FilterNear
+  #  target_col: MedB
+  #  near_col: GoodFatJet
+  #  max_dr: 1.5
+  #  output_col: MedB
+  
+common_selection: &common_selection
+  - module_name: NObjFilter
+    input_col: GoodFatJet
+    selection_name: n_fatjet
+    min_count: 1
+
+  - module_name: NObjFilter
+    input_col: GoodElectron
+    selection_name: zero_e
+    min_count: 0
+    max_count: 0
+
+  - module_name: NObjFilter
+    input_col: GoodMuon
+    selection_name: zero_mu
+    min_count: 0
+    max_count: 0
+
+  - module_name: NObjFilter
+    input_col: MedB 
+    selection_name: n_med_b
+    min_count: 1
+
+  - module_name: ObjCompareFilter
+    input_col: FirstGoodFatJet
+    min_value: 50
+    key: msoftdrop
+    selection_name: msd50
+
+  - module_name: ObjCompareFilter
+    input_col: HT
+    min_value: 500
+    selection_name: HT500
+  
+
+
+common_histograms: &common_histograms
+  #- module_name: NNMassReco
+  #  input_col: GoodJet
+  #  m3_output: mChi_uncomp
+  #  m4_output: mStop_uncomp
+  #  model_path: "nn_models/nominalBinaryUncompressed0p67_24-09-18-19-53/jetMatcherNNTraced.pt"
+  #  scaler_path: "nn_models/nominalBinaryUncompressed0p67_24-09-18-19-53/scaler.pkl"
+  #
+  #- module_name: NNMassReco
+  #  input_col: GoodJet
+  #  m3_output: mChi_comp
+  #  m4_output: mStop_comp
+  #  model_path: "nn_models/nominalBinaryCompressed0p67_24-09-18-20-06/jetMatcherNNTraced.pt"
+  #  scaler_path: "nn_models/nominalBinaryCompressed0p67_24-09-18-20-06/scaler.pkl"
+  #
+  #
+  #- module_name: NNMassPlots
+  #  m3_input: mChi_comp
+  #  m4_input: mStop_comp
+  #  prefix: comp
+  #
+  #- module_name: NNMassPlots
+  #  m3_input: mChi_uncomp
+  #  m4_input: mStop_uncomp
+  #  prefix: uncomp
+
+  #- module_name: JetComboHistograms
+  #  input_col: GoodJet
+  #  prefix: "composite"
+  #  jet_combos:
+  #    - [0,1,2,3]
+  #    - [0,1,2]
+  #    - [1,2,3]
+
+  - module_name: TopVecHistograms
+    prefix: "b-jet"
+    input_col: MedB 
+    max_idx: 1
+
+  - module_name: TopVecHistograms
+    prefix: "fatjet"
+    input_col: GoodFatJet
+    max_idx: 1
+  
+  - module_name: DijetHistograms
+    prefix: "dijet"
+    input_col_fat_jet: GoodFatJet
+    input_col_b_jet: MedB 
+
+
+  - module_name: SimpleHistogram
+    hist_name: HT
+    input_cols: [HT]
+    axes:
+      - name: HT
+        start: 0
+        stop: 3000
+        bins: 120
+        unit: GeV
+
+analyzer:
+  default_run_builder:
+    strategy_name: NoSystematics
+
+  Signal:
+    - module_name: SimpleHLT
+      triggers: [dijet_HT, dijet_AK8SingleJetPt, dijet_AK8HT, dijet_AK8B, dijet_DoublePF, dijet_DiPF]
+    - *common_cleanup
+    - *common_objects
+    - *common_selection
+    - module_name: SelectOnColumns
+      sel_name: selection
+    - *common_histograms
+
+
+# location_priorities: [".*FNAL.*", ".*US.*", ".*(DE|IT|CH|FR).*", ".*(T0|T1|T2).*","eos"]
+location_priorities: [".*(T0|T1|T2).*","eos"]
+
+event_collections:
+  # Signal Samples
+  - dataset: 'signal_2018_312_1000_100'
+    pipelines: [Signal]
+  #- dataset: 'signal_2018_312_1500_100'
+  #  pipelines: [Signal]
+  - dataset: 'signal_2018_312_2000_100'
+    pipelines: [Signal]
+  - dataset: 'signal_2018_312_1000_400'
+    pipelines: [Signal]
+  #- dataset: 'signal_2018_312_1500_400'
+  #  pipelines: [Signal]
+  - dataset: 'signal_2018_312_2000_400'
+    pipelines: [Signal]
+  # Background MC Samples
+  - dataset: 'qcd*2018*'
+    pipelines: [Signal]
+  
+extra_executors:
+  imm:
+    executor_name: ImmediateExecutor
+    chunk_size: 10000
+
+  dask_local:
+    executor_name: LocalDaskExecutor
+    chunk_size: 100000
+    min_workers: 1
+    max_workers: 3
+    reduction_factor: 2
+  
+  dask_condor:
+    executor_name: LPCCondorDask
+    container: /cvmfs/unpacked.cern.ch/registry.hub.docker.com/coffeateam/coffea-dask-almalinux9:2025.10.2-py3.12
+    venv_path: .venv
+    chunk_size: 80000
+    min_workers: 40
+    max_workers: 200
+    worker_memory: 4GB
+    reduction_factor: 5
+
+Postprocessing:
+  processors:
+    - name: Histogram1D
+      inputs:
+        - "*/*/*/*jet*"
+        - "*/*/*/*HT*"
+      scale: log
+      normalize: False 
+      structure:
+        select: {dataset_name: "*", pipeline: Signal}
+        group: {era.name: "*", name: "*"}
+        transforms:
+          - name: SplitAxes
+            split_axis_names: {"variation": "central"}
+      output_name: "{prefix}/signal/{era.name}/{name}.pdf"
+
+  default_plot_config:
+    cms_text: "Preliminary"
+    image_type: ".pdf"
+    cms_text_color: Black
+    legend_num_cols: 1
+
+
+  #default_style_set:
+  #  styles:
+  #    - pattern:
+  #        dataset_name: '*qcd*'
+  #      style:
+  #        plottype: step
+  #        color: green 
+  #    #- pattern:
+  #    #    sample_type: 'MC'
+  #    #  style:
+  #    #    plottype: fill

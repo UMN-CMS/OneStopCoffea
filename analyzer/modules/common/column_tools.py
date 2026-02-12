@@ -62,12 +62,14 @@ class PromoteIndex(AnalyzerModule):
     index : int, optional
         Index of the element to promote from each nested collection,
         by default ``0`` (leading element).
-
+    pad_none : bool, optional
+        Pad the array up to the index being accessed, True by default.
     """
 
     input_col: Column
     output_col: Column
     index: int = 0
+    pad_none: bool = True
 
     def run(self, columns, params):
         columns[self.output_col] = ak.pad_none(
@@ -95,6 +97,45 @@ class Concatenate(AnalyzerModule):
 
     def inputs(self, metadata):
         return self.input_cols
+
+    def outputs(self, metadata):
+        return [self.output_col]
+
+@define
+class ChangeOrdering(AnalyzerModule):
+
+    input_col: Column
+    output_col: Column
+    sort_by_key: str
+    ascending: bool = False
+
+    def run(self, columns, params):
+        unsorted_col = columns[self.input_col]
+        columns[self.output_col] = unsorted_col[ak.argsort(unsorted_col[self.sort_by_key],ascending=self.ascending)]
+        return columns, []
+
+    def inputs(self, metadata):
+        return [self.input_col]
+
+    def outputs(self, metadata):
+        return [self.output_col]
+
+
+@define
+class DivideColumns(AnalyzerModule):
+
+    num_col: Column
+    den_col: Column
+    num_key: str
+    den_key: str
+    output_col: Column
+
+    def run(self, columns, params):
+        columns[self.output_col] = columns[num_col][num_key] / columns[den_col][den_key] 
+        return columns, []
+
+    def inputs(self, metadata):
+        return [self.input_col]
 
     def outputs(self, metadata):
         return [self.output_col]

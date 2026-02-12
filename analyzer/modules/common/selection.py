@@ -137,6 +137,59 @@ class NObjFilter(AnalyzerModule):
         return [Column(("Selection", self.selection_name))]
 
 @define
+class ObjCompareFilter(AnalyzerModule):
+    """
+    Select events based on a comparison to a set value.
+
+    This analyzer filters events according to a value (ex HT)
+      in a given column that is above, below, or equal to a specified value.
+    
+    Parameters
+    ----------
+
+    selection_name : str
+    input_col : Column
+    equal_value : float or None, optional
+    min_value : float or None, optional
+    max_value : float or None, optional
+    """
+
+    selection_name: str
+    input_col: Column
+    key: str | None=None
+    equal_value: float | None=None
+    min_value: float | None=None
+    max_value: float | None=None
+
+    def run(self, columns, params):
+        if self.key is not None:
+            values = columns[self.input_col][self.key]
+        else:
+            values = columns[self.input_col]
+        sel = None
+
+        if self.min_value is not None:
+            sel = ak.fill_none(values >= self.min_value, False, axis=0)
+        if self.max_value is not None:
+            if sel is not None:
+                sel = sel & ak.fill_none((values <= self.max_value), False, axis=0)
+            else:
+                sel = ak.fill_none(values <= self.max_value, False, axis=0)
+        if self.equal_value is not None and sel is None:
+            sel = ak.fill_none((values == self.equal_value), False, axis=0)
+        elif self.equal_value is not None and sel is not None:
+            print("Equal value being used while comparison is being used. Using comparison to select events.")
+
+        addSelection(columns, self.selection_name, sel)
+        return columns, []
+
+    def inputs(self, metadata):
+        return [self.input_col]
+
+    def outputs(self, metadata):
+        return [Column(("Selection", self.selection_name))]
+    
+@define
 class SelectAllTriggers(AnalyzerModule):
     """
     Selection trigger by trigger for each dataset. Takes advantage of the selection flow to get the yield.

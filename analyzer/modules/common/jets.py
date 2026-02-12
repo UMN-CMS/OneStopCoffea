@@ -357,6 +357,52 @@ class JetFilter(AnalyzerModule):
     def outputs(self, metadata):
         return [self.output_col]
 
+@define
+class JetFilterArbitrary(AnalyzerModule):
+
+    """
+    This analyzer filters an input jet collection according to an arbitrary value.
+
+    Parameters
+    ----------
+    input_col : Column
+        Column containing the input jet collection to be filtered.
+    output_col : Column
+        Column where the filtered jet collection will be stored.
+    key : str
+        Key to access in the column
+    min_value : float | None=None
+        Min value for  all values in column[key] 
+    max_value : float | None=None 
+        Max value for all values in column[key]
+    """
+    input_col: Column
+    output_col: Column
+    key: str | None=None
+    min_value: float | None=None 
+    max_value: float | None=None 
+
+    def run(self, columns, params):
+        metadata = columns.metadata
+        jets = columns[self.input_col]
+        if self.key is not None:
+            if self.min_value is not None:
+                jets = jets[ak.pad_none(jets[self.key] >= self.min_value, False)]
+            if self.max_value is not None:
+                jets = jets[ak.pad_none(jets[self.key] <= self.max_value, False)] 
+        else:
+            if self.min_value is not None:
+                jets = jets[ak.pad_none(jets >= self.min_value, False, axis=0)]
+            if self.max_value is not None:
+                jets = jets[ak.pad_none(jets <= self.max_value, False, axis=0)] 
+        columns[self.output_col] = jets
+        return columns, []
+
+    def inputs(self, metadata):
+        return [self.input_col]
+
+    def outputs(self, metadata):
+        return [self.output_col]
 
 @define
 class TopVecHistograms(AnalyzerModule):
@@ -393,7 +439,7 @@ class TopVecHistograms(AnalyzerModule):
                 makeHistogram(
                     f"{self.prefix}_pt_{i + 1}",
                     columns,
-                    RegularAxis(20, 0, 1000, f"$p_{{T, {i + 1}}}$", unit="GeV"),
+                    RegularAxis(125, 0, 3000, f"$p_{{T, {i + 1}}}$", unit="GeV"),
                     padded[:, i].pt,
                     description=f"$p_T$ of jet {i + 1} ",
                     mask=mask,
@@ -416,6 +462,16 @@ class TopVecHistograms(AnalyzerModule):
                     RegularAxis(20, -4, 4, f"$\\phi_{{T, {i + 1}}}$"),
                     padded[:, i].phi,
                     description=f"$\\phi$ of jet {i + 1} ",
+                    mask=mask,
+                )
+            )
+            ret.append(
+                makeHistogram(
+                    f"{self.prefix}_mass_{i + 1}",
+                    columns,
+                    RegularAxis(100, 0, 1000, f"$m_{{T, {i + 1}}}$", unit="GeV"),
+                    padded[:, i].mass,
+                    description=f"Mass of jet {i + 1} ",
                     mask=mask,
                 )
             )
