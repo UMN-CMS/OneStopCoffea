@@ -50,7 +50,7 @@ class JetFilterBoosted(AnalyzerModule):
         sorted_jets = jets[ak.argsort(jets["msoftdrop"], ascending=False)]
 
         tau32_mask = (sorted_jets["tau3"]/sorted_jets["tau2"]) < 0.7
-        good_jets = jets[tau32_mask]
+        good_jets = sorted_jets[tau32_mask]
 
         columns[self.output_col] = good_jets
         return columns, []
@@ -96,10 +96,14 @@ class DijetHistograms(AnalyzerModule):
 
     def run(self, columns, params):
         fatjets = columns[self.input_col_fat_jet][:,0]
-        b_jets = columns[self.input_col_b_jet][:, 0]
+        b_jets = columns[self.input_col_b_jet][:,0]
         dijets = fatjets + b_jets
-
+        jet_dict = {
+            "AK8": fatjets,
+            "AK4": b_jets
+        }
         ret = []
+
         ret.append(
             makeHistogram(
                 f"{self.prefix}_pt",
@@ -157,9 +161,98 @@ class DijetHistograms(AnalyzerModule):
                 columns,
                 RegularAxis(100, 0, 5000, f"$m_{{jj}}$", unit="GeV"),
                 dijets.mass,
-                description=f"Mass of dijet ",
+                description=f"Mass of dijet",
             )
         )
+
+        ret.append(
+            makeHistogram(
+                f"AK8_mass_sd",
+                columns,
+                RegularAxis(100, 0, 1000, f"AK8 $m_{{SD}}$", unit="GeV"),
+                fatjets.msoftdrop,
+                description=f"Softdrop Mass of AK8 jet",
+            )
+        )
+
+        ret.append(
+            makeHistogram(
+                f"AK8_tau32",
+                columns,
+                RegularAxis(50, 0, 1, f"AK8 $\\tau_{{32}}$"),
+                fatjets["tau3"]/fatjets["tau2"],
+                description=f"Tau3/Tau2 of AK8 jet",
+            )
+        )
+
+        for i in [1,2,3]:
+            ret.append(
+                makeHistogram(
+                    f"AK8_tau{i}",
+                    columns,
+                    RegularAxis(50, 0, 1, f"AK8 $\\tau_{i}$"),
+                    fatjets[f"tau{i}"],
+                    description=f"Tau{i} of AK8 jet",
+                )
+            )
+
+        ret.append(
+            makeHistogram(
+                f"AK8_v_AK4_pt",
+                columns,
+                [RegularAxis(125, 0, 3000, f"AK8 $p_T$", unit="GeV"),
+                RegularAxis(125, 0, 3000, f"AK4 $p_T$", unit="GeV")],
+                [fatjets.pt, b_jets.pt],
+                description=f"$p_T$ plane of AK8 and AK4 jets",
+            )
+        )
+        ret.append(
+            makeHistogram(
+                f"dijet_vs_AK8_mass_softdrop",
+                columns,
+                [RegularAxis(100, 0, 5000, f"$m_{{jj}}$", unit="GeV"),
+                RegularAxis(100, 0, 1000, f"AK8 $m_{{SD}}$", unit="GeV")],
+                [dijets.mass, fatjets.msoftdrop],
+                description=f"Mass plane",
+            )
+        )
+        for key, value in jet_dict.items(): 
+            ret.append(
+                makeHistogram(
+                    f"{key}_pt",
+                    columns,
+                    RegularAxis(125, 0, 3000, f"{key} $p_T$", unit="GeV"),
+                    value.pt,
+                    description=f"$p_T$ of {key} jet",
+                )
+            )
+            ret.append(
+                makeHistogram(
+                    f"{key}_eta",
+                    columns,
+                    RegularAxis(20, -4, 4, f"${key} \\eta$"),
+                    value.eta,
+                    description=f"$\\eta$ of {key} jet",
+                )
+            )
+            ret.append(
+                makeHistogram(
+                    f"{key}_phi",
+                    columns,
+                    RegularAxis(20, -4, 4, f"{key} $\\phi$"),
+                    value.phi,
+                    description=f"$\\phi$ of {key} jet",
+                )
+            )
+            ret.append(
+                makeHistogram(
+                    f"{key}_mass",
+                    columns,
+                    RegularAxis(100, 0, 1000, f"{key} m", unit="GeV"),
+                    value.mass,
+                    description=f"Mass of {key} jet",
+                )
+            )
 
         return columns, ret
 
