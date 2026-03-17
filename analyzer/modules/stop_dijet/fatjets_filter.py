@@ -164,7 +164,6 @@ class DijetHistograms(AnalyzerModule):
                 description=f"Mass of dijet",
             )
         )
-
         ret.append(
             makeHistogram(
                 f"AK8_mass_sd",
@@ -174,7 +173,6 @@ class DijetHistograms(AnalyzerModule):
                 description=f"Softdrop Mass of AK8 jet",
             )
         )
-
         ret.append(
             makeHistogram(
                 f"AK8_tau32",
@@ -184,7 +182,6 @@ class DijetHistograms(AnalyzerModule):
                 description=f"Tau3/Tau2 of AK8 jet",
             )
         )
-
         for i in [1,2,3]:
             ret.append(
                 makeHistogram(
@@ -195,14 +192,13 @@ class DijetHistograms(AnalyzerModule):
                     description=f"Tau{i} of AK8 jet",
                 )
             )
-
         ret.append(
             makeHistogram(
-                f"AK8_v_AK4_pt",
+                f"AK4_v_AK8_pt",
                 columns,
-                [RegularAxis(125, 0, 3000, f"AK8 $p_T$", unit="GeV"),
-                RegularAxis(125, 0, 3000, f"AK4 $p_T$", unit="GeV")],
-                [fatjets.pt, b_jets.pt],
+                [RegularAxis(125, 0, 3000, f"AK4 $p_T$", unit="GeV"),
+                RegularAxis(125, 0, 3000, f"AK8 $p_T$", unit="GeV")],
+                [b_jets.pt, fatjets.pt,],
                 description=f"$p_T$ plane of AK8 and AK4 jets",
             )
         )
@@ -214,6 +210,26 @@ class DijetHistograms(AnalyzerModule):
                 RegularAxis(100, 0, 1000, f"AK8 $m_{{SD}}$", unit="GeV")],
                 [dijets.mass, fatjets.msoftdrop],
                 description=f"Mass plane",
+            )
+        )
+        ret.append(
+            makeHistogram(
+                f"AK4_m_v_AK8_mSD",
+                columns,
+                [RegularAxis(100, 0, 1000, f"AK4 m", unit="GeV"),
+                RegularAxis(100, 0, 1000, f"AK8 $m_{{SD}}", unit="GeV")],
+                [b_jets.mass, fatjets.msoftdrop],
+                description=f"Mass plane of AK8 and AK4 jets",
+            )
+        )
+        ret.append(
+            makeHistogram(
+                f"dijet_vs_AK8_mass_softdrop_ratio",
+                columns,
+                [RegularAxis(100, 0, 5000, f"$m_{{jj}}$", unit="GeV"),
+                RegularAxis(100, 0, 1, f"AK8 $m_{{SD}}$/$m_{{jj}}$", unit="GeV")],
+                [dijets.mass, fatjets.msoftdrop/dijets.mass],
+                description=f"Mass ratio plane",
             )
         )
         for key, value in jet_dict.items(): 

@@ -39,20 +39,27 @@ common_cleanup: &common_cleanup
   #  input_col: GoodJet
   #  working_point: M
 
-#common_categories: &common_categories
+common_categories: &common_categories
   #- module_name: SimpleCategory
   #  input_col: HT
   #  cat_name: HT_Cat
   #  start: 0
   #  stop: 3000
-  #  bins: 60
+  #  bins: 6
 
-  # - module_name: SimpleCategory
-  #   input_col: NJet
-  #   cat_name: NJet_Category
-  #   start: 4
-  #   stop: 7
-  #   bins: 3
+  - module_name: SimpleCategory
+    input_col: NJet
+    cat_name: NJet_Category
+    start: 0
+    stop: 10
+    bins: 10 
+
+  - module_name: SimpleCategory
+    input_col: NFatJet
+    cat_name: NFatJet_Category
+    start: 0
+    stop: 10
+    bins: 10 
 
 
 
@@ -93,6 +100,10 @@ common_objects: &common_objects
     input_col: GoodJet
     output_col: NJet
 
+  - module_name: Count
+    input_col: MedB 
+    output_col: Nb 
+
   - module_name: JetFilter
     input_col: FatJet
     output_col: GoodKinematicFatJet
@@ -102,6 +113,14 @@ common_objects: &common_objects
   - module_name: JetFilterBoosted
     input_col: GoodKinematicFatJet
     output_col: GoodFatJet
+
+  - module_name: Count
+    input_col: GoodKinematicFatJet
+    output_col: NFatJet
+  
+  - module_name: Count
+    input_col: GoodFatJet
+    output_col: NChi
   
   - module_name: PromoteIndex
     input_col: GoodFatJet
@@ -214,85 +233,110 @@ common_histograms: &common_histograms
         bins: 120
         unit: GeV
 
+  - module_name: SimpleHistogram
+    hist_name: NJet 
+    input_cols: [NJet] 
+    axes:
+      - name: NJet 
+        start: 0
+        stop: 10 
+        bins: 10
+
+  - module_name: SimpleHistogram
+    hist_name: NFatJet 
+    input_cols: [NFatJet] 
+    axes:
+      - name: NFatJet 
+        start: 0
+        stop: 10 
+        bins: 10
+  
+  - module_name: SimpleHistogram
+    hist_name: NChi 
+    input_cols: [NChi] 
+    axes:
+      - name: NChi 
+        start: 0
+        stop: 10 
+        bins: 10
+
+  - module_name: SimpleHistogram
+    hist_name: Nb 
+    input_cols: [Nb] 
+    axes:
+      - name: Nb 
+        start: 0
+        stop: 10 
+        bins: 10
+
 analyzer:
   default_run_builder:
     strategy_name: NoSystematics
 
   Signal:
     - module_name: SimpleHLT
-      triggers: [dijet_HT, dijet_AK8SingleJetPt, dijet_AK8HT, dijet_AK8B, dijet_DoublePF, dijet_DiPF]
-    #  selection_name: AllHLT
+      triggers: [HT, AK8SingleJetPt, AK8SingleJetPtNoTrim]
     - *common_cleanup
     - *common_objects
     - *common_selection
     - module_name: SelectOnColumns
       sel_name: selection
+    - *common_categories
     - *common_histograms
 
-  NoTrigger:
-    - *common_cleanup
-    - *common_objects
-    - *common_selection
-    - module_name: SelectOnColumns
-      sel_name: selection
-    - *common_histograms
-
-  NoTriggerHTCut:
-    - *common_cleanup
-    - *common_objects
-    - *common_selection
-    - module_name: ObjCompareFilter
-      input_col: HT
-      min_value: 500
-      selection_name: HT500
-    - module_name: SelectOnColumns
-      sel_name: selection
-    - *common_histograms
-
-  HTOnly:
+  Signal_HT_Trigger_Only:
     - module_name: SimpleHLT
-      triggers: [dijet_HT]
-      #selection_name: HTOnly
+      triggers: [HT]
     - *common_cleanup
     - *common_objects
     - *common_selection
     - module_name: SelectOnColumns
       sel_name: selection
+    - *common_categories
     - *common_histograms
 
-  AK8SingleHT:
+  Signal_AK8_Triggers_Only:
     - module_name: SimpleHLT
-      triggers: [dijet_HT, dijet_AK8SingleJetPt]
-      #selection_name: AK8SingleHT
+      triggers: [AK8SingleJetPt, AK8SingleJetPtNoTrim]
     - *common_cleanup
     - *common_objects
     - *common_selection
     - module_name: SelectOnColumns
       sel_name: selection
+    - *common_categories
     - *common_histograms
+
+  No_Trigger:
+    - *common_cleanup
+    - *common_objects
+    - *common_selection
+    - module_name: SelectOnColumns
+      sel_name: selection
+    - *common_categories
+    - *common_histograms
+
 
 # location_priorities: [".*FNAL.*", ".*US.*", ".*(DE|IT|CH|FR).*", ".*(T0|T1|T2).*","eos"]
 location_priorities: [".*(T0|T1|T2).*","eos"]
 
 event_collections:
   # Signal Samples
-  - dataset: 'signal_2018_312_1000_100'
-    pipelines: [NoTrigger, HTOnly, AK8SingleHT, Signal]
-    #pipelines: [NoTrigger, NoTriggerHTCut]
-  #- dataset: 'signal_2018_312_2000_100'
-  #  pipelines: [NoTrigger, HTOnly, AK8SingleHT, Signal]
-  #  #pipelines: [NoTrigger, NoTriggerHTCut]
-  #- dataset: 'signal_2018_312_1000_400'
-  #  pipelines: [NoTrigger, HTOnly, AK8SingleHT, Signal]
-  #  #pipelines: [NoTrigger, NoTriggerHTCut]
-  #- dataset: 'signal_2018_312_2000_400'
-  #  pipelines: [NoTrigger, HTOnly, AK8SingleHT, Signal]
-  #  #pipelines: [NoTrigger, NoTriggerHTCut]
+  - dataset: signal_2023_postBPix_312_1000_100_official
+    pipelines: [Signal, Signal_HT_Trigger_Only, Signal_AK8_Triggers_Only, No_Trigger]
+  - dataset: signal_2023_postBPix_312_1000_400_official
+    pipelines: [Signal, Signal_HT_Trigger_Only, Signal_AK8_Triggers_Only, No_Trigger]
+  - dataset: signal_2023_postBPix_312_1500_100_official
+    pipelines: [Signal, Signal_HT_Trigger_Only, Signal_AK8_Triggers_Only, No_Trigger]
+  - dataset: signal_2023_postBPix_312_1500_400_official
+    pipelines: [Signal, Signal_HT_Trigger_Only, Signal_AK8_Triggers_Only, No_Trigger]
+  - dataset: signal_2023_postBPix_312_2000_100_official
+    pipelines: [Signal, Signal_HT_Trigger_Only, Signal_AK8_Triggers_Only, No_Trigger]
+  - dataset: signal_2023_postBPix_312_2000_400_official
+    pipelines: [Signal, Signal_HT_Trigger_Only, Signal_AK8_Triggers_Only, No_Trigger]
 
-  ## Background MC Samples
-  #- dataset: 'qcd*2018*'
-  #  pipelines: [NoTrigger, HTOnly, AK8SingleHT, Signal]
-  #  #pipelines: [NoTrigger, NoTriggerHTCut]
+  # Background MC Samples
+  - dataset: qcd_inclusive_2023_postBPix
+    pipelines: [Signal, Signal_HT_Trigger_Only, Signal_AK8_Triggers_Only, No_Trigger]
   
 extra_executors:
   imm:
@@ -320,7 +364,10 @@ Postprocessing:
   processors:
     - name: Histogram1D
       inputs:
-        - "*/*/*/AK4_*"
+        - "*/*/*/AK4_eta"
+        - "*/*/*/AK4_pt"
+        - "*/*/*/AK4_phi"
+        - "*/*/*/AK4_mass"
         - "*/*/*/AK8_eta"
         - "*/*/*/AK8_pt"
         - "*/*/*/AK8_phi"
@@ -334,16 +381,41 @@ Postprocessing:
         - "*/*/*/dijet_dr"
         - "*/*/*/dijet_mass"
         - "*/*/*/HT"
+        - "*/*/*/Nb"
+        - "*/*/*/NChi"
+        - "*/*/*/NJet"
+        - "*/*/*/NFatJet"
       scale: log
       normalize: False 
       structure:
         select: {dataset_name: "*"}
         group: {pipeline: "*", era.name: "*", name: "*"}
         transforms:
-          - name: SplitAxes
-            split_axis_names: {"variation": "central"}
-      output_name: "{prefix}/{pipeline}/{era.name}/{name}.pdf"
+          - name: SelectAxesValues
+            select_axes_values: {"variation": "central"}
+          - name: MergeAxes
+            merge_axis_names: ["NJet_Category"] 
+          - name: MergeAxes
+            merge_axis_names: ["NFatJet_Category"] 
 
+      output_name: "{prefix}/{pipeline}/{era.name}/{name}.pdf"
+    - name: Histogram2D
+      inputs:
+        - "*/*/*/*_v**"
+      scale: log
+      normalize: False 
+      structure:
+        select: {dataset_name: "*"}
+        group: {pipeline: "*", era.name: "*", name: "*", dataset_name: "*"}
+        transforms:
+          - name: SelectAxesValues
+            select_axes_values: {"variation": "central"}
+          - name: MergeAxes
+            merge_axis_names: ["NJet_Category"] 
+          - name: MergeAxes
+            merge_axis_names: ["NFatJet_Category"] 
+
+      output_name: "{prefix}/{pipeline}/{era.name}/{name}_{dataset_name}.pdf"
   default_plot_config:
     cms_text: "Preliminary"
     image_type: ".pdf"
