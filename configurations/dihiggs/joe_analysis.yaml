@@ -38,7 +38,7 @@ common_histograms: &common_histograms
     hist_name: JetQvG
     input_cols: [goodJet.btagUParTAK4QvG]
     axes:
-      - name: "Jet UParTQvG Score"
+      - name: "Jet PNetQvG Score"
         start: 0
         stop: 1
         bins: 20
@@ -77,6 +77,21 @@ common_histograms: &common_histograms
       bins: 50
 
   - module_name: FourVecHistograms
+    input_col: nontop2b
+    hist_name: nontop2b
+
+  - module_name: JetComboHistograms
+    input_col: nontop2b
+    prefix: "nontop2b"
+    jet_combos:
+      - [0,1,2,3]
+    mass_axis:
+      name: "nontop2b"
+      start: 0
+      stop: 500
+      bins: 50
+
+  - module_name: FourVecHistograms
     input_col: Jet
     hist_name: AK4Jet
     mass_axis:
@@ -97,9 +112,9 @@ common_histograms: &common_histograms
 
   - module_name: SimpleHistogram
     hist_name: AK4JetQvG
-    input_cols: [Jet.btagUParTAK4QvG]
+    input_cols: [Jet.btagPNetQvG]
     axes:
-      - name: "AK4Jet UParTQvG Score"
+      - name: "AK4Jet PNetQvG Score"
         start: 0
         stop: 1
         bins: 20
@@ -132,105 +147,52 @@ common_histograms: &common_histograms
         bins: 60
         unit: "GeV"
 
-
-gen_histograms: &gen_histograms
-  - module_name: TopVecHistograms
-    prefix: "GenJet"
-    input_col: GenJet
-    max_idx: 6
-
   - module_name: SimpleHistogram
-    hist_name: GenJetHT
-    input_cols: [GenJetHT]
+    hist_name: looseElectronN
+    input_cols: [NlooseElectron]
     axes:
-      - name: "GenJet $H_{T}$"
-        start: 0
-        stop: 3000
-        bins: 60
-        unit: GeV
-
-  - module_name: SimpleHistogram
-    hist_name: GenNJet
-    input_cols: [NGenJet]
-    axes:
-      - name: "$N_{GenJets}$"
+      - name: "$N_{\\text{loose},e}$"
         start: -0.5
-        stop: 13.5
-        bins: 14
-
-  - module_name: FourVecHistograms
-    input_col: GenJet
-    hist_name: GenJet
-    mass_axis:
-      name: "GenJet"
-      start: 0
-      stop: 500
-      bins: 50
-
-  - module_name: GenPartFilter
-    input_col: GenPart
-    output_col: GenHiggs
-    pdgId: 25
-    status_flag: 13
-
-  - module_name: FourVecHistograms
-    input_col: GenHiggs
-    hist_name: GenHiggs
-    mass_axis:
-      name: "GenHiggs"
-      start: 0
-      stop: 500
-      bins: 50
-      unit: "GeV"
-
-  - module_name: GenPartDecayWalker
-    input_col: GenPart
-    output_col: GenPart_2b4q
-    sample_type: signal
-
-  - module_name: GenPartMinDRMaker
-    input_col: GenPart_2b4q
-    output_col: min_dr_GenPart 
+        stop: 4.5
+        bins: 5
 
   - module_name: SimpleHistogram
-    hist_name: min_dr_GenPart
-    input_cols: [min_dr_GenPart]
+    hist_name: tightElectronN
+    input_cols: [NtightElectron]
     axes:
-      - name: "minDR_{{GenPart}}"
-        start: 0.0
-        stop: 3.0
-        bins: 60
+      - name: "$N_{\\text{tight},e}$"
+        start: -0.5
+        stop: 4.5
+        bins: 5
+
+  - module_name: SimpleHistogram
+    hist_name: looseMuonN
+    input_cols: [NlooseMuon]
+    axes:
+      - name: "$N_{\\text{loose},\\mu}$"
+        start: -0.5
+        stop: 4.5
+        bins: 5
+
+  - module_name: SimpleHistogram
+    hist_name: tightMuonN
+    input_cols: [NtightMuon]
+    axes:
+      - name: "$N_{\\text{tight},\\mu}$"
+        start: -0.5
+        stop: 4.5
+        bins: 5
 
 {{ core.objects() }}
 {{ core.regions() }}
 
-withHLT_NoSelection:
-  - *withHLT_NoSelection
-  - *common_histograms
-
-NoSelection:
-  - *NoSelection
-  - *common_histograms
-
-withHLT_ObjDef1:
-  - *withHLT_ObjDef1
-  - *common_histograms
-
-noHLT_ObjDef1:
-  - *noHLT_ObjDef1
-  - *common_histograms
-
-withHLT_ObjDef2:
-  - *withHLT_ObjDef2
-  - *common_histograms
-
-noHLT_ObjDef2:
-  - *noHLT_ObjDef2
-  - *common_histograms
-
 analyzer:
   default_run_builder:
-    strategy_name: NoSystematics
+    strategy_name: MultiRunBuilder
+    components:
+      - strategy_name: NoSystematics
+      - strategy_name: UnscaledOnly
+
   withHLT_NoSelection:
     - *withHLT_NoSelection
     - *common_histograms
@@ -255,21 +217,42 @@ analyzer:
     - *noHLT_ObjDef2
     - *common_histograms
 
+  SignalOnly:
+    - module_name: SelectAllTriggers
+      sel_name: all_triggers
+
 location_priorities: [".*(T0|T1|T2).*","eos"]
 
-event_collections:
-  - dataset: 'ggHH2b2V6q_2024*'
-    pipelines: 
+{%- macro signalmc_pipelines() %}
       - withHLT_NoSelection
       - NoSelection
       - withHLT_ObjDef1
       - noHLT_ObjDef1
       - withHLT_ObjDef2
       - noHLT_ObjDef2
+      - SignalOnly
+{%- endmacro %}
+
+{%- macro mc_pipelines() %}
+      - withHLT_NoSelection
+      - NoSelection
+      - withHLT_ObjDef1
+      - noHLT_ObjDef1
+      - withHLT_ObjDef2
+      - noHLT_ObjDef2
+{%- endmacro %}
+
+event_collections:
+  - dataset: 'ggHH2b2V6q_2024*'
+    pipelines: 
+    {{ signalmc_pipelines() }}
   - dataset: 'qcd*2024*'
-    pipelines: [withHLT_ObjDef1]
+    pipelines:
+    {{ mc_pipelines() }}
   - dataset: 'tt_hadronic*2024*'
-    pipelines: [withHLT_ObjDef1]
+    pipelines:
+    {{ mc_pipelines() }}
   - dataset: 'tt_semilep*2024'
-    pipelines: [withHLT_ObjDef1]
+    pipelines:
+    {{ mc_pipelines() }}
         
