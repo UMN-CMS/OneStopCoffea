@@ -371,7 +371,8 @@ Postprocessing:
         - "*/*/*/AK8_eta"
         - "*/*/*/AK8_pt"
         - "*/*/*/AK8_phi"
-        - "*/*/*/AK8_mass*"
+        - "*/*/*/AK8_mass"
+        - "*/*/*/AK8_mass_softdrop"
         - "*/*/*/AK8_tau*"
         - "*/*/*/dijet_pt"
         - "*/*/*/dijet_eta"
@@ -393,10 +394,14 @@ Postprocessing:
         transforms:
           - name: SelectAxesValues
             select_axes_values: {"variation": "central"}
-          - name: MergeAxes
-            merge_axis_names: ["NJet_Category"] 
+          #- name: SliceAxes
+          #  slices: {"NFatJet_Category": [2, 3]  } 
           - name: MergeAxes
             merge_axis_names: ["NFatJet_Category"] 
+          - name: SliceAxes
+            slices: {"NJet_Category": [2, 7]  } 
+          - name: MergeAxes
+            merge_axis_names: ["NJet_Category"]
 
       output_name: "{prefix}/{pipeline}/{era.name}/{name}.pdf"
     - name: Histogram2D
@@ -410,10 +415,14 @@ Postprocessing:
         transforms:
           - name: SelectAxesValues
             select_axes_values: {"variation": "central"}
-          - name: MergeAxes
-            merge_axis_names: ["NJet_Category"] 
+          #- name: SliceAxes
+          #  slices: {"NFatJet_Category": [2, 3]  } 
           - name: MergeAxes
             merge_axis_names: ["NFatJet_Category"] 
+          - name: SliceAxes
+            slices: {"NJet_Category": [2, 7]  } 
+          - name: MergeAxes
+            merge_axis_names: ["NJet_Category"]
 
       output_name: "{prefix}/{pipeline}/{era.name}/{name}_{dataset_name}.pdf"
   default_plot_config:
