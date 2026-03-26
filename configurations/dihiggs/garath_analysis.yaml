@@ -529,6 +529,7 @@ analyzer:
   withHLT_NoSelection:
     - *withHLT_NoSelection
     - *common_histograms
+    - *gen_vars
     - *gen_histograms
 
   NoSelection:
