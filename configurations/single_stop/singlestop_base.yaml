@@ -200,4 +200,18 @@
       stop: 3000
       bins: 60
       unit: GeV
+
+- module_name: SimpleHistogram
+  hist_name: NJets
+  input_cols: [NJet]
+  axes:
+    - name: NJet
+      start: 0
+      stop: 10
+      bins: 10
+
+- module_name: TopVecHistograms
+  prefix: "good_jet"
+  input_col: GoodJet
+  max_idx: 4
 {%- endmacro %}
