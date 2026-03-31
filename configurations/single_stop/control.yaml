@@ -26,6 +26,7 @@ analyzer:
       sel_name: selection
     {{ base.ht_cat() | indent(4) }}
     {{ base.singlestop_common_histograms() | indent(4) }}
+    {{ base.singlestop_extra_histograms() | indent(4) }}
 
   Control:
     - module_name: SimpleHLT
@@ -50,6 +51,7 @@ analyzer:
       sel_name: selection
     {{ base.ht_cat() | indent(4) }}
     {{ base.singlestop_common_histograms() | indent(4) }}
+    {{ base.singlestop_extra_histograms() | indent(4) }}
 
 post_common_mc_transforms: &post_common_mc_transforms
   - name: NormalizeSystematicByProjection
@@ -115,7 +117,39 @@ Postprocessing:
                 select_axes_values: {"variation": "central"}
               - name: SliceAxes
                 slices: {0: [600,2500]}
-      output_name: "{prefix}/control/{era.name}/ratio_{era.name}_{name}.png"
+      output_name: "{prefix}/control/{era.name}/ratio_{era.name}_{name}.pdf"
+
+    - name: RatioPlot
+      inputs:
+        - "*/*/*/NJets"
+        - "*/*/*/good_jet_pt_1"
+        - "*/*/*/good_jet_pt_2"
+        - "*/*/*/good_jet_pt_3"
+        - "*/*/*/good_jet_pt_4"
+        - "*/*/*/good_jet_eta_1"
+        - "*/*/*/good_jet_eta_2"
+        - "*/*/*/good_jet_eta_3"
+        - "*/*/*/good_jet_eta_4"
+        - "*/*/*/good_jet_phi_1"
+        - "*/*/*/good_jet_phi_2"
+        - "*/*/*/good_jet_phi_3"
+        - "*/*/*/good_jet_phi_4"
+      scale: log
+      normalize: False
+      structure:
+        select: {dataset_name: "!Signal*"}
+        group: {era.name: "*"}
+        subgroups:
+          denominator:
+            select: {sample_type: MC, pipeline: Control}
+            transforms:
+              - *post_common_mc_transforms
+          numerator:
+            select: {sample_type: Data, pipeline: ControlEmulation}
+            transforms:
+              - name: SelectAxesValues
+                select_axes_values: {"variation": "central"}
+      output_name: "{prefix}/control/{era.name}/ratio_{era.name}_{name}.pdf"
 
     - name: RatioPlot
       inputs:
@@ -140,7 +174,7 @@ Postprocessing:
                 select_axes_values: {"variation": "central"}
               - name: SliceAxes
                 slices: {0: [200,2500]}
-      output_name: "{prefix}/control/{era.name}/ratio_{era.name}_{name}.png"
+      output_name: "{prefix}/control/{era.name}/ratio_{era.name}_{name}.pdf"
 
     - name: RatioPlot
       inputs:
@@ -164,7 +198,7 @@ Postprocessing:
                 select_axes_values: {"variation": "central"}
               - name: SliceAxes
                 slices: {0: [300,1000]}
-      output_name: "{prefix}/control/{era.name}/ratio_{era.name}_{name}.png"
+      output_name: "{prefix}/control/{era.name}/ratio_{era.name}_{name}.pdf"
 
 
     - name: RatioPlot
@@ -190,7 +224,7 @@ Postprocessing:
                 merge_axis_names: ["HT_Cat"]
               - name: SelectAxesValues
                 select_axes_values: {"variation": "central"}
-      output_name: "{prefix}/control/{era.name}/compare_bsf_{era.name}_{name}.png"
+      output_name: "{prefix}/control/{era.name}/compare_bsf_{era.name}_{name}.pdf"
 
 
     - name: RatioPlot
@@ -225,7 +259,7 @@ Postprocessing:
 
               - name: FormatTitle
                 title_format: "With BSF Reweighting"
-      output_name: "{prefix}/control/{era.name}/normalized_bsf_{era.name}_{name}.png"
+      output_name: "{prefix}/control/{era.name}/normalized_bsf_{era.name}_{name}.pdf"
 
     - name: RatioPlot
       inputs:
@@ -257,16 +291,16 @@ Postprocessing:
                 style: {plottype: step, linewidth: 2}
               - name: FormatTitle
                 title_format: "{axis_params.variation}"
-      output_name: "{prefix}/control/{era.name}/triggereff_sys_{era.name}_{name}.png"
+      output_name: "{prefix}/control/{era.name}/triggereff_sys_{era.name}_{name}.pdf"
       plot_configuration:
         cms_text: "Preliminary"
-        image_type: ".png"
+        image_type: ".pdf"
         cms_text_color: Black
         legend_num_cols: 1
 
   default_plot_config:
     cms_text: "Preliminary"
-    image_type: ".png"
+    image_type: ".pdf"
     cms_text_color: Black
     legend_num_cols: 2
 
