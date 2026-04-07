@@ -106,36 +106,36 @@ common_objects: &common_objects
 
   - module_name: JetFilter
     input_col: FatJet
-    output_col: GoodKinematicFatJet
+    output_col: GoodFatJet
     max_abs_eta: 2.4
     include_jet_id: True 
 
-  - module_name: JetFilterBoosted
-    input_col: GoodKinematicFatJet
-    output_col: GoodFatJet
+  #- module_name: JetFilterBoosted
+  #  input_col: GoodKinematicFatJet
+  #  output_col: GoodFatJet
 
   - module_name: Count
-    input_col: GoodKinematicFatJet
+    input_col: GoodFatJet
     output_col: NFatJet
   
-  - module_name: Count
-    input_col: GoodFatJet
-    output_col: NChi
+  #- module_name: Count
+  #  input_col: GoodFatJet
+  #  output_col: NChi
   
-  - module_name: PromoteIndex
-    input_col: GoodFatJet
-    output_col: FirstGoodFatJet
+  #- module_name: PromoteIndex
+  #  input_col: GoodFatJet
+  #  output_col: FirstGoodFatJet
 
   #- module_name: DijetMaker
   #  input_col_1: GoodFatJet
   #  input_col_2: MedB 
   #  output_col: Dijet
 
-  - module_name: FilterNear
-    target_col: MedB
-    near_col: GoodFatJet
-    max_dr: 0.8 
-    output_col: MedB
+  #- module_name: FilterNear
+  #  target_col: MedB
+  #  near_col: GoodFatJet
+  #  max_dr: 0.8 
+  #  output_col: MedB
   
 common_selection: &common_selection
   - module_name: NObjFilter
@@ -155,16 +155,16 @@ common_selection: &common_selection
     min_count: 0
     max_count: 0
 
-  - module_name: NObjFilter
-    input_col: MedB 
-    selection_name: n_med_b
-    min_count: 1
+  #- module_name: NObjFilter
+  #  input_col: MedB 
+  #  selection_name: n_med_b
+  #  min_count: 1
 
-  - module_name: ObjCompareFilter
-    input_col: FirstGoodFatJet
-    min_value: 50
-    key: msoftdrop
-    selection_name: msd50
+  #- module_name: ObjCompareFilter
+  #  input_col: FirstGoodFatJet
+  #  min_value: 50
+  #  key: msoftdrop
+  #  selection_name: msd50
 
   #- module_name: ObjCompareFilter
   #  input_col: HT
@@ -207,20 +207,24 @@ common_histograms: &common_histograms
   #    - [0,1,2]
   #    - [1,2,3]
 
-  #- module_name: TopVecHistograms
-  #  prefix: "b-jet"
-  #  input_col: MedB 
-  #  max_idx: 1
+  - module_name: TopVecHistograms
+    prefix: "good_jet"
+    input_col: GoodJet 
+    max_idx: 4
 
+  - module_name: TopVecHistograms
+    prefix: "good_fat_jet"
+    input_col: GoodFatJet 
+    max_idx: 2
   #- module_name: TopVecHistograms
   #  prefix: "fatjet"
   #  input_col: GoodFatJet
   #  max_idx: 1
   
-  - module_name: DijetHistograms
-    prefix: "dijet"
-    input_col_fat_jet: GoodFatJet
-    input_col_b_jet: MedB 
+  #- module_name: DijetHistograms
+  #  prefix: "dijet"
+  #  input_col_fat_jet: GoodFatJet
+  #  input_col_b_jet: MedB 
 
 
   - module_name: SimpleHistogram
@@ -252,15 +256,6 @@ common_histograms: &common_histograms
         bins: 10
   
   - module_name: SimpleHistogram
-    hist_name: NChi 
-    input_cols: [NChi] 
-    axes:
-      - name: NChi 
-        start: 0
-        stop: 10 
-        bins: 10
-
-  - module_name: SimpleHistogram
     hist_name: Nb 
     input_cols: [Nb] 
     axes:
@@ -284,36 +279,14 @@ analyzer:
     - *common_categories
     - *common_histograms
 
-  Signal_HT_Trigger_Only:
-    - module_name: SimpleHLT
-      triggers: [HT]
-    - *common_cleanup
-    - *common_objects
-    - *common_selection
-    - module_name: SelectOnColumns
-      sel_name: selection
-    - *common_categories
-    - *common_histograms
-
-  Signal_AK8_Triggers_Only:
-    - module_name: SimpleHLT
-      triggers: [AK8SingleJetPt, AK8SingleJetPtNoTrim]
-    - *common_cleanup
-    - *common_objects
-    - *common_selection
-    - module_name: SelectOnColumns
-      sel_name: selection
-    - *common_categories
-    - *common_histograms
-
-  No_Trigger:
-    - *common_cleanup
-    - *common_objects
-    - *common_selection
-    - module_name: SelectOnColumns
-      sel_name: selection
-    - *common_categories
-    - *common_histograms
+  #No_Trigger:
+  #  - *common_cleanup
+  #  - *common_objects
+  #  - *common_selection
+  #  - module_name: SelectOnColumns
+  #    sel_name: selection
+  #  - *common_categories
+  #  - *common_histograms
 
 
 # location_priorities: [".*FNAL.*", ".*US.*", ".*(DE|IT|CH|FR).*", ".*(T0|T1|T2).*","eos"]
@@ -322,21 +295,21 @@ location_priorities: [".*(T0|T1|T2).*","eos"]
 event_collections:
   # Signal Samples
   - dataset: signal_2023_postBPix_312_1000_100_official
-    pipelines: [Signal, Signal_HT_Trigger_Only, Signal_AK8_Triggers_Only, No_Trigger]
+    pipelines: [Signal]
   - dataset: signal_2023_postBPix_312_1000_400_official
-    pipelines: [Signal, Signal_HT_Trigger_Only, Signal_AK8_Triggers_Only, No_Trigger]
+    pipelines: [Signal]
   - dataset: signal_2023_postBPix_312_1500_100_official
-    pipelines: [Signal, Signal_HT_Trigger_Only, Signal_AK8_Triggers_Only, No_Trigger]
+    pipelines: [Signal]
   - dataset: signal_2023_postBPix_312_1500_400_official
-    pipelines: [Signal, Signal_HT_Trigger_Only, Signal_AK8_Triggers_Only, No_Trigger]
+    pipelines: [Signal]
   - dataset: signal_2023_postBPix_312_2000_100_official
-    pipelines: [Signal, Signal_HT_Trigger_Only, Signal_AK8_Triggers_Only, No_Trigger]
+    pipelines: [Signal]
   - dataset: signal_2023_postBPix_312_2000_400_official
-    pipelines: [Signal, Signal_HT_Trigger_Only, Signal_AK8_Triggers_Only, No_Trigger]
+    pipelines: [Signal]
 
   # Background MC Samples
   - dataset: qcd_inclusive_2023_postBPix
-    pipelines: [Signal, Signal_HT_Trigger_Only, Signal_AK8_Triggers_Only, No_Trigger]
+    pipelines: [Signal]
   
 extra_executors:
   imm:
@@ -364,28 +337,29 @@ Postprocessing:
   processors:
     - name: Histogram1D
       inputs:
-        - "*/*/*/AK4_eta"
-        - "*/*/*/AK4_pt"
-        - "*/*/*/AK4_phi"
-        - "*/*/*/AK4_mass"
-        - "*/*/*/AK8_eta"
-        - "*/*/*/AK8_pt"
-        - "*/*/*/AK8_phi"
-        - "*/*/*/AK8_mass"
-        - "*/*/*/AK8_mass_softdrop"
-        - "*/*/*/AK8_tau*"
-        - "*/*/*/dijet_pt"
-        - "*/*/*/dijet_eta"
-        - "*/*/*/dijet_deta"
-        - "*/*/*/dijet_phi"
-        - "*/*/*/dijet_dphi"
-        - "*/*/*/dijet_dr"
-        - "*/*/*/dijet_mass"
+        #- "*/*/*/AK4_eta"
+        #- "*/*/*/AK4_pt"
+        #- "*/*/*/AK4_phi"
+        #- "*/*/*/AK4_mass"
+        #- "*/*/*/AK8_eta"
+        #- "*/*/*/AK8_pt"
+        #- "*/*/*/AK8_phi"
+        #- "*/*/*/AK8_mass"
+        #- "*/*/*/AK8_mass_softdrop"
+        #- "*/*/*/AK8_tau*"
+        #- "*/*/*/dijet_pt"
+        #- "*/*/*/dijet_eta"
+        #- "*/*/*/dijet_deta"
+        #- "*/*/*/dijet_phi"
+        #- "*/*/*/dijet_dphi"
+        #- "*/*/*/dijet_dr"
+        #- "*/*/*/dijet_mass"
         - "*/*/*/HT"
-        - "*/*/*/Nb"
-        - "*/*/*/NChi"
+        #- "*/*/*/Nb"
+        #- "*/*/*/NChi"
         - "*/*/*/NJet"
         - "*/*/*/NFatJet"
+        - "*/*/*/good*"
       scale: log
       normalize: False 
       structure:
@@ -398,8 +372,6 @@ Postprocessing:
           #  slices: {"NFatJet_Category": [2, 3]  } 
           - name: MergeAxes
             merge_axis_names: ["NFatJet_Category"] 
-          - name: SliceAxes
-            slices: {"NJet_Category": [2, 7]  } 
           - name: MergeAxes
             merge_axis_names: ["NJet_Category"]
 
