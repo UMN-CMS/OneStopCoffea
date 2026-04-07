@@ -48,7 +48,7 @@ def plot2D(
         [meta],
         plot_configuration=pc,
         metadata=common_meta,
-        extra_text=f"{common_meta['pipeline']}",
+        extra_text=f"{common_meta['sample_name']}\n{common_meta['pipeline']}",
         text_color="white",
     )
     plt.close(fig)

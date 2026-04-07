@@ -1,0 +1,157 @@
+{% import "singlestop_base.yaml" as base %}
+
+analyzer:
+  default_run_builder:
+    strategy_name: NoSystematics
+
+  Signal312:
+    - module_name: SimpleHLT
+      triggers: [HT,AK8SingleJetPtNoTrim, AK8SingleJetPt]
+      should_run:
+        sample_type: Data
+    {{ base.event_level_cleanup() | indent(4) }}
+    - module_name: SelectOnColumns
+      sel_name: pre_selection
+    {{ base.jec_jer_corrections() | indent(4) }}
+    {{ base.singlestop_objects() | indent(4) }}
+    {{ base.weights() | indent(4) }}
+    - module_name: TriggerBNNCorrection
+      base_path: postprocessing/newtriggereffs/
+      correction_pattern: "{era}.json.gz"
+    - module_name: NObjFilter
+      input_col: MedB
+      selection_name: 2bjet
+      min_count: 2
+    - module_name: NObjFilter
+      input_col: TightB
+      selection_name: 1tightbjet
+      min_count: 1
+    - module_name: VecDRSelection
+      input_col: MedB
+      selection_name: b_dr
+      min_dr: 1.0
+    {{ base.singlestop_common_selection() | indent(4) }}
+    - module_name: SelectOnColumns
+      sel_name: selection
+    {{ base.singlestop_common_histograms() | indent(4) }}
+    {{ base.singlestop_extra_histograms() | indent(4) }}
+
+  Signal313:
+    - module_name: SimpleHLT
+      triggers: [HT,AK8SingleJetPtNoTrim, AK8SingleJetPt]
+      should_run:
+        sample_type: Data
+    {{ base.event_level_cleanup() | indent(4) }}
+    - module_name: SelectOnColumns
+      sel_name: pre_selection
+    {{ base.jec_jer_corrections() | indent(4) }}
+    {{ base.singlestop_objects() | indent(4) }}
+    {{ base.weights() | indent(4) }}
+    - module_name: TriggerBNNCorrection
+      base_path: postprocessing/newtriggereffs/
+      correction_pattern: "{era}.json.gz"
+    - module_name: NObjFilter
+      input_col: TightB
+      selection_name: 3tightbjet
+      min_count: 3
+    - module_name: VecDRSelection
+      input_col: MedB
+      selection_name: b_dr
+      min_dr: 1.0
+    {{ base.singlestop_common_selection() | indent(4) }}
+    - module_name: SelectOnColumns
+      sel_name: selection
+    {{ base.singlestop_common_histograms() | indent(4) }}
+    {{ base.singlestop_extra_histograms() | indent(4) }}
+
+location_priorities: [".*FNAL.*", ".*US.*", ".*(DE|IT|CH|FR).*", ".*(T0|T1|T2).*","eos"]
+
+event_collections:
+  - dataset: 'signal_2018_312_1500_600_official'
+    pipelines: [Signal312]
+  #- dataset: 'signal_2018_312_1500_400_official'
+  #  pipelines: [Signal312]
+  #- dataset: 'signal_2018_312_1500_500_official'
+  #  pipelines: [Signal312]
+  
+  
+extra_executors:
+  test:
+    executor_name: ImmediateExecutor
+    chunk_size: 10000
+
+  test2:
+    executor_name: LocalDaskExecutor
+    chunk_size: 100000
+    min_workers: 1
+    max_workers: 3
+    reduction_factor: 2
+  
+  testcondor:
+    executor_name: LPCCondorDask
+    container: /cvmfs/unpacked.cern.ch/registry.hub.docker.com/coffeateam/coffea-dask-almalinux9:2025.10.2-py3.12
+    venv_path: .venv
+    chunk_size: 80000
+    min_workers: 40
+    max_workers: 200
+    worker_memory: 4GB
+    reduction_factor: 5
+
+Postprocessing:
+  do_merge_and_scale: False
+  processors:
+    - name: RatioPlot
+      inputs:
+        - "*/*/*/*/composite_13_m"
+        - "*/*/*/*/composite_14_m"
+        - "*/*/*/*/composite_24_m"
+        - "*/*/*/*/comp_mChi"
+        - "*/*/*/*/comp_mStop"
+        - "*/*/*/*/uncomp_mChi"
+        - "*/*/*/*/uncomp_mStop"
+        - "*/*/*/*/HT"
+        - "*/*/*/*/fatjet_pt_1"
+        - "*/*/*/*/fatjet_eta_1"
+        - "*/*/*/*/fatjet_phi_1"
+        - "*/*/*/*/goodjet_pt_1"
+        - "*/*/*/*/goodjet_eta_1"
+        - "*/*/*/*/goodjet_phi_1"
+        - "*/*/*/*/goodjet_pt_2"
+        - "*/*/*/*/goodjet_eta_2"
+        - "*/*/*/*/goodjet_phi_2"
+        - "*/*/*/*/goodjet_pt_3"
+        - "*/*/*/*/goodjet_eta_3"
+        - "*/*/*/*/goodjet_phi_3"
+        - "*/*/*/*/goodjet_pt_4"
+        - "*/*/*/*/goodjet_eta_4"
+        - "*/*/*/*/goodjet_phi_4"
+      normalize: True
+      structure:
+        select: {dataset_name: "*", pipeline: Signal312}
+        group: {era.name: "*"}
+        subgroups:
+          denominator:
+            select: {sample_name: "*_plus"}
+            transforms:
+              - name: SelectAxesValues
+                select_axes_values: {"variation": "central"}
+            title: plus
+          numerator:
+            select: {sample_name: "*_minus"}
+            transforms:
+              - name: SelectAxesValues
+                select_axes_values: {"variation": "central"}
+            title: minus
+      output_name: "{prefix}/{era.name}/ratio_{dataset_name}_{name}.pdf"
+    - name: Histogram2D
+      inputs: 
+        - "*/*/*/*/comp_mStop_vs_mChiRatio"
+        - "*/*/*/*/uncomp_mStop_vs_mChiRatio"
+      normalize: False
+      structure:
+        select: {dataset_name: "*", pipeline: "*"}
+        group: {era.name: "*", sample_name: "*"}
+        transforms:
+          - name: SelectAxesValues
+            select_axes_values: {variation: "central"}
+      output_name: "{prefix}/{era.name}/{sample_name}_{name}.pdf"
