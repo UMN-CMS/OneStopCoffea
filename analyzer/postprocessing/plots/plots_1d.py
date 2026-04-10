@@ -183,6 +183,7 @@ def computeRatio(n, d, normalize=False, ratio_type="poisson"):
     if normalize:
         with np.errstate(divide="ignore", invalid="ignore"):
             ratio = (n / np.sum(n)) / (d / np.sum(d))
+            unc = unc*(np.sum(d)/np.sum(n))
 
     ratio[ratio == 0] = np.nan
     ratio[np.isinf(ratio)] = np.nan
