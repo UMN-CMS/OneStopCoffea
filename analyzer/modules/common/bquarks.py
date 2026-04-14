@@ -30,13 +30,14 @@ class BQuarkMaker(AnalyzerModule):
     input_col: Column
     output_col: Column
     working_point: str
+    tagger: str = 'btagDeepFlavB'
 
     __corrections: dict = field(factory=dict)
 
     def run(self, columns, params):
         wps = self.getWPs(columns.metadata)
         jets = columns[self.input_col]
-        bjets = jets[jets.btagDeepFlavB > wps[self.working_point]]
+        bjets = jets[jets[self.tagger] > wps[self.working_point]]
         columns[self.output_col] = bjets
         return columns, []
 
@@ -45,7 +46,12 @@ class BQuarkMaker(AnalyzerModule):
         if file_path in self.__corrections:
             return self.__corrections[file_path]
         cset = correctionlib.CorrectionSet.from_file(file_path)
-        ret = {p: cset["deepJet_wp_values"].evaluate(p) for p in ("L", "M", "T")}
+        tagger_to_wp_map = {
+            'btagDeepFlavB': 'deepJet_wp_values',
+            'btagRobustParTAK4B': 'robustParticleTransformer_wp_values',
+            'btagPNetB': 'particleNet_wp_values',
+        }
+        ret = {p: cset[tagger_to_wp_map[self.tagger]].evaluate(p) for p in ("L", "M", "T")}
         self.__corrections[file_path] = ret
         return ret
 

@@ -232,6 +232,16 @@ class DijetHistograms(AnalyzerModule):
                 description=f"Mass ratio plane",
             )
         )
+        ret.append(
+            makeHistogram(
+                f"AK4_pt_vs_AK4_btag",
+                columns,
+                [RegularAxis(125, 0, 3000, f"AK4 $p_T$", unit="GeV"),
+                RegularAxis(100, 0, 1, f"AK4 RobustParTAK4")],
+                [b_jets.pt, b_jets["btagRobustParTAK4B"]],
+                description=f"btag pt plane",
+            )
+        )
         for key, value in jet_dict.items(): 
             ret.append(
                 makeHistogram(

@@ -475,6 +475,27 @@ class TopVecHistograms(AnalyzerModule):
                     mask=mask,
                 )
             )
+            if 'btagRobustParTAK4B' in padded[:,i].fields:
+                ret.append(
+                    makeHistogram(
+                        f"{self.prefix}_btagrobustpart_{i + 1}",
+                        columns,
+                        RegularAxis(100, 0, 1, f"$RobustParTAK4B_{{{i + 1}}}$", unit="GeV"),
+                        padded[:, i]['btagRobustParTAK4B'],
+                        description=f"btagRobustParTAK4B of jet {i + 1} ",
+                        mask=mask,
+                    )
+                )
+                ret.append(
+                    makeHistogram(
+                        f"{self.prefix}_pt_vs_{self.prefix}_btag_{i + 1}",
+                        columns,
+                        [RegularAxis(125, 0, 3000, f"{self.prefix} $p_T$", unit="GeV"),
+                        RegularAxis(100, 0, 1, f"{self.prefix} RobustParTAK4B")],
+                        [ak.fill_none(padded[:,i].pt,0), ak.fill_none(padded[:,i]["btagRobustParTAK4B"],0)],
+                        description=f"pt vs btag plane",
+                    )
+                )
 
         return columns, ret
 

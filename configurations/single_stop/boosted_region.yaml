@@ -88,10 +88,17 @@ common_objects: &common_objects
     min_pt: 50
     max_abs_eta: 2.4
 
+  #- module_name: BQuarkMaker
+  #  input_col: GoodJet
+  #  output_col: MedB
+  #  working_point: M
+  #  tagger: btagDeepFlavB
+
   - module_name: BQuarkMaker
     input_col: GoodJet
-    output_col: MedB
-    working_point: M
+    output_col: MedB_robustpart
+    working_point: T
+    tagger: btagRobustParTAK4B
 
   - module_name: HT
     input_col: GoodJet
@@ -101,7 +108,7 @@ common_objects: &common_objects
     output_col: NJet
 
   - module_name: Count
-    input_col: MedB 
+    input_col: MedB_robustpart
     output_col: Nb 
 
   - module_name: JetFilter
@@ -154,6 +161,11 @@ common_selection: &common_selection
     selection_name: zero_mu
     min_count: 0
     max_count: 0
+
+  - module_name: NObjFilter
+    input_col: MedB_robustpart
+    selection_name: n_med_b
+    min_count: 1
 
   #- module_name: NObjFilter
   #  input_col: MedB 
@@ -221,11 +233,10 @@ common_histograms: &common_histograms
   #  input_col: GoodFatJet
   #  max_idx: 1
   
-  #- module_name: DijetHistograms
-  #  prefix: "dijet"
-  #  input_col_fat_jet: GoodFatJet
-  #  input_col_b_jet: MedB 
-
+  - module_name: DijetHistograms
+    prefix: "dijet"
+    input_col_fat_jet: GoodFatJet
+    input_col_b_jet: MedB_robustpart
 
   - module_name: SimpleHistogram
     hist_name: HT
@@ -327,8 +338,8 @@ extra_executors:
     executor_name: LPCCondorDask
     container: /cvmfs/unpacked.cern.ch/registry.hub.docker.com/coffeateam/coffea-dask-almalinux9:2025.10.2-py3.12
     venv_path: .venv
-    chunk_size: 80000
-    min_workers: 40
+    chunk_size: 400000
+    min_workers: 10
     max_workers: 200
     worker_memory: 4GB
     reduction_factor: 5
@@ -337,29 +348,35 @@ Postprocessing:
   processors:
     - name: Histogram1D
       inputs:
-        #- "*/*/*/AK4_eta"
-        #- "*/*/*/AK4_pt"
-        #- "*/*/*/AK4_phi"
-        #- "*/*/*/AK4_mass"
-        #- "*/*/*/AK8_eta"
-        #- "*/*/*/AK8_pt"
-        #- "*/*/*/AK8_phi"
-        #- "*/*/*/AK8_mass"
-        #- "*/*/*/AK8_mass_softdrop"
-        #- "*/*/*/AK8_tau*"
-        #- "*/*/*/dijet_pt"
-        #- "*/*/*/dijet_eta"
-        #- "*/*/*/dijet_deta"
-        #- "*/*/*/dijet_phi"
-        #- "*/*/*/dijet_dphi"
-        #- "*/*/*/dijet_dr"
-        #- "*/*/*/dijet_mass"
+        - "*/*/*/AK4_eta"
+        - "*/*/*/AK4_pt"
+        - "*/*/*/AK4_phi"
+        - "*/*/*/AK4_mass"
+        - "*/*/*/AK8_eta"
+        - "*/*/*/AK8_pt"
+        - "*/*/*/AK8_phi"
+        - "*/*/*/AK8_mass"
+        - "*/*/*/AK8_mass_softdrop"
+        - "*/*/*/AK8_tau*"
+        - "*/*/*/dijet_pt"
+        - "*/*/*/dijet_eta"
+        - "*/*/*/dijet_deta"
+        - "*/*/*/dijet_phi"
+        - "*/*/*/dijet_dphi"
+        - "*/*/*/dijet_dr"
+        - "*/*/*/dijet_mass"
         - "*/*/*/HT"
-        #- "*/*/*/Nb"
+        - "*/*/*/Nb"
         #- "*/*/*/NChi"
         - "*/*/*/NJet"
         - "*/*/*/NFatJet"
-        - "*/*/*/good*"
+        - "*/*/*/good_jet_eta*"
+        - "*/*/*/good_jet_phi*"
+        - "*/*/*/good_jet_pt_1"
+        - "*/*/*/good_jet_pt_2"
+        - "*/*/*/good_jet_pt_3"
+        - "*/*/*/good_jet_pt_4"
+        - "*/*/*/good_jet_btag*"
       scale: log
       normalize: False 
       structure:
