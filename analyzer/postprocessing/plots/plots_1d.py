@@ -142,15 +142,22 @@ def plotDictAsBars(
     fig, ax = plt.subplots(layout="constrained")
     for item, meta in items:
         title = meta.get("title") or meta["dataset_title"]
+
+        if 'minus' in meta.get('sample_name'):
+            minus_plus = 'Minus'
+        else:
+            minus_plus = 'Plus'
         flow = getter(item)
         style = styler.getStyle(meta)
         h = makeStrHist([(x, y) for x, y in flow.items()], ax_name=ax_name)
+        if normalize:
+            h = h/h.values()[0]
         h.plot1d(
             ax=ax,
-            label=title,
-            density=normalize,
+            label=f'{minus_plus} '+title,
             **style.get(),
         )
+    
     ax.legend()
     labelAxis(ax, "y", h.axes)
     labelAxis(ax, "x", h.axes)

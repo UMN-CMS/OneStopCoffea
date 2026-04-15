@@ -12,7 +12,7 @@ from analyzer.utils.structure_tools import (
 )
 from .processors import BasePostprocessor
 from .plots.plots_1d import plotOne, plotRatio, plotRatioOfRatios
-from .plots.plots_2d import plot2D
+from .plots.plots_2d import plot2D, plot2DPulls
 from attrs import define, field
 
 ResultSet = list[list[ItemWithMeta]]
@@ -191,4 +191,31 @@ class Histogram2D(BasePostprocessor):
             normalize=self.normalize,
             plot_configuration=self.plot_configuration,
             color_scale=self.scale,
+        )
+
+
+@define
+class HistogramPulls2D(BasePostprocessor):
+    output_name: str
+    scale: Literal["log", "linear"] = "linear"
+    normalize: bool = False
+
+    def getRunFuncs(self, group, prefix=None):
+        hist1 = group["hist1"]
+        hist2 = group["hist2"]
+        common_meta = commonDict(it.chain(hist1, hist2))
+        output_path = dotFormat(
+            self.output_name, prefix=prefix, **dict(dictToDot(common_meta))
+        )
+        pc = self.plot_configuration.makeFormatted(common_meta)
+        yield ft.partial(
+            plot2DPulls,
+            hist1[0],
+            hist2[0],
+            output_path,
+            self.style_set,
+            normalize=self.normalize,
+            plot_configuration=pc,
+            color_scale=self.scale,
+            override_axis_labels = None,
         )

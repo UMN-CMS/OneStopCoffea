@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
-
+import hist
 
 from analyzer.postprocessing.style import Styler
 
@@ -139,3 +139,51 @@ def plot2DSigBkg(
         text_color="white",
     )
     plt.close(fig)
+
+def plot2DPulls(
+    hist1, 
+    hist2,
+    output_path,
+    style_set,
+    normalize=False,
+    plot_configuration=None,
+    color_scale="linear",
+    override_axis_labels=None
+    ):
+
+
+    override_axis_labels = override_axis_labels or {}
+    pc = plot_configuration or PlotConfiguration()
+    fig, ax = plt.subplots(layout="constrained")
+    item1, meta1 = hist1
+    item2, meta2 = hist2
+    h1 = item1.histogram
+    h2 = item2.histogram
+
+    if normalize:
+        h1 = h1 / np.sum(h1.values())
+        h2 = h2 / np.sum(h2.values())
+
+    pulls = (h2.values()-h1.values())/np.sqrt(h2.variances())
+    pulls_hist = hist.Hist(*h1.axes)
+    pulls_hist[...] = pulls
+
+    if color_scale == "log":
+        pulls_hist.plot2d(norm=matplotlib.colors.LogNorm(), ax=ax)
+    else:
+        pulls_hist.plot2d(ax=ax, norm=matplotlib.colors.TwoSlopeNorm(vmin=-10,vmax=10,vcenter=0), cmap='RdYlGn')
+
+    common_meta = commonDict([meta1, meta2], key=lambda x: x)
+    #breakpoint() 
+    addCMSBits(
+        ax,
+        [common_meta],
+        extra_text=f"{common_meta["pipeline"]}\n{common_meta["dataset_name"]}\nNormalized Pulls\n(Norm Plus-Norm Minus)/Norm Plus_Unc",
+        text_color="black",
+        plot_configuration=pc,
+    )
+
+    common_meta = commonDict([meta1, meta2], key=lambda x: x)
+    saveFig(fig, output_path, metadata=common_meta, extension=pc.image_type)
+    plt.close(fig) 
+
