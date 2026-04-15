@@ -134,8 +134,6 @@ event_collections:
     pipelines: [Signal312]
   - dataset: 'signal_2023_preBPix_312_1500_1400_official'
     pipelines: [Signal312]
-  - dataset: 'signal_2023_preBPix_312_1750_1400_official'
-    pipelines: [Signal312]
   - dataset: 'signal_2023_preBPix_312_2000_1400_official'
     pipelines: [Signal312]
   - dataset: 'signal_2023_preBPix_312_2000_1700_official'
