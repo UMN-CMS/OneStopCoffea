@@ -32,6 +32,10 @@ from .style import loadStyles
 from attrs import define, field
 from rich import print
 from .basic_histograms import BasePostprocessor
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 @define
@@ -41,6 +45,23 @@ class PostprocessorConfig:
     default_plot_config: PlotConfiguration = field(factory=PlotConfiguration)
     drop_sample_pattern: BasePattern | None = None
     do_merge_and_scale: bool = True
+
+    def keepPatterns(self):
+        keep_patterns = []
+        for processor in self.processors:
+            if hasattr(processor, "inputs"):
+                if not self.do_merge_and_scale:
+                    keep_patterns.extend(
+                        inp for inp_list in processor.inputs for inp in inp_list
+                    )
+                else:
+                    keep_patterns.extend(
+                        tuple(("*", *inp))
+                        for inp_list in processor.inputs
+                        for inp in inp_list
+                    )
+        keep_patterns = keep_patterns or None
+        return keep_patterns
 
 
 def initProcess():
@@ -56,7 +77,7 @@ class LoadStyles(WorkerPlugin):
         pass
 
 
-def determineFileGroups(postprocessors, results):
+def determineFileGroups(postprocessors, results) -> set[frozenset]:
     ret = set()
     for processor in postprocessors:
         real_inputs = [[("*", *inp) for inp in l] for l in processor.inputs]
@@ -92,19 +113,7 @@ def maximalSubgroups(groups: set[frozenset]) -> set[frozenset]:
     return ret
 
 
-def runPostprocessors(
-    path,
-    input_files,
-    parallel=None,
-    prefix=None,
-    loaded_results=None,
-    target_load_size: int | None = None,
-    include_sidecar: bool = False,
-):
-    import analyzer.postprocessing.plots.utils as plots
-
-    plots.INCLUDE_SIDECAR = include_sidecar
-
+def loadPostprocessor(path):
     converter = Converter()
     setupConverter(converter)
 
@@ -126,21 +135,54 @@ def runPostprocessors(
             processor.style_set = postprocessor.default_style_set
         if processor.plot_configuration is None:
             processor.plot_configuration = postprocessor.default_plot_config
+    return postprocessor
 
-    keep_patterns = []
+
+def runResults(
+    postprocessor,
+    results,
+    parallel=None,
+    prefix=None,
+):
+    if postprocessor.do_merge_and_scale:
+        results = mergeAndScale(
+            results, drop_sample_pattern=postprocessor.drop_sample_pattern
+        )
+
+    all_funcs = []
     for processor in postprocessor.processors:
-        if hasattr(processor, "inputs"):
-            if not postprocessor.do_merge_and_scale:
-                keep_patterns.extend(
-                    inp for inp_list in processor.inputs for inp in inp_list
-                )
-            else:
-                keep_patterns.extend(
-                    tuple(("*", *inp))
-                    for inp_list in processor.inputs
-                    for inp in inp_list
-                )
-    keep_patterns = keep_patterns or None
+        all_funcs.extend(list(processor.run(results, prefix)))
+
+    if parallel and parallel > 1:
+        with Progress() as progress:
+            task = progress.add_task("[green]Processing...", total=len(all_funcs))
+            with cf.ProcessPoolExecutor(
+                max_workers=parallel, initializer=initProcess
+            ) as executor:
+                futures = [executor.submit(f) for f in all_funcs]
+                for future in cf.as_completed(futures):
+                    future.result()
+                    progress.update(task, advance=1)
+    else:
+        for f in track(all_funcs, description="Processing..."):
+            f()
+
+
+def runPostprocessors(
+    path,
+    input_files,
+    parallel=None,
+    prefix=None,
+    target_load_size: int | None = None,
+    include_sidecar: bool = False,
+):
+
+    import analyzer.postprocessing.plots.utils as plots
+
+    plots.INCLUDE_SIDECAR = include_sidecar
+
+    postprocessor = loadPostprocessor(path)
+    keep_patterns = postprocessor.keepPatterns()
 
     if target_load_size is not None:
         peek_results, sizes = loadResults(
@@ -150,36 +192,14 @@ def runPostprocessors(
             return_file_sizes=True,
         )
         file_groups = determineFileGroups(postprocessor.processors, peek_results)
+        logger.info(
+            f"Identified {len(file_groups)} file groups based on raw postprocessor structure."
+        )
+        file_groups = maximalSubgroups(file_groups)
+        logger.info(f"Regrouped into {len(file_groups)} subgroups.")
     else:
         file_groups = [input_files]
 
     for file_group in file_groups:
-        if loaded_results is not None:
-            import copy
-
-            results = copy.deepcopy(loaded_results)
-        else:
-            results = loadResults(file_group, keep_patterns=keep_patterns)
-
-        if postprocessor.do_merge_and_scale:
-            results = mergeAndScale(
-                results, drop_sample_pattern=postprocessor.drop_sample_pattern
-            )
-
-        all_funcs = []
-        for processor in postprocessor.processors:
-            all_funcs.extend(list(processor.run(results, prefix)))
-
-        if parallel and parallel > 1:
-            with Progress() as progress:
-                task = progress.add_task("[green]Processing...", total=len(all_funcs))
-                with cf.ProcessPoolExecutor(
-                    max_workers=parallel, initializer=initProcess
-                ) as executor:
-                    futures = [executor.submit(f) for f in all_funcs]
-                    for future in cf.as_completed(futures):
-                        future.result()
-                        progress.update(task, advance=1)
-        else:
-            for f in track(all_funcs, description="Processing..."):
-                f()
+        results = loadResults(file_group, keep_patterns=keep_patterns)
+        runResults(postprocessor, results, parallel=parallel, prefix=prefix)

@@ -203,10 +203,21 @@ def browse(inputs, interpretter, peek, merge_datasets):
 @click.argument("inputs", type=str, nargs=-1)
 @click.option("--prefix", type=str, required=False, default=None)
 @click.option("--parallel", type=int, required=False, default=None)
-def postprocess(configuration, inputs, parallel, prefix):
+@click.option("--target-load-size", type=int, required=False, default=None)
+@click.option("--include-sidecar", is_flag=True, default=False)
+def postprocess(
+    configuration, inputs, parallel, prefix, target_load_size, include_sidecar
+):
     from analyzer.postprocessing.running import runPostprocessors
 
-    runPostprocessors(configuration, inputs, parallel=parallel, prefix=prefix)
+    runPostprocessors(
+        configuration,
+        inputs,
+        parallel=parallel,
+        prefix=prefix,
+        target_load_size=target_load_size,
+        include_sidecar=include_sidecar,
+    )
 
 
 @cli.command()
