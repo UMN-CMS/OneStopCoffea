@@ -118,9 +118,11 @@ def plotOne(
 def makeStrHist(data, ax_name):
     import hist
 
-    ax = hist.axis.StrCategory([x[0] for x in data], name=ax_name)
-    h = hist.Hist(ax, storage="double")
-    h[:] = np.array([x[1] for x in data])
+    cat = np.array([x[0] for x in data])
+    ax = hist.axis.StrCategory(cat, name=ax_name, growth=True)
+    h = hist.Hist(ax, storage="weight")
+    data_vals = np.array([x[1] for x in data])
+    h[...] = np.stack([data_vals, data_vals], axis=-1)
     return h
 
 
@@ -139,6 +141,7 @@ def plotDictAsBars(
     styler = Styler(style_set)
     mpl.use("Agg")
 
+    import hist
     fig, ax = plt.subplots(layout="constrained")
     for item, meta in items:
         title = meta.get("title") or meta["dataset_title"]
@@ -151,7 +154,7 @@ def plotDictAsBars(
         style = styler.getStyle(meta)
         h = makeStrHist([(x, y) for x, y in flow.items()], ax_name=ax_name)
         if normalize:
-            h = h/h.values()[0]
+            h = h/(h.values()[0])
         h.plot1d(
             ax=ax,
             label=f'{minus_plus} '+title,

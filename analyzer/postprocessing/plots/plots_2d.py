@@ -164,26 +164,113 @@ def plot2DPulls(
         h1 = h1 / np.sum(h1.values())
         h2 = h2 / np.sum(h2.values())
 
-    pulls = (h2.values()-h1.values())/np.sqrt(h2.variances())
-    pulls_hist = hist.Hist(*h1.axes)
-    pulls_hist[...] = pulls
+    with np.errstate(divide='ignore', invalid='ignore'):
+        pulls = (h2.values()-h1.values())/np.sqrt(h2.variances()+h1.variances())
+        pulls_hist = hist.Hist(*h1.axes)
+        pulls_hist[...] = pulls
 
     if color_scale == "log":
         pulls_hist.plot2d(norm=matplotlib.colors.LogNorm(), ax=ax)
     else:
-        pulls_hist.plot2d(ax=ax, norm=matplotlib.colors.TwoSlopeNorm(vmin=-10,vmax=10,vcenter=0), cmap='RdYlGn')
+        pulls_hist.plot2d(ax=ax, norm=matplotlib.colors.TwoSlopeNorm(vmin=-5,vmax=5,vcenter=0), cmap='bwr')
 
     common_meta = commonDict([meta1, meta2], key=lambda x: x)
+    import re 
+    dataset_name_numbers = re.findall(r'\d+', common_meta["dataset_name"])
     #breakpoint() 
     addCMSBits(
         ax,
         [common_meta],
-        extra_text=f"{common_meta["pipeline"]}\n{common_meta["dataset_name"]}\nNormalized Pulls\n(Norm Plus-Norm Minus)/Norm Plus_Unc",
+        extra_text=f"{common_meta["pipeline"]}\n{dataset_name_numbers[-2]}_{dataset_name_numbers[-1]}\nNormalized Pulls\n(Norm Plus-Norm Minus)\n/Sqrt(Var_Sum)",
         text_color="black",
         plot_configuration=pc,
     )
 
     common_meta = commonDict([meta1, meta2], key=lambda x: x)
     saveFig(fig, output_path, metadata=common_meta, extension=pc.image_type)
-    plt.close(fig) 
+    plt.close(fig)
 
+def plotEffRatio(
+    num_hists, 
+    den_hists,
+    output_path,
+    style_set,
+    plot_configuration=None,
+    color_scale="linear",
+    override_axis_labels=None,
+): 
+    import re
+    import mplhep as hep
+    plt.style.use(hep.style.CMS)
+    override_axis_labels = override_axis_labels or {}
+    pc = plot_configuration or PlotConfiguration()
+    fig, ax = plt.subplots(layout="constrained")
+    ratio_eff = [] 
+    x_values = [] 
+    y_values = []
+    metas = []
+    labels = []
+    for num_hist in num_hists:
+        for den_hist in den_hists:
+            num_item, num_meta = num_hist 
+            den_item, den_meta = den_hist
+            den_name_numbers = re.findall(r'\d+', den_meta["dataset_name"])
+            num_name_numbers = re.findall(r'\d+', num_meta["dataset_name"])
+            if num_name_numbers != den_name_numbers:
+                continue
+            else:
+                metas.append(num_meta)
+                x_values.append(int(num_name_numbers[-2]))
+                y_values.append(int(num_name_numbers[-1]))
+
+            num = num_item.cutflow           
+            den = den_item.cutflow
+            with np.errstate(divide='ignore', invalid='ignore'):
+                n_init = num["initial"]
+                d_init = den["initial"]
+                n_count = list(num.values())[-1]
+                d_count = list(den.values())[-1]
+                num_eff = n_count/n_init 
+                den_eff = d_count/d_init
+                ratio = num_eff/den_eff
+
+                #Ratio of two binomials is approx log normal, calculate two sided error in 'log space' and then go back.
+                log_val = np.log(ratio)
+                log_sf_var = (1/n_count) + (1/d_count) - (1/n_init) - (1/d_init)
+                log_sf_sigma = np.sqrt(max(0, log_sf_var))
+                upper = np.exp(log_val + log_sf_sigma)
+                lower = np.exp(log_val - log_sf_sigma)
+                err_up = upper - ratio
+                err_down = ratio - lower
+
+                ratio_eff.append(num_eff/den_eff)
+                label_str = f"${ratio:.3g}^{{+{err_up:.3g}}}_{{-{err_down:.3g}}}$"
+                labels.append(label_str)
+
+    viridis_clipped = matplotlib.colors.LinearSegmentedColormap.from_list(
+        'viridis_clipped', matplotlib.cm.viridis(np.linspace(0.2, 1.0, 256))
+    ) 
+    sc = ax.scatter(
+        x_values, 
+        y_values, 
+        c=ratio_eff, 
+        cmap=viridis_clipped, 
+        marker='s', 
+        s=2500,
+    )
+    for x, y, txt in zip(x_values, y_values, labels):
+        ax.text(x, y, txt, ha='center', va='center', fontsize=10, color='black')
+
+    ax.set_xlabel(override_axis_labels.get("x", "$m_{{\\mathit{{\\tilde t_1}}}}$"))
+    ax.set_ylabel(override_axis_labels.get("y", "$m_{{\\mathit{{\\tilde \\chi^{{\\pm}}_1}}}}$"))
+    fig.colorbar(sc, ax=ax, label="PlusEff/MinusEff")
+    addCMSBits(
+        ax,
+        [num_meta],
+        extra_text=f"{num_meta["pipeline"]}",
+        text_color="black",
+        plot_configuration=pc,
+    )
+
+    saveFig(fig, output_path, metadata=num_meta, extension=pc.image_type)
+    plt.close(fig)
