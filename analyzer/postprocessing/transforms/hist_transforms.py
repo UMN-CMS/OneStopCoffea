@@ -477,10 +477,12 @@ class ABCDTransformer(TransformHistogram):
 @define
 class NormalizeByXSec(TransformHistogram):
     def __call__(self, items: list[ItemWithMeta]):
+        unique_processes = {(meta["dataset_name"], meta["x_sec"]) for _, meta in items}
+        total_xsec = sum(xsec for _, xsec in unique_processes)
         ret = []
         for item, meta in items:
             h = item.histogram
-            nh = h*(meta["x_sec"]*meta["era"]["lumi"])/meta["n_events"]
+            nh = h*(meta["x_sec"]*meta["era"]["lumi"])/(meta["n_events"]*total_xsec)
             # new_axes = [x for x in item.axes if x.name not in select_axes_values]
             ret.append(
                 ItemWithMeta(

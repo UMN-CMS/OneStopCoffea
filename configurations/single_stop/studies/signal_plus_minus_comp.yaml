@@ -139,6 +139,75 @@ event_collections:
   - dataset: 'signal_2023_preBPix_312_2000_1700_official'
     pipelines: [Signal312]
   
+  - dataset: 'signal_2018_313_1000_400_official'
+    pipelines: [Signal313]
+  - dataset: 'signal_2018_313_1250_400_official'
+    pipelines: [Signal313]
+  - dataset: 'signal_2018_313_1750_400_official'
+    pipelines: [Signal313]
+  - dataset: 'signal_2018_313_1000_600_official'
+    pipelines: [Signal313]
+  - dataset: 'signal_2018_313_1250_600_official'
+    pipelines: [Signal313]
+  - dataset: 'signal_2018_313_1500_600_official'
+    pipelines: [Signal313]
+  - dataset: 'signal_2018_313_1750_600_official'
+    pipelines: [Signal313]
+  - dataset: 'signal_2018_313_2000_600_official'
+    pipelines: [Signal313]
+  - dataset: 'signal_2018_313_1000_900_official'
+    pipelines: [Signal313]
+  - dataset: 'signal_2018_313_1250_900_official'
+    pipelines: [Signal313]
+  - dataset: 'signal_2018_313_1250_1100_official'
+    pipelines: [Signal313]
+  - dataset: 'signal_2018_313_1500_1100_official'
+    pipelines: [Signal313]
+  - dataset: 'signal_2018_313_1750_1100_official'
+    pipelines: [Signal313]
+  - dataset: 'signal_2018_313_2000_1100_official'
+    pipelines: [Signal313]
+  - dataset: 'signal_2018_313_1500_1400_official'
+    pipelines: [Signal313]
+  - dataset: 'signal_2018_313_1750_1400_official'
+    pipelines: [Signal313]
+  - dataset: 'signal_2018_313_2000_1400_official'
+    pipelines: [Signal313]
+  - dataset: 'signal_2018_313_2000_1700_official'
+    pipelines: [Signal313]
+
+  - dataset: 'signal_2023_preBPix_313_1000_400_official'
+    pipelines: [Signal313]
+  - dataset: 'signal_2023_preBPix_313_1250_400_official'
+    pipelines: [Signal313]
+  - dataset: 'signal_2023_preBPix_313_1000_600_official'
+    pipelines: [Signal313]
+  - dataset: 'signal_2023_preBPix_313_1250_600_official'
+    pipelines: [Signal313]
+  - dataset: 'signal_2023_preBPix_313_1500_600_official'
+    pipelines: [Signal313]
+  - dataset: 'signal_2023_preBPix_313_1750_600_official'
+    pipelines: [Signal313]
+  - dataset: 'signal_2023_preBPix_313_2000_600_official'
+    pipelines: [Signal313]
+  - dataset: 'signal_2023_preBPix_313_1000_900_official'
+    pipelines: [Signal313]
+  - dataset: 'signal_2023_preBPix_313_1250_900_official'
+    pipelines: [Signal313]
+  - dataset: 'signal_2023_preBPix_313_1250_1100_official'
+    pipelines: [Signal313]
+  - dataset: 'signal_2023_preBPix_313_1500_1100_official'
+    pipelines: [Signal313]
+  - dataset: 'signal_2023_preBPix_313_1750_1100_official'
+    pipelines: [Signal313]
+  - dataset: 'signal_2023_preBPix_313_2000_1100_official'
+    pipelines: [Signal313]
+  - dataset: 'signal_2023_preBPix_313_1500_1400_official'
+    pipelines: [Signal313]
+  - dataset: 'signal_2023_preBPix_313_2000_1400_official'
+    pipelines: [Signal313]
+  - dataset: 'signal_2023_preBPix_313_2000_1700_official'
+    pipelines: [Signal313]
   
 extra_executors:
   test:
@@ -190,36 +259,39 @@ Postprocessing:
         - "*/*/*/*/goodjet_pt_4"
         - "*/*/*/*/goodjet_eta_4"
         - "*/*/*/*/goodjet_phi_4"
-      normalize: True
+      normalize: False 
       structure:
-        select: {dataset_name: "*", pipeline: Signal312}
-        group: {dataset_name: "*", era.name: "*"}
+        select: {dataset_name: "*"}
+        group: {dataset_name: "*", era.name: "*", pipeline: "*"}
         subgroups:
           denominator:
-            select: {sample_name: "*_plus"}
-            transforms:
-              - name: SelectAxesValues
-                select_axes_values: {"variation": "central"}
-            title: plus
-          numerator:
             select: {sample_name: "*_minus"}
             transforms:
               - name: SelectAxesValues
                 select_axes_values: {"variation": "central"}
+              - name: NormalizeByXSec 
+            title: plus
+          numerator:
+            select: {sample_name: "*_plus"}
+            transforms:
+              - name: SelectAxesValues
+                select_axes_values: {"variation": "central"}
+              - name: NormalizeByXSec 
             title: minus
-      output_name: "{prefix}/{era.name}/{dataset_name}/ratio_{name}.pdf"
+      output_name: "{prefix}/{era.name}/{pipeline}/{dataset_name}/ratio_{name}.pdf"
     - name: Histogram2D
       inputs: 
         - "*/*/*/*/comp_mStop_vs_mChiRatio"
         - "*/*/*/*/uncomp_mStop_vs_mChiRatio"
       normalize: False
       structure:
-        select: {dataset_name: "*", pipeline: "*"}
-        group: {dataset_name: "*", era.name: "*", sample_name: "*"}
+        select: {dataset_name: "*"}
+        group: {dataset_name: "*", era.name: "*", sample_name: "*", pipeline: "*"}
         transforms:
           - name: SelectAxesValues
             select_axes_values: {variation: "central"}
-      output_name: "{prefix}/{era.name}/{dataset_name}/{sample_name}_{name}.pdf"
+          - name: NormalizeByXSec 
+      output_name: "{prefix}/{era.name}/{pipeline}/{dataset_name}/{sample_name}_{name}.pdf"
     - name: HistogramPulls2D
       inputs: 
         - "*/*/*/*/comp_mStop_vs_mChiRatio"
@@ -227,22 +299,24 @@ Postprocessing:
       normalize: True 
       scale: linear
       structure:
-        select: {dataset_name: "*", pipeline: "*"}
-        group: {dataset_name: "*", era.name: "*"}
+        select: {dataset_name: "*"}
+        group: {dataset_name: "*", era.name: "*", pipeline: "*"}
         subgroups:
           hist1:
             select: {sample_name: "*_minus"}
             transforms:
               - name: SelectAxesValues
                 select_axes_values: {"variation": "central"}
+              - name: NormalizeByXSec 
             title: minus 
           hist2:
             select: {sample_name: "*_plus"}
             transforms:
               - name: SelectAxesValues
                 select_axes_values: {"variation": "central"}
+              - name: NormalizeByXSec 
             title: plus 
-      output_name: "{prefix}/{era.name}/{dataset_name}/{name}_pulls.pdf"
+      output_name: "{prefix}/{era.name}/{pipeline}/{dataset_name}/{name}_pulls.pdf"
     - name: PlotSelectionFlow
       inputs:
         - "*/*/*/*/pre_selection"
@@ -250,6 +324,19 @@ Postprocessing:
       normalize: True
       structure:
         select: {dataset_name: "*", pipeline: "*"}
-        group: {dataset_name: "*", era.name: "*"}
-      output_name: "{prefix}/{era.name}/{dataset_name}/{name}.pdf"
-
+        group: {dataset_name: "*", era.name: "*", pipeline: "*"}
+      output_name: "{prefix}/{era.name}/{pipeline}/{dataset_name}/{name}.pdf"
+    - name: Histogram2DEffRatio
+      inputs:
+        - "*/*/*/*/pre_selection"
+        - "*/*/*/*/selection"
+      normalize: False
+      structure:
+        select: {dataset_name: "*"}
+        group: {era.name: "*", "pipeline": "*"}
+        subgroups:
+          num:
+            select: {sample_name: "*_plus"}
+          den:
+            select: {sample_name: "*_minus"}
+      output_name: "{prefix}/{era.name}/{pipeline}/signal_eff_plane.pdf"
