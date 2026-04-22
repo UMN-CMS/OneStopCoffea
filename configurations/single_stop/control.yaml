@@ -292,17 +292,22 @@ Postprocessing:
               - name: FormatTitle
                 title_format: "{axis_params.variation}"
       output_name: "{prefix}/control/{era.name}/triggereff_sys_{era.name}_{name}.pdf"
-      plot_configuration:
-        cms_text: "Preliminary"
-        image_type: ".pdf"
-        cms_text_color: Black
-        legend_num_cols: 1
+      #plot_configuration:
+      #  cms_text: "Preliminary"
+      #  image_type: ".pdf"
+      #  cms_text_color: Black
+      #  legend_num_cols: 1
 
+  #default_plot_config:
+  #  cms_text: "Preliminary"
+  #  image_type: ".pdf"
+  #  cms_text_color: Black
+  #  legend_num_cols: 2
   default_plot_config:
-    cms_text: "Preliminary"
+    cms_text: ["Preliminary", "Private Work"]
     image_type: ".pdf"
     cms_text_color: Black
-    legend_num_cols: 2
+    legend_num_cols: 1
 
 
   default_style_set:
