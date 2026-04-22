@@ -482,7 +482,7 @@ class NormalizeByXSec(TransformHistogram):
         ret = []
         for item, meta in items:
             h = item.histogram
-            nh = h*(meta["x_sec"]*meta["era"]["lumi"])/(meta["n_events"]*total_xsec)
+            nh = h*(meta["x_sec"])/(meta["n_events"]*total_xsec)
             # new_axes = [x for x in item.axes if x.name not in select_axes_values]
             ret.append(
                 ItemWithMeta(

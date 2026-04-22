@@ -263,7 +263,7 @@ def plotEffRatio(
 
     ax.set_xlabel(override_axis_labels.get("x", "$m_{{\\mathit{{\\tilde t_1}}}}$"))
     ax.set_ylabel(override_axis_labels.get("y", "$m_{{\\mathit{{\\tilde \\chi^{{\\pm}}_1}}}}$"))
-    fig.colorbar(sc, ax=ax, label="PlusEff/MinusEff")
+    fig.colorbar(sc, ax=ax, label="MinusEff/PlusEff")
     addCMSBits(
         ax,
         [num_meta],

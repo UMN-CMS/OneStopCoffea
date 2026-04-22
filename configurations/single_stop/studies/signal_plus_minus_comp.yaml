@@ -259,20 +259,22 @@ Postprocessing:
         - "*/*/*/*/goodjet_pt_4"
         - "*/*/*/*/goodjet_eta_4"
         - "*/*/*/*/goodjet_phi_4"
-      normalize: False 
+      normalize: False
+      xsec_normalize: True 
+      ratio_type: poisson-ratio
       structure:
         select: {dataset_name: "*"}
         group: {dataset_name: "*", era.name: "*", pipeline: "*"}
         subgroups:
           denominator:
-            select: {sample_name: "*_minus"}
+            select: {sample_name: "*_plus"}
             transforms:
               - name: SelectAxesValues
                 select_axes_values: {"variation": "central"}
               - name: NormalizeByXSec 
             title: plus
           numerator:
-            select: {sample_name: "*_plus"}
+            select: {sample_name: "*_minus"}
             transforms:
               - name: SelectAxesValues
                 select_axes_values: {"variation": "central"}
@@ -296,7 +298,7 @@ Postprocessing:
       inputs: 
         - "*/*/*/*/comp_mStop_vs_mChiRatio"
         - "*/*/*/*/uncomp_mStop_vs_mChiRatio"
-      normalize: True 
+      normalize: False 
       scale: linear
       structure:
         select: {dataset_name: "*"}
@@ -336,7 +338,7 @@ Postprocessing:
         group: {era.name: "*", "pipeline": "*"}
         subgroups:
           num:
-            select: {sample_name: "*_plus"}
-          den:
             select: {sample_name: "*_minus"}
+          den:
+            select: {sample_name: "*_plus"}
       output_name: "{prefix}/{era.name}/{pipeline}/signal_eff_plane.pdf"

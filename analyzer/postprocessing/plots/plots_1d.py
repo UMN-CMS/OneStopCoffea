@@ -248,7 +248,7 @@ def plotStackedDenominators(ax, denominators, styler, normalize=False):
         label="Den. Stat. Unc.",
         histtype="band",
     )
-    return den_total
+    return den_total, denominators
 
 
 def plotUnstackedDenominators(ax, denominators, styler, *, normalize):
@@ -275,13 +275,14 @@ def plotMultiNumerators(
     ax,
     ratio_ax,
     numerators,
-    den_total,
+    den_stacked,
     styler,
     normalize,
     ratio_type,
     x_values,
     ratio_func=computeRatio,
     show_den_unc=True,
+    xsec_normalize=False,
 ):
 
     for item, meta in numerators:
@@ -289,15 +290,31 @@ def plotMultiNumerators(
         style = styler.getStyle(meta)
 
         n_vals = hist.values()
+        den_total = den_stacked[0]
         d_vals = den_total.values()
+        dmeta = den_stacked[1][0].metadata
 
-        ratio, unc = ratio_func(
-            n_vals,
-            d_vals,
-            normalize=normalize,
-            ratio_type=ratio_type,
-        )
+        if xsec_normalize:
+            total_xsec = dmeta['x_sec']+meta['x_sec']
+            inv_den_weight=(dmeta['n_events']*total_xsec)/dmeta['x_sec']
+            inv_num_weight=(meta['n_events']*total_xsec)/meta['x_sec']
 
+            ratio, unc = ratio_func(
+                n_vals*inv_num_weight,
+                d_vals*inv_den_weight,
+                normalize=normalize,
+                ratio_type=ratio_type,
+            )
+
+            ratio *= inv_den_weight/inv_num_weight
+            unc *= inv_den_weight/inv_num_weight
+        else:
+            ratio, unc = ratio_func(
+                n_vals,
+                d_vals,
+                normalize=normalize,
+                ratio_type=ratio_type,
+            )
         hist.plot1d(
             ax=ax,
             label=meta.get("sample_name") or meta.get("title") or meta["dataset_title"],
@@ -377,6 +394,7 @@ def plotRatio(
     no_stack=False,
     ratio_hlines=(1.0,),
     ratio_height=0.3,
+    xsec_normalize=False,
 ):
     pc = plot_configuration or PlotConfiguration()
     styler = Styler(style_set)
@@ -409,7 +427,7 @@ def plotRatio(
             ratio_func=ratio_func,
         )
     else:
-        den_total = plotStackedDenominators(
+        den_stacked = plotStackedDenominators(
             ax,
             denominator,
             styler,
@@ -419,12 +437,13 @@ def plotRatio(
             ax,
             ratio_ax,
             numerators,
-            den_total,
+            den_stacked,
             styler,
             normalize=normalize,
             ratio_type=ratio_type,
             x_values=x_values,
             ratio_func=ratio_func,
+            xsec_normalize=xsec_normalize,
         )
 
     for y in ratio_hlines:

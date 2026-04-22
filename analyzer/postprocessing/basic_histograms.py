@@ -64,6 +64,7 @@ class RatioPlot(BasePostprocessor):
         "poisson"
     )
     no_stack: bool = False
+    xsec_normalize: bool = False
 
     def getRunFuncs(self, group, prefix=None):
         numerator = group["numerator"]
@@ -87,6 +88,7 @@ class RatioPlot(BasePostprocessor):
             ratio_height=self.ratio_height,
             no_stack=self.no_stack,
             plot_configuration=pc,
+            xsec_normalize=self.xsec_normalize,
         )
 
 
