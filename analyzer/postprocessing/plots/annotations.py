@@ -29,9 +29,9 @@ def _buildCMSText(cms_text, all_meta):
 
     if is_private:
         if has_mc and has_data:
-            data_label = "CMS Data/Simulation"
+            data_label = "CMS\nData/Simulation"
         elif sim_only:
-            data_label = "CMS Simulation"
+            data_label = "CMS\nSimulation"
         else:
             data_label = "CMS Data"
         return "", f"Private Work\n({data_label})"
