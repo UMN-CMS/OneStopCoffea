@@ -225,6 +225,11 @@ Postprocessing:
               - name: SelectAxesValues
                 select_axes_values: {"variation": "central"}
       output_name: "{prefix}/control/{era.name}/compare_bsf_{era.name}_{name}.pdf"
+      plot_configuration:
+        cms_text: ["Preliminary", "Private Work"]
+        image_type: ".pdf"
+        cms_text_color: Black
+        legend_num_cols: 1
 
 
     - name: RatioPlot
@@ -260,6 +265,11 @@ Postprocessing:
               - name: FormatTitle
                 title_format: "With BSF Reweighting"
       output_name: "{prefix}/control/{era.name}/normalized_bsf_{era.name}_{name}.pdf"
+      plot_configuration:
+        cms_text: ["Preliminary", "Private Work"]
+        image_type: ".pdf"
+        cms_text_color: Black
+        legend_num_cols: 1
 
     - name: RatioPlot
       inputs:
@@ -292,11 +302,11 @@ Postprocessing:
               - name: FormatTitle
                 title_format: "{axis_params.variation}"
       output_name: "{prefix}/control/{era.name}/triggereff_sys_{era.name}_{name}.pdf"
-      #plot_configuration:
-      #  cms_text: "Preliminary"
-      #  image_type: ".pdf"
-      #  cms_text_color: Black
-      #  legend_num_cols: 1
+      plot_configuration:
+        cms_text: ["Preliminary", "Private Work"]
+        image_type: ".pdf"
+        cms_text_color: Black
+        legend_num_cols: 1
 
   #default_plot_config:
   #  cms_text: "Preliminary"
@@ -307,7 +317,7 @@ Postprocessing:
     cms_text: ["Preliminary", "Private Work"]
     image_type: ".pdf"
     cms_text_color: Black
-    legend_num_cols: 1
+    legend_num_cols: 2
 
 
   default_style_set:
