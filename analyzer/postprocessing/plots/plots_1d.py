@@ -295,9 +295,9 @@ def plotMultiNumerators(
         dmeta = den_stacked[1][0].metadata
 
         if xsec_normalize:
-            total_xsec = dmeta['x_sec']+meta['x_sec']
-            inv_den_weight=(dmeta['n_events']*total_xsec)/dmeta['x_sec']
-            inv_num_weight=(meta['n_events']*total_xsec)/meta['x_sec']
+            plus_xsec = dmeta['x_sec']
+            inv_den_weight=1
+            inv_num_weight=meta['x_sec']/plus_xsec
 
             ratio, unc = ratio_func(
                 n_vals*inv_num_weight,
