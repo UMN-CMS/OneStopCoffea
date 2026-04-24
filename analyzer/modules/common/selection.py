@@ -4,6 +4,7 @@ from analyzer.core.columns import Column
 from attrs import define
 from analyzer.core.columns import addSelection
 from analyzer.core.results import SelectionFlow
+from analyzer.core.adl import ADLBlock, ADLStatement
 
 
 @define
@@ -57,7 +58,6 @@ class SelectOnColumns(AnalyzerModule):
                 ret = ret & getCol(cut)
             return ret
 
-
         for s in columns.pipeline_data.get("Selections", {}):
             columns.pipeline_data["Selections"][s] = True
 
@@ -69,17 +69,25 @@ class SelectOnColumns(AnalyzerModule):
             ret = ret & getCol(name)
             cutflow[name] = ak.count_nonzero(ret, axis=0)
 
-
-        onecut = {cut : ak.count_nonzero(getCol(cut)) for cut in cuts}
-        n_minus_one = {cut: ak.count_nonzero(andCuts(cuts[:i] + cuts[i+1:]),axis=0) for i,cut in enumerate(cuts)}
+        onecut = {cut: ak.count_nonzero(getCol(cut)) for cut in cuts}
+        n_minus_one = {
+            cut: ak.count_nonzero(andCuts(cuts[:i] + cuts[i + 1 :]), axis=0)
+            for i, cut in enumerate(cuts)
+        }
         columns.filter(ret)
 
         if self.save_cutflow:
-            return columns, [SelectionFlow(self.sel_name, cuts=cuts, cutflow=cutflow, one_cut=onecut,n_minus_one=n_minus_one)]
+            return columns, [
+                SelectionFlow(
+                    self.sel_name,
+                    cuts=cuts,
+                    cutflow=cutflow,
+                    one_cut=onecut,
+                    n_minus_one=n_minus_one,
+                )
+            ]
         else:
             return columns, []
-
-        
 
     def inputs(self, metadata):
         if self.selection_names is None:
@@ -136,6 +144,30 @@ class NObjFilter(AnalyzerModule):
     def outputs(self, metadata):
         return [Column(("Selection", self.selection_name))]
 
+    def adlExport(self, metadata):
+        statements = []
+        col_name = self.input_col.adl_name
+        if (
+            self.min_count is not None
+            and self.max_count is not None
+            and self.min_count == self.max_count
+        ):
+            statements.append(
+                ADLStatement("select", f"size({col_name}) == {self.min_count}")
+            )
+        else:
+            if self.min_count is not None:
+                statements.append(
+                    ADLStatement("select", f"size({col_name}) >= {self.min_count}")
+                )
+            if self.max_count is not None:
+                statements.append(
+                    ADLStatement("select", f"size({col_name}) <= {self.max_count}")
+                )
+
+        return [ADLBlock(block_type="region_statement", name="", statements=statements)]
+
+
 @define
 class SelectAllTriggers(AnalyzerModule):
     """
@@ -152,12 +184,14 @@ class SelectAllTriggers(AnalyzerModule):
     def run(self, columns, params):
         all_triggers = columns["HLT"].fields
         initial = ak.num(columns._events, axis=0)
-        
+
         cutflow = {"initial": initial}
         for trigger_name in all_triggers:
             ret = columns["HLT"][trigger_name]
             cutflow[trigger_name] = ak.count_nonzero(ret, axis=0)
-        return columns, [SelectionFlow(self.sel_name, cuts=all_triggers, cutflow=cutflow)]
+        return columns, [
+            SelectionFlow(self.sel_name, cuts=all_triggers, cutflow=cutflow)
+        ]
 
     def inputs(self, metadata):
         return [Column(("HLT"))]
