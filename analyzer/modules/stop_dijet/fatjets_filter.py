@@ -49,10 +49,11 @@ class JetFilterBoosted(AnalyzerModule):
         jets = columns[self.input_col]
         sorted_jets = jets[ak.argsort(jets["msoftdrop"], ascending=False)]
 
-        tau32_mask = (sorted_jets["tau3"]/sorted_jets["tau2"]) < 0.7
-        good_jets = sorted_jets[tau32_mask]
+        #tau32_mask = (sorted_jets["tau3"]/sorted_jets["tau2"]) < 0.7
+        #good_jets = sorted_jets[tau32_mask]
 
-        columns[self.output_col] = good_jets
+        #columns[self.output_col] = good_jets
+        columns[self.output_col] = sorted_jets
         return columns, []
 
     def inputs(self, metadata):
@@ -95,9 +96,10 @@ class DijetHistograms(AnalyzerModule):
     input_col_fat_jet: Column
 
     def run(self, columns, params):
-        fatjets = columns[self.input_col_fat_jet][:,0]
-        b_jets = columns[self.input_col_b_jet][:,0]
+        fatjets = ak.pad_none(columns[self.input_col_fat_jet],1,axis=1)[:,0]
+        b_jets = ak.pad_none(columns[self.input_col_b_jet], 1, axis=1)[:,0]
         dijets = fatjets + b_jets
+        dijets = dijets[~ak.is_none(dijets)]
         jet_dict = {
             "AK8": fatjets,
             "AK4": b_jets

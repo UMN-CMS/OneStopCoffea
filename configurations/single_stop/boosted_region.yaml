@@ -107,19 +107,15 @@ common_objects: &common_objects
     input_col: GoodJet
     output_col: NJet
 
-  - module_name: Count
-    input_col: MedB_robustpart
-    output_col: Nb 
-
   - module_name: JetFilter
     input_col: FatJet
-    output_col: GoodFatJet
+    output_col: GoodKinematicFatJet
     max_abs_eta: 2.4
     include_jet_id: True 
 
-  #- module_name: JetFilterBoosted
-  #  input_col: GoodKinematicFatJet
-  #  output_col: GoodFatJet
+  - module_name: JetFilterBoosted #doesn't actually filter at the moment
+    input_col: GoodKinematicFatJet
+    output_col: GoodFatJet
 
   - module_name: Count
     input_col: GoodFatJet
@@ -129,20 +125,25 @@ common_objects: &common_objects
   #  input_col: GoodFatJet
   #  output_col: NChi
   
-  #- module_name: PromoteIndex
-  #  input_col: GoodFatJet
-  #  output_col: FirstGoodFatJet
+  - module_name: PromoteIndex
+    input_col: GoodFatJet
+    output_col: FirstGoodFatJet
 
   #- module_name: DijetMaker
   #  input_col_1: GoodFatJet
   #  input_col_2: MedB 
   #  output_col: Dijet
 
-  #- module_name: FilterNear
-  #  target_col: MedB
-  #  near_col: GoodFatJet
-  #  max_dr: 0.8 
-  #  output_col: MedB
+  - module_name: FilterNear
+    target_col: MedB_robustpart
+    near_col: FirstGoodFatJet
+    max_dr: 0.8 
+    output_col: MedB_robustpart_filtered
+
+  - module_name: Count
+    input_col: MedB_robustpart_filtered
+    output_col: Nb 
+
   
 common_selection: &common_selection
   - module_name: NObjFilter
@@ -163,8 +164,8 @@ common_selection: &common_selection
     max_count: 0
 
   - module_name: NObjFilter
-    input_col: MedB_robustpart
-    selection_name: n_med_b
+    input_col: MedB_robustpart_filtered
+    selection_name: n_tight_b
     min_count: 1
 
   #- module_name: NObjFilter
@@ -172,11 +173,11 @@ common_selection: &common_selection
   #  selection_name: n_med_b
   #  min_count: 1
 
-  #- module_name: ObjCompareFilter
-  #  input_col: FirstGoodFatJet
-  #  min_value: 50
-  #  key: msoftdrop
-  #  selection_name: msd50
+  - module_name: ObjCompareFilter
+    input_col: FirstGoodFatJet
+    min_value: 50
+    key: msoftdrop
+    selection_name: msd50
 
   #- module_name: ObjCompareFilter
   #  input_col: HT
@@ -236,7 +237,7 @@ common_histograms: &common_histograms
   - module_name: DijetHistograms
     prefix: "dijet"
     input_col_fat_jet: GoodFatJet
-    input_col_b_jet: MedB_robustpart
+    input_col_b_jet: MedB_robustpart_filtered
 
   - module_name: SimpleHistogram
     hist_name: HT
@@ -305,18 +306,18 @@ location_priorities: [".*(T0|T1|T2).*","eos"]
 
 event_collections:
   # Signal Samples
-  - dataset: signal_2023_postBPix_312_1000_100_official
-    pipelines: [Signal]
-  - dataset: signal_2023_postBPix_312_1000_400_official
-    pipelines: [Signal]
-  - dataset: signal_2023_postBPix_312_1500_100_official
-    pipelines: [Signal]
-  - dataset: signal_2023_postBPix_312_1500_400_official
-    pipelines: [Signal]
-  - dataset: signal_2023_postBPix_312_2000_100_official
-    pipelines: [Signal]
-  - dataset: signal_2023_postBPix_312_2000_400_official
-    pipelines: [Signal]
+  #- dataset: signal_2023_postBPix_312_1000_100_official
+  #  pipelines: [Signal]
+  #- dataset: signal_2023_postBPix_312_1000_400_official
+  #  pipelines: [Signal]
+  #- dataset: signal_2023_postBPix_312_1500_100_official
+  #  pipelines: [Signal]
+  #- dataset: signal_2023_postBPix_312_1500_400_official
+  #  pipelines: [Signal]
+  #- dataset: signal_2023_postBPix_312_2000_100_official
+  #  pipelines: [Signal]
+  #- dataset: signal_2023_postBPix_312_2000_400_official
+  #  pipelines: [Signal]
 
   # Background MC Samples
   - dataset: qcd_inclusive_2023_postBPix
@@ -356,7 +357,7 @@ Postprocessing:
         - "*/*/*/AK8_pt"
         - "*/*/*/AK8_phi"
         - "*/*/*/AK8_mass"
-        - "*/*/*/AK8_mass_softdrop"
+        - "*/*/*/AK8_mass_sd"
         - "*/*/*/AK8_tau*"
         - "*/*/*/dijet_pt"
         - "*/*/*/dijet_eta"
@@ -406,10 +407,10 @@ Postprocessing:
             select_axes_values: {"variation": "central"}
           #- name: SliceAxes
           #  slices: {"NFatJet_Category": [2, 3]  } 
+          #- name: SliceAxes
+          #  slices: {"NJet_Category": [2, 7]} 
           - name: MergeAxes
             merge_axis_names: ["NFatJet_Category"] 
-          - name: SliceAxes
-            slices: {"NJet_Category": [2, 7]  } 
           - name: MergeAxes
             merge_axis_names: ["NJet_Category"]
 
