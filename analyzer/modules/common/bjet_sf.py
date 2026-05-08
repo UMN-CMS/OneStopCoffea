@@ -66,7 +66,7 @@ class BJetShapeSF(AnalyzerModule):
     def run(self, columns, params):
         sf_eval = self.getCorrection(columns.metadata)
         systematic = params["bjetshapesf-variation"]
-        systematic = systematic.removesuffix(columns.metadata["era"]["name"])
+        systematic = systematic.removesuffix("_" + columns.metadata["era"]["name"])
         gj = columns[self.input_col]
         if systematic == "disabled":
             columns["Weights", self.weight_name] = ak.ones_like(ak.firsts(gj.pt))
