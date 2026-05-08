@@ -174,7 +174,6 @@ class Histogram2D(BasePostprocessor):
     normalize: bool = False
 
     def getRunFuncs(self, group, prefix=None):
-        # print(group)
         if len(group) != 1:
             raise RuntimeError()
         hist = group[0]

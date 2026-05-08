@@ -29,7 +29,6 @@ def scaleYAxis(ax):
     text_children = [
         x for x in children if isinstance(x, mpl.text.Text | mpl.legend.Legend)
     ]
-    # breakpoint()
     bbs = [t.get_tightbbox() for t in text_children]
     min_b = min(x.y0 for x in bbs)
     max_b = max(x.y1 for x in bbs)

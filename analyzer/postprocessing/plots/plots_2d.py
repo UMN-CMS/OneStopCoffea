@@ -9,6 +9,7 @@ from analyzer.utils.structure_tools import commonDict
 from .annotations import labelAxis
 from .common import PlotConfiguration
 from .utils import saveFigVariants
+import mplhep
 
 
 def plot2D(
@@ -19,6 +20,7 @@ def plot2D(
     normalize=False,
     plot_configuration=None,
     color_scale="linear",
+    cbar_title="Events",
 ):
     pc = plot_configuration or PlotConfiguration()
 
@@ -29,9 +31,13 @@ def plot2D(
     if normalize:
         h = h / np.sum(h.values())
     if color_scale == "log":
-        h.plot2d(norm=matplotlib.colors.LogNorm(), ax=ax)
+        objs = mplhep.hist2dplot(h, norm=matplotlib.colors.LogNorm(), ax=ax)
     else:
-        h.plot2d(ax=ax)
+        objs = mplhep.hist2dplot(h, ax=ax)
+    cbar = objs.cbar
+    if cbar_title and cbar is not None:
+        cbar.set_label(cbar_title)
+
     labelAxis(ax, "y", h.axes)
 
     labelAxis(ax, "x", h.axes)
