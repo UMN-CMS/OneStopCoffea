@@ -393,10 +393,10 @@ class JetFilter(AnalyzerModule):
             ADLStatement("select", f"abs(eta) < {self.max_abs_eta}"),
         ]
         if self.include_jet_id:
-            statements.append(ADLStatement("select", f"jetId & 6 != 0  # Tight jet ID"))
+            statements.append(ADLStatement("select", "jetId & 6 != 0  # Tight jet ID"))
         if self.include_pu_id:
             statements.append(
-                ADLStatement("select", f"pt > 50 or puId & 2 != 0  # PU ID")
+                ADLStatement("select", "pt > 50 or puId & 2 != 0  # PU ID")
             )
 
         return [
