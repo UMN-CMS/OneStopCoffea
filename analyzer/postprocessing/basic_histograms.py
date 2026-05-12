@@ -12,7 +12,7 @@ from analyzer.utils.structure_tools import (
 )
 from .processors import BasePostprocessor
 from .plots.plots_1d import plotOne, plotRatio, plotRatioOfRatios
-from .plots.plots_2d import plot2D, plot2DPulls, plotEffRatio
+from .plots.plots_2d import plot2D, plot2DPulls, plotEffRatio, plotMinusToPlusNEventsRatio
 from attrs import define, field
 
 ResultSet = list[list[ItemWithMeta]]
@@ -238,6 +238,31 @@ class Histogram2DEffRatio(BasePostprocessor):
         pc = self.plot_configuration.makeFormatted(common_meta)
         yield ft.partial(
             plotEffRatio,
+            num,
+            den,
+            output_path,
+            self.style_set,
+            plot_configuration=pc,
+            color_scale=self.scale,
+            override_axis_labels = None,
+        )
+
+@define
+class Histogram2DNRatio(BasePostprocessor):
+    output_name: str
+    scale: Literal["log", "linear"] = "linear"
+    normalize: bool = False
+
+    def getRunFuncs(self, group, prefix=None):
+        num = group["num"]
+        den = group["den"]
+        common_meta = commonDict(it.chain(num, den))
+        output_path = dotFormat(
+            self.output_name, prefix=prefix, **dict(dictToDot(common_meta))
+        )
+        pc = self.plot_configuration.makeFormatted(common_meta)
+        yield ft.partial(
+            plotMinusToPlusNEventsRatio,
             num,
             den,
             output_path,

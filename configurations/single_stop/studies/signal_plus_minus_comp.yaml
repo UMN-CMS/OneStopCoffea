@@ -234,101 +234,115 @@ extra_executors:
 Postprocessing:
   do_merge_and_scale: False
   processors:
-    - name: RatioPlot
-      inputs:
-        - "*/*/*/*/composite_13_m"
-        - "*/*/*/*/composite_14_m"
-        - "*/*/*/*/composite_24_m"
-        - "*/*/*/*/comp_mChi"
-        - "*/*/*/*/comp_mStop"
-        - "*/*/*/*/uncomp_mChi"
-        - "*/*/*/*/uncomp_mStop"
-        - "*/*/*/*/HT"
-        - "*/*/*/*/fatjet_pt_1"
-        - "*/*/*/*/fatjet_eta_1"
-        - "*/*/*/*/fatjet_phi_1"
-        - "*/*/*/*/goodjet_pt_1"
-        - "*/*/*/*/goodjet_eta_1"
-        - "*/*/*/*/goodjet_phi_1"
-        - "*/*/*/*/goodjet_pt_2"
-        - "*/*/*/*/goodjet_eta_2"
-        - "*/*/*/*/goodjet_phi_2"
-        - "*/*/*/*/goodjet_pt_3"
-        - "*/*/*/*/goodjet_eta_3"
-        - "*/*/*/*/goodjet_phi_3"
-        - "*/*/*/*/goodjet_pt_4"
-        - "*/*/*/*/goodjet_eta_4"
-        - "*/*/*/*/goodjet_phi_4"
-      normalize: False
-      xsec_normalize: True 
-      ratio_type: poisson-ratio
-      structure:
-        select: {dataset_name: "*"}
-        group: {dataset_name: "*", era.name: "*", pipeline: "*"}
-        subgroups:
-          denominator:
-            select: {sample_name: "*_plus"}
-            transforms:
-              - name: SelectAxesValues
-                select_axes_values: {"variation": "central"}
-              - name: NormalizeByXSec 
-            title: plus
-          numerator:
-            select: {sample_name: "*_minus"}
-            transforms:
-              - name: SelectAxesValues
-                select_axes_values: {"variation": "central"}
-              - name: NormalizeByXSec 
-            title: minus
-      output_name: "{prefix}/{era.name}/{pipeline}/{dataset_name}/ratio_{name}.pdf"
-    - name: Histogram2D
-      inputs: 
-        - "*/*/*/*/comp_mStop_vs_mChiRatio"
-        - "*/*/*/*/uncomp_mStop_vs_mChiRatio"
-      normalize: False
-      structure:
-        select: {dataset_name: "*"}
-        group: {dataset_name: "*", era.name: "*", sample_name: "*", pipeline: "*"}
-        transforms:
-          - name: SelectAxesValues
-            select_axes_values: {variation: "central"}
-          - name: NormalizeByXSec 
-      output_name: "{prefix}/{era.name}/{pipeline}/{dataset_name}/{sample_name}_{name}.pdf"
-    - name: HistogramPulls2D
-      inputs: 
-        - "*/*/*/*/comp_mStop_vs_mChiRatio"
-        - "*/*/*/*/uncomp_mStop_vs_mChiRatio"
-      normalize: False 
-      scale: linear
-      structure:
-        select: {dataset_name: "*"}
-        group: {dataset_name: "*", era.name: "*", pipeline: "*"}
-        subgroups:
-          hist1:
-            select: {sample_name: "*_minus"}
-            transforms:
-              - name: SelectAxesValues
-                select_axes_values: {"variation": "central"}
-              - name: NormalizeByXSec 
-            title: minus 
-          hist2:
-            select: {sample_name: "*_plus"}
-            transforms:
-              - name: SelectAxesValues
-                select_axes_values: {"variation": "central"}
-              - name: NormalizeByXSec 
-            title: plus 
-      output_name: "{prefix}/{era.name}/{pipeline}/{dataset_name}/{name}_pulls.pdf"
-    - name: PlotSelectionFlow
-      inputs:
-        - "*/*/*/*/pre_selection"
-        - "*/*/*/*/selection"
-      normalize: True
-      structure:
-        select: {dataset_name: "*", pipeline: "*"}
-        group: {dataset_name: "*", era.name: "*", pipeline: "*"}
-      output_name: "{prefix}/{era.name}/{pipeline}/{dataset_name}/{name}.pdf"
-    - name: Histogram2DEffRatio
+    #- name: RatioPlot
+    #  inputs:
+    #    - "*/*/*/*/composite_13_m"
+    #    - "*/*/*/*/composite_14_m"
+    #    - "*/*/*/*/composite_24_m"
+    #    - "*/*/*/*/comp_mChi"
+    #    - "*/*/*/*/comp_mStop"
+    #    - "*/*/*/*/uncomp_mChi"
+    #    - "*/*/*/*/uncomp_mStop"
+    #    - "*/*/*/*/HT"
+    #    - "*/*/*/*/fatjet_pt_1"
+    #    - "*/*/*/*/fatjet_eta_1"
+    #    - "*/*/*/*/fatjet_phi_1"
+    #    - "*/*/*/*/goodjet_pt_1"
+    #    - "*/*/*/*/goodjet_eta_1"
+    #    - "*/*/*/*/goodjet_phi_1"
+    #    - "*/*/*/*/goodjet_pt_2"
+    #    - "*/*/*/*/goodjet_eta_2"
+    #    - "*/*/*/*/goodjet_phi_2"
+    #    - "*/*/*/*/goodjet_pt_3"
+    #    - "*/*/*/*/goodjet_eta_3"
+    #    - "*/*/*/*/goodjet_phi_3"
+    #    - "*/*/*/*/goodjet_pt_4"
+    #    - "*/*/*/*/goodjet_eta_4"
+    #    - "*/*/*/*/goodjet_phi_4"
+    #  normalize: False
+    #  xsec_normalize: True 
+    #  ratio_type: poisson-ratio
+    #  structure:
+    #    select: {dataset_name: "*"}
+    #    group: {dataset_name: "*", era.name: "*", pipeline: "*"}
+    #    subgroups:
+    #      denominator:
+    #        select: {sample_name: "*_plus"}
+    #        transforms:
+    #          - name: SelectAxesValues
+    #            select_axes_values: {"variation": "central"}
+    #        title: plus
+    #      numerator:
+    #        select: {sample_name: "*_minus"}
+    #        transforms:
+    #          - name: SelectAxesValues
+    #            select_axes_values: {"variation": "central"}
+    #        title: minus
+    #    transforms:
+    #      - name: NormalizeByXSec 
+    #  output_name: "{prefix}/{era.name}/{pipeline}/{dataset_name}/ratio_{name}.pdf"
+    #- name: Histogram2D
+    #  inputs: 
+    #    - "*/*/*/*/comp_mStop_vs_mChiRatio"
+    #    - "*/*/*/*/uncomp_mStop_vs_mChiRatio"
+    #  normalize: False
+    #  structure:
+    #    select: {dataset_name: "*"}
+    #    group: {dataset_name: "*", era.name: "*", sample_name: "*", pipeline: "*"}
+    #    transforms:
+    #      - name: SelectAxesValues
+    #        select_axes_values: {variation: "central"}
+    #      - name: NormalizeByXSec 
+    #  output_name: "{prefix}/{era.name}/{pipeline}/{dataset_name}/{sample_name}_{name}.pdf"
+    #- name: HistogramPulls2D
+    #  inputs: 
+    #    - "*/*/*/*/comp_mStop_vs_mChiRatio"
+    #    - "*/*/*/*/uncomp_mStop_vs_mChiRatio"
+    #  normalize: False 
+    #  scale: linear
+    #  structure:
+    #    select: {dataset_name: "*"}
+    #    group: {dataset_name: "*", era.name: "*", pipeline: "*"}
+    #    subgroups:
+    #      hist1:
+    #        select: {sample_name: "*_minus"}
+    #        transforms:
+    #          - name: SelectAxesValues
+    #            select_axes_values: {"variation": "central"}
+    #        title: minus 
+    #      hist2:
+    #        select: {sample_name: "*_plus"}
+    #        transforms:
+    #          - name: SelectAxesValues
+    #            select_axes_values: {"variation": "central"}
+    #        title: plus 
+    #    transforms:
+    #      - name: NormalizeByXSec 
+    #  output_name: "{prefix}/{era.name}/{pipeline}/{dataset_name}/{name}_pulls.pdf"
+    #- name: PlotSelectionFlow
+    #  inputs:
+    #    - "*/*/*/*/pre_selection"
+    #    - "*/*/*/*/selection"
+    #  normalize: True
+    #  structure:
+    #    select: {dataset_name: "*", pipeline: "*"}
+    #    group: {dataset_name: "*", era.name: "*", pipeline: "*"}
+    #  output_name: "{prefix}/{era.name}/{pipeline}/{dataset_name}/{name}.pdf"
+    #- name: Histogram2DEffRatio
+    #  inputs:
+    #    - "*/*/*/*/pre_selection"
+    #    - "*/*/*/*/selection"
+    #  normalize: False
+    #  structure:
+    #    select: {dataset_name: "*"}
+    #    group: {era.name: "*", "pipeline": "*"}
+    #    subgroups:
+    #      num:
+    #        select: {sample_name: "*_minus"}
+    #      den:
+    #        select: {sample_name: "*_plus"}
+    #  output_name: "{prefix}/{era.name}/{pipeline}/signal_eff_plane.pdf"
+    - name: Histogram2DNRatio
       inputs:
         - "*/*/*/*/pre_selection"
         - "*/*/*/*/selection"
@@ -341,4 +355,4 @@ Postprocessing:
             select: {sample_name: "*_minus"}
           den:
             select: {sample_name: "*_plus"}
-      output_name: "{prefix}/{era.name}/{pipeline}/signal_eff_plane.pdf"
+      output_name: "{prefix}/{era.name}/{pipeline}/n_passed_plane_plus.pdf"

@@ -142,25 +142,26 @@ def plotDictAsBars(
     mpl.use("Agg")
 
     import hist
+
     fig, ax = plt.subplots(layout="constrained")
     for item, meta in items:
         title = meta.get("title") or meta["dataset_title"]
 
-        if 'minus' in meta.get('sample_name'):
-            minus_plus = 'Minus'
+        if "minus" in meta.get("sample_name"):
+            minus_plus = "Minus"
         else:
-            minus_plus = 'Plus'
+            minus_plus = "Plus"
         flow = getter(item)
         style = styler.getStyle(meta)
         h = makeStrHist([(x, y) for x, y in flow.items()], ax_name=ax_name)
         if normalize:
-            h = h/(h.values()[0])
+            h = h / (h.values()[0])
         h.plot1d(
             ax=ax,
-            label=f'{minus_plus} '+title,
+            label=f"{minus_plus} " + title,
             **style.get(),
         )
-    
+
     ax.legend()
     labelAxis(ax, "y", h.axes)
     labelAxis(ax, "x", h.axes)
@@ -193,7 +194,7 @@ def computeRatio(n, d, normalize=False, ratio_type="poisson"):
     if normalize:
         with np.errstate(divide="ignore", invalid="ignore"):
             ratio = (n / np.sum(n)) / (d / np.sum(d))
-            unc = unc*(np.sum(d)/np.sum(n))
+            unc = unc * (np.sum(d) / np.sum(n))
 
     ratio[ratio == 0] = np.nan
     ratio[np.isinf(ratio)] = np.nan
@@ -224,7 +225,9 @@ def plotStackedDenominators(ax, denominators, styler, normalize=False):
 
     for item, meta in den_to_plot:
         hists.append(item.histogram)
-        titles.append(meta.get("sample_name") or meta.get("title") or meta["dataset_title"])
+        titles.append(
+            meta.get("sample_name") or meta.get("title") or meta["dataset_title"]
+        )
         style = styler.getStyle(meta)
         for key, value in style.get().items():
             style_kwargs[key].append(value)
@@ -295,19 +298,31 @@ def plotMultiNumerators(
         dmeta = den_stacked[1][0].metadata
 
         if xsec_normalize:
-            plus_xsec = dmeta['x_sec']
-            inv_den_weight=1
-            inv_num_weight=meta['x_sec']/plus_xsec
+            # plus_xsec = dmeta['x_sec']
+            # minus_xsec = meta['x_sec']
+            # total_xsec = plus_xsec+minus_xsec
+            # lumi = meta['era']['lumi']
+            ##n_n_events = meta['n_events']
+            # n_n_events = hist.sum().value
+            # d_n_events = den_total.sum().value
+            ##d_n_events = dmeta['n_events']
+            # den_weight = (lumi*total_xsec)/d_n_events
+            # num_weight = (lumi*total_xsec)/n_n_events
+            # ratio, unc = ratio_func(
+            #    n_vals/num_weight,
+            #    d_vals/den_weight,
+            #    normalize=normalize,
+            #    ratio_type=ratio_type,
+            # )
 
+            # ratio *= num_weight/den_weight
+            # unc *= num_weight/den_weight
             ratio, unc = ratio_func(
-                n_vals*inv_num_weight,
-                d_vals*inv_den_weight,
+                n_vals,
+                d_vals,
                 normalize=normalize,
                 ratio_type=ratio_type,
             )
-
-            ratio *= inv_den_weight/inv_num_weight
-            unc *= inv_den_weight/inv_num_weight
         else:
             ratio, unc = ratio_func(
                 n_vals,

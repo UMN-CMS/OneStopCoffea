@@ -477,25 +477,28 @@ class ABCDTransformer(TransformHistogram):
 @define
 class NormalizeByXSec(TransformHistogram):
     def __call__(self, items: list[ItemWithMeta]):
-        unique_processes = {meta["dataset_name"]: meta["x_sec"] for _, meta in items}
-
-        plus_xsec = next(v for k, v in unique_processes.items() if 'plus' in k)
-        minus_xsec = next(v for k, v in unique_processes.items() if 'minus' in k)
-        
-        scale = plus_xsec / minus_xsec
-
-        scaled_xsecs = {
-        k: (v * scale if 'minus' in k else v)
-        for k, v in unique_processes.items()
-        }
         ret = []
+        scale = dict()
+
+        #make xsec map between plus and minus datasets
+        for item, meta in items:
+            dname = meta["dataset_name"]
+            if dname not in scale.keys():
+                scale[dname] = dict()
+            scale[dname][meta["sample_name"]] = {"x_sec": meta["x_sec"], 'n_events': meta["n_events"]}
+
         for item, meta in items:
             h = item.histogram
-            nh = h*(plus_xsec/meta["x_sec"])
-            # new_axes = [x for x in item.axes if x.name not in select_axes_values]
+            dname = meta["dataset_name"]
+            plus = dname+"_plus"
+            minus = dname+"_minus"
+            sf = (scale[dname][plus]["x_sec"]+scale[dname][minus]["x_sec"])
+            lumi_scale = meta['era']['lumi'] * sf / meta["n_events"]
+            nh = h*lumi_scale
             ret.append(
                 ItemWithMeta(
                     Histogram(name=h.name, axes=None, histogram=nh), metadata=meta
                 )
             )
         return ret
+    
