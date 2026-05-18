@@ -104,14 +104,14 @@ location_priorities: [".*FNAL.*", ".*US.*", ".*(DE|IT|CH|FR).*", ".*(T0|T1|T2).*
 
 event_collections:
   # DO NOT UNCOMMENT!!!!!!!
-  - dataset: 'data_JetHT_*'
-    pipelines: [Signal312, Signal313, Control]
+  #- dataset: 'data_JetHT_*'
+  #  pipelines: [Signal312, Signal313, Control]
 
   # Data samples
-  - dataset: 'signal_*_312_*_official'
-    pipelines: [Signal312]
-  - dataset: 'signal_*_313_*_official'
-    pipelines: [Signal313]
+  #- dataset: 'signal_*_312_*_official'
+  #  pipelines: [Signal312]
+  #- dataset: 'signal_*_313_*_official'
+  #  pipelines: [Signal313]
   
   # Background MC Samples
   - dataset: 'qcd*'
