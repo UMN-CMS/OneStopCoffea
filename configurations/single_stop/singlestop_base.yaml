@@ -144,7 +144,7 @@
   model_path: "nn_models/nominalBinaryCompressed0p67_24-09-18-20-06/jetMatcherNNTraced.pt"
   scaler_path: "nn_models/nominalBinaryCompressed0p67_24-09-18-20-06/scaler.pkl"
 
-- module_name: JetCombos
+- module_name: JetComboHistograms
   input_col: GoodJet
   prefix: "composite"
   jet_combos:
@@ -182,7 +182,6 @@
   ratio_range: [0.0, 0.8]
   bins: 50
   y_bins: 60
-
 {%- endmacro %}
 
 {% macro singlestop_extra_histograms() -%}
@@ -190,6 +189,11 @@
   prefix: "fatjet"
   input_col: GoodFatJet
   max_idx: 1
+
+- module_name: TopVecHistograms
+  prefix: "goodjet"
+  input_col: GoodJet
+  max_idx: 4
 
 - module_name: SimpleHistogram
   hist_name: HT
