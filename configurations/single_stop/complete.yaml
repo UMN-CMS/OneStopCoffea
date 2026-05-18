@@ -43,6 +43,7 @@ analyzer:
       sel_name: selection
     {{ base.ht_cat() | indent(4) }}
     {{ base.singlestop_common_histograms() | indent(4) }}
+    {{ base.singlestop_extra_histograms() | indent(4) }}
 
   Signal313:
     - module_name: SimpleHLT
@@ -71,6 +72,7 @@ analyzer:
       sel_name: selection
     {{ base.ht_cat() | indent(4) }}
     {{ base.singlestop_common_histograms() | indent(4) }}
+    {{ base.singlestop_extra_histograms() | indent(4) }}
 
 location_priorities: [".*FNAL.*", ".*US.*", ".*(DE|IT|CH|FR).*", ".*(T0|T1|T2).*","eos"]
 
@@ -80,10 +82,10 @@ event_collections:
   #   pipelines: [Signal312, Signal313]
 
   # Data samples
-  - dataset: 'signal_*_312_*_official'
-    pipelines: [Signal312]
-  - dataset: 'signal_*_313_*_official'
-    pipelines: [Signal313]
+  #- dataset: 'signal_*_312_*_official'
+  #  pipelines: [Signal312]
+  #- dataset: 'signal_*_313_*_official'
+  #  pipelines: [Signal313]
   
   # Background MC Samples
   - dataset: 'qcd*'
