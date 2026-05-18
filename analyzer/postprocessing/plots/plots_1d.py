@@ -118,9 +118,11 @@ def plotOne(
 def makeStrHist(data, ax_name):
     import hist
 
-    ax = hist.axis.StrCategory([x[0] for x in data], name=ax_name)
-    h = hist.Hist(ax, storage="double")
-    h[:] = np.array([x[1] for x in data])
+    cat = np.array([x[0] for x in data])
+    ax = hist.axis.StrCategory(cat, name=ax_name, growth=True)
+    h = hist.Hist(ax, storage="weight")
+    data_vals = np.array([x[1] for x in data])
+    h[...] = np.stack([data_vals, data_vals], axis=-1)
     return h
 
 
@@ -139,18 +141,27 @@ def plotDictAsBars(
     styler = Styler(style_set)
     mpl.use("Agg")
 
+    import hist
+
     fig, ax = plt.subplots(layout="constrained")
     for item, meta in items:
         title = meta.get("title") or meta["dataset_title"]
+
+        if "minus" in meta.get("sample_name"):
+            minus_plus = "Minus"
+        else:
+            minus_plus = "Plus"
         flow = getter(item)
         style = styler.getStyle(meta)
         h = makeStrHist([(x, y) for x, y in flow.items()], ax_name=ax_name)
+        if normalize:
+            h = h / (h.values()[0])
         h.plot1d(
             ax=ax,
-            label=title,
-            density=normalize,
+            label=f"{minus_plus} " + title,
             **style.get(),
         )
+
     ax.legend()
     labelAxis(ax, "y", h.axes)
     labelAxis(ax, "x", h.axes)
@@ -183,6 +194,7 @@ def computeRatio(n, d, normalize=False, ratio_type="poisson"):
     if normalize:
         with np.errstate(divide="ignore", invalid="ignore"):
             ratio = (n / np.sum(n)) / (d / np.sum(d))
+            unc = unc * (np.sum(d) / np.sum(n))
 
     ratio[ratio == 0] = np.nan
     ratio[np.isinf(ratio)] = np.nan
@@ -213,7 +225,9 @@ def plotStackedDenominators(ax, denominators, styler, normalize=False):
 
     for item, meta in den_to_plot:
         hists.append(item.histogram)
-        titles.append(meta.get("title") or meta["dataset_title"])
+        titles.append(
+            meta.get("sample_name") or meta.get("title") or meta["dataset_title"]
+        )
         style = styler.getStyle(meta)
         for key, value in style.get().items():
             style_kwargs[key].append(value)
@@ -233,10 +247,11 @@ def plotStackedDenominators(ax, denominators, styler, normalize=False):
     mplhep.histplot(
         den_total,
         ax=ax,
+        density=normalize,
         label="Den. Stat. Unc.",
         histtype="band",
     )
-    return den_total
+    return den_total, denominators
 
 
 def plotUnstackedDenominators(ax, denominators, styler, *, normalize):
@@ -263,13 +278,14 @@ def plotMultiNumerators(
     ax,
     ratio_ax,
     numerators,
-    den_total,
+    den_stacked,
     styler,
     normalize,
     ratio_type,
     x_values,
     ratio_func=computeRatio,
     show_den_unc=True,
+    xsec_normalize=False,
 ):
 
     for item, meta in numerators:
@@ -277,18 +293,46 @@ def plotMultiNumerators(
         style = styler.getStyle(meta)
 
         n_vals = hist.values()
+        den_total = den_stacked[0]
         d_vals = den_total.values()
+        dmeta = den_stacked[1][0].metadata
 
-        ratio, unc = ratio_func(
-            n_vals,
-            d_vals,
-            normalize=normalize,
-            ratio_type=ratio_type,
-        )
+        if xsec_normalize:
+            # plus_xsec = dmeta['x_sec']
+            # minus_xsec = meta['x_sec']
+            # total_xsec = plus_xsec+minus_xsec
+            # lumi = meta['era']['lumi']
+            ##n_n_events = meta['n_events']
+            # n_n_events = hist.sum().value
+            # d_n_events = den_total.sum().value
+            ##d_n_events = dmeta['n_events']
+            # den_weight = (lumi*total_xsec)/d_n_events
+            # num_weight = (lumi*total_xsec)/n_n_events
+            # ratio, unc = ratio_func(
+            #    n_vals/num_weight,
+            #    d_vals/den_weight,
+            #    normalize=normalize,
+            #    ratio_type=ratio_type,
+            # )
 
+            # ratio *= num_weight/den_weight
+            # unc *= num_weight/den_weight
+            ratio, unc = ratio_func(
+                n_vals,
+                d_vals,
+                normalize=normalize,
+                ratio_type=ratio_type,
+            )
+        else:
+            ratio, unc = ratio_func(
+                n_vals,
+                d_vals,
+                normalize=normalize,
+                ratio_type=ratio_type,
+            )
         hist.plot1d(
             ax=ax,
-            label=meta.get("title") or meta["dataset_title"],
+            label=meta.get("sample_name") or meta.get("title") or meta["dataset_title"],
             density=normalize,
             yerr=True,
             **style.get(),
@@ -365,6 +409,7 @@ def plotRatio(
     no_stack=False,
     ratio_hlines=(1.0,),
     ratio_height=0.3,
+    xsec_normalize=False,
 ):
     pc = plot_configuration or PlotConfiguration()
     styler = Styler(style_set)
@@ -397,7 +442,7 @@ def plotRatio(
             ratio_func=ratio_func,
         )
     else:
-        den_total = plotStackedDenominators(
+        den_stacked = plotStackedDenominators(
             ax,
             denominator,
             styler,
@@ -407,12 +452,13 @@ def plotRatio(
             ax,
             ratio_ax,
             numerators,
-            den_total,
+            den_stacked,
             styler,
             normalize=normalize,
             ratio_type=ratio_type,
             x_values=x_values,
             ratio_func=ratio_func,
+            xsec_normalize=xsec_normalize,
         )
 
     for y in ratio_hlines:
