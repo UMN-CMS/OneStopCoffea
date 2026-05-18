@@ -12,7 +12,7 @@ from analyzer.utils.structure_tools import (
 )
 from .processors import BasePostprocessor
 from .plots.plots_1d import plotOne, plotRatio, plotRatioOfRatios, plotModel
-from .plots.plots_2d import plot2D
+from .plots.plots_2d import plot2D, plot2DPulls, plotEffRatio, plotMinusToPlusNEventsRatio
 from attrs import define, field
 
 ResultSet = list[list[ItemWithMeta]]
@@ -64,6 +64,7 @@ class RatioPlot(BasePostprocessor):
         "poisson"
     )
     no_stack: bool = False
+    xsec_normalize: bool = False
 
     def getRunFuncs(self, group, prefix=None):
         numerator = group["numerator"]
@@ -87,6 +88,7 @@ class RatioPlot(BasePostprocessor):
             ratio_height=self.ratio_height,
             no_stack=self.no_stack,
             plot_configuration=pc,
+            xsec_normalize=self.xsec_normalize,
         )
 
 
@@ -227,10 +229,6 @@ class ModelPlot(BasePostprocessor):
         signal = signals[0]
 
         common_meta = commonDict(items)
-        output_path = dotFormat(
-            self.output_name, prefix=prefix, **dict(dictToDot(common_meta))
-        )
-        pc = self.plot_configuration.makeFormatted(common_meta)
 
         yield ft.partial(
             plotModel,
@@ -246,4 +244,80 @@ class ModelPlot(BasePostprocessor):
             ratio_hlines=self.ratio_hlines,
             ratio_height=self.ratio_height,
             plot_configuration=pc,
+        )
+
+@define
+class HistogramPulls2D(BasePostprocessor):
+    output_name: str
+    scale: Literal["log", "linear"] = "linear"
+    normalize: bool = False
+
+    def getRunFuncs(self, group, prefix=None):
+        hist1 = group["hist1"]
+        hist2 = group["hist2"]
+        common_meta = commonDict(it.chain(hist1, hist2))
+        output_path = dotFormat(
+            self.output_name, prefix=prefix, **dict(dictToDot(common_meta))
+        )
+        pc = self.plot_configuration.makeFormatted(common_meta)
+        yield ft.partial(
+            plot2DPulls,
+            hist1[0],
+            hist2[0],
+            output_path,
+            self.style_set,
+            normalize=self.normalize,
+            plot_configuration=pc,
+            color_scale=self.scale,
+            override_axis_labels = None,
+        )
+
+@define
+class Histogram2DEffRatio(BasePostprocessor):
+    output_name: str
+    scale: Literal["log", "linear"] = "linear"
+    normalize: bool = False
+
+    def getRunFuncs(self, group, prefix=None):
+        num = group["num"]
+        den = group["den"]
+        common_meta = commonDict(it.chain(num, den))
+        output_path = dotFormat(
+            self.output_name, prefix=prefix, **dict(dictToDot(common_meta))
+        )
+        pc = self.plot_configuration.makeFormatted(common_meta)
+        yield ft.partial(
+            plotEffRatio,
+            num,
+            den,
+            output_path,
+            self.style_set,
+            plot_configuration=pc,
+            color_scale=self.scale,
+            override_axis_labels = None,
+        )
+
+@define
+class Histogram2DNRatio(BasePostprocessor):
+    output_name: str
+    scale: Literal["log", "linear"] = "linear"
+    normalize: bool = False
+
+    def getRunFuncs(self, group, prefix=None):
+        num = group["num"]
+        den = group["den"]
+        common_meta = commonDict(it.chain(num, den))
+        output_path = dotFormat(
+            self.output_name, prefix=prefix, **dict(dictToDot(common_meta))
+        )
+        pc = self.plot_configuration.makeFormatted(common_meta)
+        yield ft.partial(
+            plotMinusToPlusNEventsRatio,
+            num,
+            den,
+            output_path,
+            self.style_set,
+            plot_configuration=pc,
+            color_scale=self.scale,
+            override_axis_labels = None,
         )
