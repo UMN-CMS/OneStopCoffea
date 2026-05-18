@@ -473,3 +473,32 @@ class ABCDTransformer(TransformHistogram):
             )
 
         return ret
+
+@define
+class NormalizeByXSec(TransformHistogram):
+    def __call__(self, items: list[ItemWithMeta]):
+        ret = []
+        scale = dict()
+
+        #make xsec map between plus and minus datasets
+        for item, meta in items:
+            dname = meta["dataset_name"]
+            if dname not in scale.keys():
+                scale[dname] = dict()
+            scale[dname][meta["sample_name"]] = {"x_sec": meta["x_sec"], 'n_events': meta["n_events"]}
+
+        for item, meta in items:
+            h = item.histogram
+            dname = meta["dataset_name"]
+            plus = dname+"_plus"
+            minus = dname+"_minus"
+            sf = (scale[dname][plus]["x_sec"]+scale[dname][minus]["x_sec"])
+            lumi_scale = meta['era']['lumi'] * sf / meta["n_events"]
+            nh = h*lumi_scale
+            ret.append(
+                ItemWithMeta(
+                    Histogram(name=h.name, axes=None, histogram=nh), metadata=meta
+                )
+            )
+        return ret
+    
