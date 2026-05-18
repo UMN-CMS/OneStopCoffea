@@ -51,6 +51,7 @@ notebooks=["jupyter>=1.1.1",]
 
 [tool.uv.sources]
 lpcjobqueue = { git = "https://github.com/CoffeaTeam/lpcjobqueue.git" }
+coffea = { git = "https://github.com/scikit-hep/coffea.git" }
 
 [project.scripts]
 analyzer = "analyzer"
