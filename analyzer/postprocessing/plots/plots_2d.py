@@ -9,6 +9,7 @@ from analyzer.utils.structure_tools import commonDict
 from .annotations import labelAxis
 from .common import PlotConfiguration
 from .utils import saveFigVariants
+from .annotations import addCMSBits
 import mplhep
 
 
@@ -170,8 +171,8 @@ def plot2DPulls(
     item2, meta2 = hist2
     h1 = item1.histogram
     h2 = item2.histogram
-
     if normalize:
+        print("Normalizing")
         h1 = h1 / np.sum(h1.values())
         h2 = h2 / np.sum(h2.values())
     with np.errstate(divide='ignore', invalid='ignore'):
@@ -182,22 +183,39 @@ def plot2DPulls(
     if color_scale == "log":
         pulls_hist.plot2d(norm=matplotlib.colors.LogNorm(), ax=ax)
     else:
-        pulls_hist.plot2d(ax=ax, norm=matplotlib.colors.TwoSlopeNorm(vmin=-5,vmax=5,vcenter=0), cmap='bwr')
+        pulls_hist.plot2d(ax=ax, norm=matplotlib.colors.TwoSlopeNorm(vmin=-10,vmax=10,vcenter=0), cmap='bwr')
 
     common_meta = commonDict([meta1, meta2], key=lambda x: x)
-    import re
-    dataset_name_numbers = re.findall(r'\d+', common_meta["dataset_name"])
-    #breakpoint()
-    addCMSBits(
+    #import re
+    #if "QCD" not in common_meta["dataset_title"]:
+    #    dataset_name_numbers = re.findall(r'\d+', common_meta["dataset_name"])
+    #    addCMSBits(
+    #        ax,
+    #        [common_meta],
+    #        extra_text=f"{common_meta["pipeline"]}\n{dataset_name_numbers[-2]}_{dataset_name_numbers[-1]}\nPulls\n(Plus-Minus)\n/Sqrt(Var_Sum)",
+    #        text_color="black",
+    #        plot_configuration=pc,
+    #    )
+    #else:
+    #    addCMSBits(
+    #        ax,
+    #        [common_meta],
+    #        extra_text=f"{common_meta["pipeline"]}\nPulls",
+    #        text_color="black",
+    #        plot_configuration=pc,
+    #    )
+
+    #saveFig(fig, output_path, metadata=common_meta, extension=pc.image_type)
+    saveFigVariants(
+        fig,
         ax,
-        [common_meta],
-        extra_text=f"{common_meta["pipeline"]}\n{dataset_name_numbers[-2]}_{dataset_name_numbers[-1]}\nPulls\n(Plus-Minus)\n/Sqrt(Var_Sum)",
-        text_color="black",
+        output_path,
+        [meta1,meta2],
         plot_configuration=pc,
+        metadata=common_meta,
+        extra_text=f"{common_meta["pipeline"]} Pulls\n{meta2["era"]["name"]}-{meta1["era"]["name"]}",
+        text_color="black",
     )
-
-    common_meta = commonDict([meta1, meta2], key=lambda x: x)
-    saveFig(fig, output_path, metadata=common_meta, extension=pc.image_type)
     plt.close(fig)
 
 def plotEffRatio(

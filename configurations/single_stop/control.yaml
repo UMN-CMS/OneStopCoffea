@@ -89,232 +89,337 @@ event_collections:
 
 Postprocessing:
   processors:
-    - name: RatioPlot
-      inputs:
-        - "*/*/*/composite_13_m"
-        - "*/*/*/composite_14_m"
-        - "*/*/*/comp_mChi"
-        - "*/*/*/comp_mStop"
-        - "*/*/*/uncomp_mChi"
-        - "*/*/*/uncomp_mStop"
-        - "*/*/*/HT"
-      scale: log
-      normalize: False
+    - name: HistogramPulls2D
+      inputs: 
+        - "*/*/*/comp_mStop_vs_mChiRatio"
+        - "*/*/*/uncomp_mStop_vs_mChiRatio"
+      normalize: True 
+      scale: linear
       structure:
-        select: {dataset_name: "!Signal*"}
-        group: {era.name: "*"}
+        select: {dataset_name: "*"}
+        group: {pipeline: "*"}
         subgroups:
-          denominator:
-            select: {sample_type: MC, pipeline: Control}
-            transforms:
-              - *post_common_mc_transforms
-              - name: SliceAxes
-                slices: {0: [600,2500]}
-          numerator:
-            select: {sample_type: Data, pipeline: ControlEmulation}
+          hist1:
+            select: {dataset_name: "data*2017*"}
             transforms:
               - name: SelectAxesValues
                 select_axes_values: {"variation": "central"}
-              - name: SliceAxes
-                slices: {0: [600,2500]}
-      output_name: "{prefix}/control/{era.name}/ratio_{era.name}_{name}.pdf"
-
-    - name: RatioPlot
-      inputs:
-        - "*/*/*/NJets"
-        - "*/*/*/good_jet_pt_1"
-        - "*/*/*/good_jet_pt_2"
-        - "*/*/*/good_jet_pt_3"
-        - "*/*/*/good_jet_pt_4"
-        - "*/*/*/good_jet_eta_1"
-        - "*/*/*/good_jet_eta_2"
-        - "*/*/*/good_jet_eta_3"
-        - "*/*/*/good_jet_eta_4"
-        - "*/*/*/good_jet_phi_1"
-        - "*/*/*/good_jet_phi_2"
-        - "*/*/*/good_jet_phi_3"
-        - "*/*/*/good_jet_phi_4"
-      scale: log
-      normalize: False
-      structure:
-        select: {dataset_name: "!Signal*"}
-        group: {era.name: "*"}
-        subgroups:
-          denominator:
-            select: {sample_type: MC, pipeline: Control}
-            transforms:
-              - *post_common_mc_transforms
-          numerator:
-            select: {sample_type: Data, pipeline: ControlEmulation}
+            title: minus 
+          hist2:
+            select: {dataset_name: "data*2018*"}
             transforms:
               - name: SelectAxesValues
                 select_axes_values: {"variation": "central"}
-      output_name: "{prefix}/control/{era.name}/ratio_{era.name}_{name}.pdf"
-
-    - name: RatioPlot
-      inputs:
-        - "*/*/*/composite_24_m"
-        - "*/*/*/uncomp_mChi"
-      scale: log
-      normalize: False
-      structure:
-        select: {dataset_name: "!Signal*"}
-        group: {era.name: "*"}
-        subgroups:
-          denominator:
-            select: {sample_type: MC, pipeline: Control}
-            transforms:
-              - *post_common_mc_transforms
-              - name: SliceAxes
-                slices: {0: [200,2500]}
-          numerator:
-            select: {sample_type: Data, pipeline: ControlEmulation}
-            transforms:
-              - name: SelectAxesValues
-                select_axes_values: {"variation": "central"}
-              - name: SliceAxes
-                slices: {0: [200,2500]}
-      output_name: "{prefix}/control/{era.name}/ratio_{era.name}_{name}.pdf"
-
-    - name: RatioPlot
-      inputs:
-        - "*/*/*/fatjet_pt_1"
-      scale: log
-      normalize: False
-      structure:
-        select: {dataset_name: "!Signal*"}
-        group: {era.name: "*"}
-        subgroups:
-          denominator:
-            select: {sample_type: MC, pipeline: Control}
-            transforms:
-              - *post_common_mc_transforms
-              - name: SliceAxes
-                slices: {0: [300,1500]}
-          numerator:
-            select: {sample_type: Data, pipeline: ControlEmulation}
-            transforms:
-              - name: SelectAxesValues
-                select_axes_values: {"variation": "central"}
-              - name: SliceAxes
-                slices: {0: [300,1000]}
-      output_name: "{prefix}/control/{era.name}/ratio_{era.name}_{name}.pdf"
-
-
-    - name: RatioPlot
-      inputs:
-        - "*/*/*/HT"
-      scale: log
-      normalize: False
-      structure:
-        select: {dataset_name: "qcd*"}
-        group: {era.name: "*"}
-        subgroups:
-          denominator:
-            select: {sample_type: MC, pipeline: Control}
-            transforms:
-              - name: MergeAxes
-                merge_axis_names: ["HT_Cat"]
-              - name: SelectAxesValues
-                select_axes_values: {"variation": "bjetshapesf-variation_disabled"}
-          numerator:
-            select: {sample_type: MC, pipeline: Control}
-            transforms:
-              - name: MergeAxes
-                merge_axis_names: ["HT_Cat"]
-              - name: SelectAxesValues
-                select_axes_values: {"variation": "central"}
-      output_name: "{prefix}/control/{era.name}/compare_bsf_{era.name}_{name}.pdf"
+            title: plus 
+      output_name: "{prefix}/{pipeline}/{name}_data_2018_2017_pulls.pdf"
       plot_configuration:
-        cms_text: ["Preliminary", "Private Work"]
+        cms_text: "Preliminary"
         image_type: ".pdf"
-        cms_text_color: Black
+        cms_text_color: 'black'
         legend_num_cols: 1
-
-
-    - name: RatioPlot
-      inputs:
-        - "*/*/*/fatjet_pt_1"
-        - "*/*/*/HT"
-      scale: log
-      normalize: False
+    - name: HistogramPulls2D
+      inputs: 
+        - "*/*/*/comp_mStop_vs_mChiRatio"
+        - "*/*/*/uncomp_mStop_vs_mChiRatio"
+      normalize: True 
+      scale: linear
       structure:
-        select: {dataset_name: "qcd*"}
-        group: {era.name: "*"}
+        select: {dataset_name: "*"}
+        group: {pipeline: "*"}
         subgroups:
-          denominator:
-            select: {sample_type: MC, pipeline: Control}
+          hist1:
+            select: {dataset_name: "qcd*2017*"}
             transforms:
-              - name: SelectAxesValues
-                select_axes_values: {"variation": "bjetshapesf-variation_disabled"}
-              - name: MergeAxes
-                merge_axis_names: ["HT_Cat"]
-          numerator:
-            select: {sample_type: MC, pipeline: Control}
+              - *post_common_mc_transforms
+            title: minus 
+          hist2:
+            select: {dataset_name: "qcd*2018*"}
             transforms:
-              - name: NormalizeSystematicByProjection
-                normalize_within: ["HT_Cat"]
-                pre_sf_name: "bjetshapesf-variation_disabled"
-                post_sf_name: "central"
-                variation_axis: "variation"
-              - name: SelectAxesValues
-                select_axes_values: {"variation": "central"}
-              - name: MergeAxes
-                merge_axis_names: ["HT_Cat"]
-
-              - name: FormatTitle
-                title_format: "With BSF Reweighting"
-      output_name: "{prefix}/control/{era.name}/normalized_bsf_{era.name}_{name}.pdf"
+              - *post_common_mc_transforms
+            title: plus 
+      output_name: "{prefix}/{pipeline}/{name}_qcd_2018_2017_pulls.pdf"
       plot_configuration:
-        cms_text: ["Preliminary", "Private Work"]
+        cms_text: "Preliminary"
         image_type: ".pdf"
-        cms_text_color: Black
+        cms_text_color: 'black'
         legend_num_cols: 1
-
-    - name: RatioPlot
-      inputs:
-        - "*/*/*/HT"
-        - "*/*/*/fatjet_pt_1"
-      scale: log
-      normalize: False
+    - name: HistogramPulls2D
+      inputs: 
+        - "*/*/*/comp_mStop_vs_mChiRatio"
+        - "*/*/*/uncomp_mStop_vs_mChiRatio"
+      normalize: True 
+      scale: linear
       structure:
-        select: {dataset_name: "qcd*", sample_type: MC, pipeline: Control}
-        group: {era.name: "*"}
+        select: {dataset_name: "*"}
+        group: {pipeline: "*"}
         subgroups:
-          denominator:
+          hist1:
+            select: {dataset_name: "qcd*2016*pre*"}
             transforms:
-              - name: SelectAxesValues
-                select_axes_values: {"variation": "central"}
-              - name: MergeAxes
-                merge_axis_names: ["HT_Cat"]
-              - name: SetStyle
-                style: {color: black, plottype: errorbar, marker: o, linestyle: null}
-              - name: FormatTitle
-                title_format: "{dataset_name} Nominal"
-          numerator:
+              - *post_common_mc_transforms
+            title: minus 
+          hist2:
+            select: {dataset_name: "qcd*2018*"}
             transforms:
-              - name: SelectAxesValues
-                select_axes_values: {"variation": ["triggereff-variation_up", "triggereff-variation_down"]}
-              - name: MergeAxes
-                merge_axis_names: ["HT_Cat"]
-              - name: SetStyle
-                style: {plottype: step, linewidth: 2}
-              - name: FormatTitle
-                title_format: "{axis_params.variation}"
-      output_name: "{prefix}/control/{era.name}/triggereff_sys_{era.name}_{name}.pdf"
+              - *post_common_mc_transforms
+            title: plus 
+      output_name: "{prefix}/{pipeline}/{name}_qcd_2018_2016pre_pulls.pdf"
       plot_configuration:
-        cms_text: ["Preliminary", "Private Work"]
+        cms_text: "Preliminary"
         image_type: ".pdf"
-        cms_text_color: Black
+        cms_text_color: 'black'
         legend_num_cols: 1
+    - name: HistogramPulls2D
+      inputs: 
+        - "*/*/*/comp_mStop_vs_mChiRatio"
+        - "*/*/*/uncomp_mStop_vs_mChiRatio"
+      normalize: True 
+      scale: linear
+      structure:
+        select: {dataset_name: "*"}
+        group: {pipeline: "Control"}
+        subgroups:
+          hist1:
+            select: {dataset_name: "qcd*2016*post*"}
+            transforms:
+              - *post_common_mc_transforms
+            title: minus 
+          hist2:
+            select: {dataset_name: "qcd*2018*"}
+            transforms:
+              - *post_common_mc_transforms
+            title: plus 
+      output_name: "{prefix}/{pipeline}/{name}_qcd_2018_2016post_pulls.pdf"
+      plot_configuration:
+        cms_text: "Preliminary"
+        image_type: ".pdf"
+        cms_text_color: 'black'
+        legend_num_cols: 1
+    #- name: RatioPlot
+    #  inputs:
+    #    - "*/*/*/composite_13_m"
+    #    - "*/*/*/composite_14_m"
+    #    - "*/*/*/comp_mChi"
+    #    - "*/*/*/comp_mStop"
+    #    - "*/*/*/uncomp_mChi"
+    #    - "*/*/*/uncomp_mStop"
+    #    - "*/*/*/HT"
+    #  scale: log
+    #  normalize: False
+    #  structure:
+    #    select: {dataset_name: "!Signal*"}
+    #    group: {era.name: "*"}
+    #    subgroups:
+    #      denominator:
+    #        select: {sample_type: MC, pipeline: Control}
+    #        transforms:
+    #          - *post_common_mc_transforms
+    #          - name: SliceAxes
+    #            slices: {0: [600,2500]}
+    #      numerator:
+    #        select: {sample_type: Data, pipeline: ControlEmulation}
+    #        transforms:
+    #          - name: SelectAxesValues
+    #            select_axes_values: {"variation": "central"}
+    #          - name: SliceAxes
+    #            slices: {0: [600,2500]}
+    #  output_name: "{prefix}/control/{era.name}/ratio_{era.name}_{name}.pdf"
 
+    #- name: RatioPlot
+    #  inputs:
+    #    - "*/*/*/NJets"
+    #    - "*/*/*/good_jet_pt_1"
+    #    - "*/*/*/good_jet_pt_2"
+    #    - "*/*/*/good_jet_pt_3"
+    #    - "*/*/*/good_jet_pt_4"
+    #    - "*/*/*/good_jet_eta_1"
+    #    - "*/*/*/good_jet_eta_2"
+    #    - "*/*/*/good_jet_eta_3"
+    #    - "*/*/*/good_jet_eta_4"
+    #    - "*/*/*/good_jet_phi_1"
+    #    - "*/*/*/good_jet_phi_2"
+    #    - "*/*/*/good_jet_phi_3"
+    #    - "*/*/*/good_jet_phi_4"
+    #  scale: log
+    #  normalize: False
+    #  structure:
+    #    select: {dataset_name: "!Signal*"}
+    #    group: {era.name: "*"}
+    #    subgroups:
+    #      denominator:
+    #        select: {sample_type: MC, pipeline: Control}
+    #        transforms:
+    #          - *post_common_mc_transforms
+    #      numerator:
+    #        select: {sample_type: Data, pipeline: ControlEmulation}
+    #        transforms:
+    #          - name: SelectAxesValues
+    #            select_axes_values: {"variation": "central"}
+    #  output_name: "{prefix}/control/{era.name}/ratio_{era.name}_{name}.pdf"
+
+    #- name: RatioPlot
+    #  inputs:
+    #    - "*/*/*/composite_24_m"
+    #    - "*/*/*/uncomp_mChi"
+    #  scale: log
+    #  normalize: False
+    #  structure:
+    #    select: {dataset_name: "!Signal*"}
+    #    group: {era.name: "*"}
+    #    subgroups:
+    #      denominator:
+    #        select: {sample_type: MC, pipeline: Control}
+    #        transforms:
+    #          - *post_common_mc_transforms
+    #          - name: SliceAxes
+    #            slices: {0: [200,2500]}
+    #      numerator:
+    #        select: {sample_type: Data, pipeline: ControlEmulation}
+    #        transforms:
+    #          - name: SelectAxesValues
+    #            select_axes_values: {"variation": "central"}
+    #          - name: SliceAxes
+    #            slices: {0: [200,2500]}
+    #  output_name: "{prefix}/control/{era.name}/ratio_{era.name}_{name}.pdf"
+
+    #- name: RatioPlot
+    #  inputs:
+    #    - "*/*/*/fatjet_pt_1"
+    #  scale: log
+    #  normalize: False
+    #  structure:
+    #    select: {dataset_name: "!Signal*"}
+    #    group: {era.name: "*"}
+    #    subgroups:
+    #      denominator:
+    #        select: {sample_type: MC, pipeline: Control}
+    #        transforms:
+    #          - *post_common_mc_transforms
+    #          - name: SliceAxes
+    #            slices: {0: [300,1500]}
+    #      numerator:
+    #        select: {sample_type: Data, pipeline: ControlEmulation}
+    #        transforms:
+    #          - name: SelectAxesValues
+    #            select_axes_values: {"variation": "central"}
+    #          - name: SliceAxes
+    #            slices: {0: [300,1000]}
+    #  output_name: "{prefix}/control/{era.name}/ratio_{era.name}_{name}.pdf"
+
+
+    #- name: RatioPlot
+    #  inputs:
+    #    - "*/*/*/HT"
+    #  scale: log
+    #  normalize: False
+    #  structure:
+    #    select: {dataset_name: "qcd*"}
+    #    group: {era.name: "*"}
+    #    subgroups:
+    #      denominator:
+    #        select: {sample_type: MC, pipeline: Control}
+    #        transforms:
+    #          - name: MergeAxes
+    #            merge_axis_names: ["HT_Cat"]
+    #          - name: SelectAxesValues
+    #            select_axes_values: {"variation": "bjetshapesf-variation_disabled"}
+    #      numerator:
+    #        select: {sample_type: MC, pipeline: Control}
+    #        transforms:
+    #          - name: MergeAxes
+    #            merge_axis_names: ["HT_Cat"]
+    #          - name: SelectAxesValues
+    #            select_axes_values: {"variation": "central"}
+    #  output_name: "{prefix}/control/{era.name}/compare_bsf_{era.name}_{name}.pdf"
+    #  plot_configuration:
+    #    cms_text: ["Preliminary", "Private Work"]
+    #    image_type: ".pdf"
+    #    cms_text_color: Black
+    #    legend_num_cols: 1
+
+
+    #- name: RatioPlot
+    #  inputs:
+    #    - "*/*/*/fatjet_pt_1"
+    #    - "*/*/*/HT"
+    #  scale: log
+    #  normalize: False
+    #  structure:
+    #    select: {dataset_name: "qcd*"}
+    #    group: {era.name: "*"}
+    #    subgroups:
+    #      denominator:
+    #        select: {sample_type: MC, pipeline: Control}
+    #        transforms:
+    #          - name: SelectAxesValues
+    #            select_axes_values: {"variation": "bjetshapesf-variation_disabled"}
+    #          - name: MergeAxes
+    #            merge_axis_names: ["HT_Cat"]
+    #      numerator:
+    #        select: {sample_type: MC, pipeline: Control}
+    #        transforms:
+    #          - name: NormalizeSystematicByProjection
+    #            normalize_within: ["HT_Cat"]
+    #            pre_sf_name: "bjetshapesf-variation_disabled"
+    #            post_sf_name: "central"
+    #            variation_axis: "variation"
+    #          - name: SelectAxesValues
+    #            select_axes_values: {"variation": "central"}
+    #          - name: MergeAxes
+    #            merge_axis_names: ["HT_Cat"]
+
+    #          - name: FormatTitle
+    #            title_format: "With BSF Reweighting"
+    #  output_name: "{prefix}/control/{era.name}/normalized_bsf_{era.name}_{name}.pdf"
+    #  plot_configuration:
+    #    cms_text: ["Preliminary", "Private Work"]
+    #    image_type: ".pdf"
+    #    cms_text_color: Black
+    #    legend_num_cols: 1
+
+    #- name: RatioPlot
+    #  inputs:
+    #    - "*/*/*/HT"
+    #    - "*/*/*/fatjet_pt_1"
+    #  scale: log
+    #  normalize: False
+    #  structure:
+    #    select: {dataset_name: "qcd*", sample_type: MC, pipeline: Control}
+    #    group: {era.name: "*"}
+    #    subgroups:
+    #      denominator:
+    #        transforms:
+    #          - name: SelectAxesValues
+    #            select_axes_values: {"variation": "central"}
+    #          - name: MergeAxes
+    #            merge_axis_names: ["HT_Cat"]
+    #          - name: SetStyle
+    #            style: {color: black, plottype: errorbar, marker: o, linestyle: null}
+    #          - name: FormatTitle
+    #            title_format: "{dataset_name} Nominal"
+    #      numerator:
+    #        transforms:
+    #          - name: SelectAxesValues
+    #            select_axes_values: {"variation": ["triggereff-variation_up", "triggereff-variation_down"]}
+    #          - name: MergeAxes
+    #            merge_axis_names: ["HT_Cat"]
+    #          - name: SetStyle
+    #            style: {plottype: step, linewidth: 2}
+    #          - name: FormatTitle
+    #            title_format: "{axis_params.variation}"
+    #  output_name: "{prefix}/control/{era.name}/triggereff_sys_{era.name}_{name}.pdf"
+    #  plot_configuration:
+    #    cms_text: ["Preliminary", "Private Work"]
+    #    image_type: ".pdf"
+    #    cms_text_color: Black
+    #    legend_num_cols: 1
   #default_plot_config:
   #  cms_text: "Preliminary"
   #  image_type: ".pdf"
   #  cms_text_color: Black
   #  legend_num_cols: 2
   default_plot_config:
-    cms_text: ["Preliminary", "Private Work"]
+    cms_text: "Preliminary"
     image_type: ".pdf"
     cms_text_color: Black
     legend_num_cols: 2

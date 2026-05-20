@@ -12,7 +12,12 @@ from analyzer.utils.structure_tools import (
 )
 from .processors import BasePostprocessor
 from .plots.plots_1d import plotOne, plotRatio, plotRatioOfRatios
-from .plots.plots_2d import plot2D, plot2DPulls, plotEffRatio, plotMinusToPlusNEventsRatio
+from .plots.plots_2d import (
+    plot2D,
+    plot2DPulls,
+    plotEffRatio,
+    plotMinusToPlusNEventsRatio,
+)
 from attrs import define, field
 
 ResultSet = list[list[ItemWithMeta]]
@@ -219,8 +224,9 @@ class HistogramPulls2D(BasePostprocessor):
             normalize=self.normalize,
             plot_configuration=pc,
             color_scale=self.scale,
-            override_axis_labels = None,
+            override_axis_labels=None,
         )
+
 
 @define
 class Histogram2DEffRatio(BasePostprocessor):
@@ -244,8 +250,9 @@ class Histogram2DEffRatio(BasePostprocessor):
             self.style_set,
             plot_configuration=pc,
             color_scale=self.scale,
-            override_axis_labels = None,
+            override_axis_labels=None,
         )
+
 
 @define
 class Histogram2DNRatio(BasePostprocessor):
@@ -269,5 +276,5 @@ class Histogram2DNRatio(BasePostprocessor):
             self.style_set,
             plot_configuration=pc,
             color_scale=self.scale,
-            override_axis_labels = None,
+            override_axis_labels=None,
         )
