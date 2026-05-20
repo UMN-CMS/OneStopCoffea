@@ -151,18 +151,97 @@ extra_executors:
     reduction_factor: 5
 
 
+post_common_mc_transforms: &post_common_mc_transforms
+  #- name: NormalizeSystematicByProjection
+  #  normalize_within: ["HT_Cat"]
+  #  pre_sf_name: "bjetshapesf-variation_disabled"
+  #  post_sf_name: "central"
+  #  variation_axis: "variation"
+  - name: SelectAxesValues
+    select_axes_values: {"variation": "central"}
+  - name: MergeAxes
+    merge_axis_names: ["HT_Cat"]
+
 Postprocessing:
   processors:
-    {{ post.handle2D([ "*/*/*/uncomp_mStop_vs_mChi",  "*/*/*/uncomp_mStop_vs_mChiRatio"]) | indent(4) }}
-    {{ post1d.handle1D([ "*/*/*/uncomp_mStop",  "*/*/*/uncomp_mChi"]) | indent(4) }}
-    {{ post.handle2D([ "*/*/*/comp_mStop_vs_mChi",  "*/*/*/comp_mStop_vs_mChiRatio"]) | indent(4) }}
-    {{ post1d.handle1D([ "*/*/*/comp_mStop",  "*/*/*/comp_mChi"]) | indent(4) }}
-    {{ post1d.handle1D([ "*/*/*/composite_13_m",  "*/*/*/composite_14_m", "*/*/*/composite_24_m"]) | indent(4) }}
-    # {{ post.ratio_variation("bsf",["*/*/*/uncomp_mChi", "*/*/*/uncomp_mStop"], ["b*hf*"]) | indent(4) }}
-    # {{ post.ratio_variation("jesrel",["*/*/*/uncomp_mChi", "*/*/*/uncomp_mStop"], ["jes*Rel*"]) | indent(4) }}
-    # {{ post.ratio_variation("jer",["*/*/*/uncomp_mChi", "*/*/*/uncomp_mStop"], ["jer*"]) | indent(4) }}
-    # {{ post.ratio_variation("trigger",["*/*/*/uncomp_mChi", "*/*/*/uncomp_mStop"], ["trigger*"]) | indent(4) }}
-
+    - name: HistogramPulls2D
+      inputs: 
+        - "*/*/*/comp_mStop_vs_mChiRatio"
+        - "*/*/*/uncomp_mStop_vs_mChiRatio"
+      normalize: True 
+      scale: linear
+      structure:
+        select: {dataset_name: "*"}
+        group: {pipeline: "*"}
+        subgroups:
+          hist1:
+            select: {dataset_name: "qcd*2017*"}
+            transforms:
+              - *post_common_mc_transforms
+            title: minus 
+          hist2:
+            select: {dataset_name: "qcd*2018*"}
+            transforms:
+              - *post_common_mc_transforms
+            title: plus 
+      output_name: "{prefix}/{pipeline}/{name}_qcd_2018_2017_pulls.pdf"
+      plot_configuration:
+        cms_text: "Preliminary"
+        image_type: ".pdf"
+        cms_text_color: 'black'
+        legend_num_cols: 1
+    - name: HistogramPulls2D
+      inputs: 
+        - "*/*/*/comp_mStop_vs_mChiRatio"
+        - "*/*/*/uncomp_mStop_vs_mChiRatio"
+      normalize: True 
+      scale: linear
+      structure:
+        select: {dataset_name: "*"}
+        group: {pipeline: "*"}
+        subgroups:
+          hist1:
+            select: {dataset_name: "qcd*2016*pre*"}
+            transforms:
+              - *post_common_mc_transforms
+            title: minus 
+          hist2:
+            select: {dataset_name: "qcd*2018*"}
+            transforms:
+              - *post_common_mc_transforms
+            title: plus 
+      output_name: "{prefix}/{pipeline}/{name}_qcd_2018_2016pre_pulls.pdf"
+      plot_configuration:
+        cms_text: "Preliminary"
+        image_type: ".pdf"
+        cms_text_color: 'black'
+        legend_num_cols: 1
+    - name: HistogramPulls2D
+      inputs: 
+        - "*/*/*/comp_mStop_vs_mChiRatio"
+        - "*/*/*/uncomp_mStop_vs_mChiRatio"
+      normalize: True 
+      scale: linear
+      structure:
+        select: {dataset_name: "*"}
+        group: {pipeline: "*"}
+        subgroups:
+          hist1:
+            select: {dataset_name: "qcd*2016*post*"}
+            transforms:
+              - *post_common_mc_transforms
+            title: minus 
+          hist2:
+            select: {dataset_name: "qcd*2018*"}
+            transforms:
+              - *post_common_mc_transforms
+            title: plus 
+      output_name: "{prefix}/{pipeline}/{name}_qcd_2018_2016post_pulls.pdf"
+      plot_configuration:
+        cms_text: "Preliminary"
+        image_type: ".pdf"
+        cms_text_color: 'black'
+        legend_num_cols: 1
   default_plot_config:
     cms_text: "Preliminary"
     image_type: ".png"

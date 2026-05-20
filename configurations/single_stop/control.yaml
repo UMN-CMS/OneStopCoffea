@@ -97,7 +97,63 @@ Postprocessing:
       scale: linear
       structure:
         select: {dataset_name: "*"}
-        group: {pipeline: "*"}
+        group: {pipeline: "ControlEmulation"}
+        subgroups:
+          hist1:
+            select: {dataset_name: "data*2016_post*"}
+            transforms:
+              - name: SelectAxesValues
+                select_axes_values: {"variation": "central"}
+            title: minus 
+          hist2:
+            select: {dataset_name: "data*2018*"}
+            transforms:
+              - name: SelectAxesValues
+                select_axes_values: {"variation": "central"}
+            title: plus 
+      output_name: "{prefix}/{pipeline}/{name}_data_2018_2016_post_pulls.pdf"
+      plot_configuration:
+        cms_text: "Preliminary"
+        image_type: ".pdf"
+        cms_text_color: 'black'
+        legend_num_cols: 1
+    - name: HistogramPulls2D
+      inputs: 
+        - "*/*/*/comp_mStop_vs_mChiRatio"
+        - "*/*/*/uncomp_mStop_vs_mChiRatio"
+      normalize: True 
+      scale: linear
+      structure:
+        select: {dataset_name: "*"}
+        group: {pipeline: "ControlEmulation"}
+        subgroups:
+          hist1:
+            select: {dataset_name: "data*2016_pre*"}
+            transforms:
+              - name: SelectAxesValues
+                select_axes_values: {"variation": "central"}
+            title: minus 
+          hist2:
+            select: {dataset_name: "data*2018*"}
+            transforms:
+              - name: SelectAxesValues
+                select_axes_values: {"variation": "central"}
+            title: plus 
+      output_name: "{prefix}/{pipeline}/{name}_data_2018_2016_pre_pulls.pdf"
+      plot_configuration:
+        cms_text: "Preliminary"
+        image_type: ".pdf"
+        cms_text_color: 'black'
+        legend_num_cols: 1
+    - name: HistogramPulls2D
+      inputs: 
+        - "*/*/*/comp_mStop_vs_mChiRatio"
+        - "*/*/*/uncomp_mStop_vs_mChiRatio"
+      normalize: True 
+      scale: linear
+      structure:
+        select: {dataset_name: "*"}
+        group: {pipeline: "ControlEmulation"}
         subgroups:
           hist1:
             select: {dataset_name: "data*2017*"}
