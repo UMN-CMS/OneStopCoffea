@@ -1,0 +1,37 @@
+{% macro  handle2D_comb(inputs, dataset_name_1, dataset_name_2, output_str) %}
+- name: HistogramPulls2D
+  inputs: {{ inputs | tojson }}
+  normalize: true 
+  scale: linear
+  structure:
+    select: {dataset_name: "*"}
+    group: {pipeline: '*'}
+    subgroups:
+      hist1:
+        select: {dataset_name: {{dataset_name_1}} }
+        transforms:
+          - name: NormalizeSystematicByProjection
+            normalize_within: ["HT_Cat"]
+            pre_sf_name: "bjetshapesf-variation_disabled"
+            variation_axis: "variation"
+            should_run:
+              dataset_name: "signal*"
+          - name: MergeAxes
+            merge_axis_names: ["HT_Cat"]
+          - name: SelectAxesValues
+            select_axes_values: {"variation": "central"}
+      hist2:
+        select: {dataset_name: {{dataset_name_2}} }
+        transforms:
+          - name: NormalizeSystematicByProjection
+            normalize_within: ["HT_Cat"]
+            pre_sf_name: "bjetshapesf-variation_disabled"
+            variation_axis: "variation"
+            should_run:
+              dataset_name: "signal*"
+          - name: MergeAxes
+            merge_axis_names: ["HT_Cat"]
+          - name: SelectAxesValues
+            select_axes_values: {"variation": "central"}
+  output_name: "{prefix}/{pipeline}/{name}_combined_{{output_str}}_pulls.pdf"
+{% endmacro %}

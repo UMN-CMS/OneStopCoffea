@@ -1,96 +1,101 @@
-post_common_mc_transforms: &post_common_mc_transforms
-  #- name: NormalizeSystematicByProjection
-  #  normalize_within: ["HT_Cat"]
-  #  pre_sf_name: "bjetshapesf-variation_disabled"
-  #  post_sf_name: "central"
-  #  variation_axis: "variation"
-  - name: SelectAxesValues
-    select_axes_values: {"variation": "central"}
-  - name: MergeAxes
-    merge_axis_names: ["HT_Cat"]
+{% import 'postprocessors/combined_2d.yaml' as comb2D %}
 
 Postprocessing:
   processors:
-    - name: HistogramPulls2D
-      inputs: 
+    {{ comb2D.handle2D_comb([ "*/*/*/comp_mStop_vs_mChi",  "*/*/*/comp_mStop_vs_mChiRatio", "*/*/*/uncomp_mStop_vs_mChi",  "*/*/*/uncomp_mStop_vs_mChiRatio"], "qcd*2016_pre*", "qcd*2016_post*", '2016_pre_post') | indent(4) }}
+    {{ comb2D.handle2D_comb([ "*/*/*/comp_mStop_vs_mChi",  "*/*/*/comp_mStop_vs_mChiRatio", "*/*/*/uncomp_mStop_vs_mChi",  "*/*/*/uncomp_mStop_vs_mChiRatio"], "qcd*2022_pre*", "qcd*2022_post*", '2022_pre_post') | indent(4) }}
+    {{ comb2D.handle2D_comb([ "*/*/*/comp_mStop_vs_mChi",  "*/*/*/comp_mStop_vs_mChiRatio", "*/*/*/uncomp_mStop_vs_mChi",  "*/*/*/uncomp_mStop_vs_mChiRatio"], "qcd*2023_pre*", "qcd*2023_post*", '2023_pre_post') | indent(4) }}
+    - name: Histogram2D
+      inputs:
         - "*/*/*/comp_mStop_vs_mChiRatio"
         - "*/*/*/uncomp_mStop_vs_mChiRatio"
-      normalize: True 
-      scale: linear
       structure:
         select: {dataset_name: "*"}
-        group: {pipeline: "*"}
-        subgroups:
-          hist1:
-            select: {dataset_name: "qcd*2017*"}
-            transforms:
-              - *post_common_mc_transforms
-            title: minus 
-          hist2:
-            select: {dataset_name: "qcd*2018*"}
-            transforms:
-              - *post_common_mc_transforms
-            title: plus 
-      output_name: "{prefix}/{pipeline}/{name}_qcd_2018_2017_pulls.pdf"
-      plot_configuration:
-        cms_text: "Preliminary"
-        image_type: ".pdf"
-        cms_text_color: 'black'
-        legend_num_cols: 1
-    - name: HistogramPulls2D
-      inputs: 
+        group: {pipeline: "*", dataset_name: "*"}
+        transforms:
+          - name: MergeAxes
+            merge_axis_names: ["HT_Cat"]
+          - name: SelectAxesValues
+            select_axes_values: {"variation": "central"}
+      output_name: "{prefix}/{pipeline}/{dataset_name}/{name}"
+    - name: Histogram2DCombined
+      inputs:
         - "*/*/*/comp_mStop_vs_mChiRatio"
         - "*/*/*/uncomp_mStop_vs_mChiRatio"
-      normalize: True 
-      scale: linear
       structure:
-        select: {dataset_name: "*"}
+        select: {dataset_name: "*2016*"}
         group: {pipeline: "*"}
-        subgroups:
-          hist1:
-            select: {dataset_name: "qcd*2016*pre*"}
-            transforms:
-              - *post_common_mc_transforms
-            title: minus 
-          hist2:
-            select: {dataset_name: "qcd*2018*"}
-            transforms:
-              - *post_common_mc_transforms
-            title: plus 
-      output_name: "{prefix}/{pipeline}/{name}_qcd_2018_2016pre_pulls.pdf"
-      plot_configuration:
-        cms_text: "Preliminary"
-        image_type: ".pdf"
-        cms_text_color: 'black'
-        legend_num_cols: 1
-    - name: HistogramPulls2D
-      inputs: 
+        transforms:
+          - name: MergeAxes
+            merge_axis_names: ["HT_Cat"]
+          - name: SelectAxesValues
+            select_axes_values: {"variation": "central"}
+      output_name: "{prefix}/{pipeline}/{name}_16_combined"
+    - name: Histogram2DCombined
+      inputs:
         - "*/*/*/comp_mStop_vs_mChiRatio"
         - "*/*/*/uncomp_mStop_vs_mChiRatio"
-      normalize: True 
-      scale: linear
       structure:
-        select: {dataset_name: "*"}
+        select: {dataset_name: "*2022*"}
         group: {pipeline: "*"}
-        subgroups:
-          hist1:
-            select: {dataset_name: "qcd*2016*post*"}
-            transforms:
-              - *post_common_mc_transforms
-            title: minus 
-          hist2:
-            select: {dataset_name: "qcd*2018*"}
-            transforms:
-              - *post_common_mc_transforms
-            title: plus 
-      output_name: "{prefix}/{pipeline}/{name}_qcd_2018_2016post_pulls.pdf"
+        transforms:
+          - name: MergeAxes
+            merge_axis_names: ["HT_Cat"]
+          - name: SelectAxesValues
+            select_axes_values: {"variation": "central"}
+      output_name: "{prefix}/{pipeline}/{name}_22_combined"
+    - name: Histogram2DCombined
+      inputs:
+        - "*/*/*/comp_mStop_vs_mChiRatio"
+        - "*/*/*/uncomp_mStop_vs_mChiRatio"
+      structure:
+        select: {dataset_name: "*2023*"}
+        group: {pipeline: "*"}
+        transforms:
+          - name: MergeAxes
+            merge_axis_names: ["HT_Cat"]
+          - name: SelectAxesValues
+            select_axes_values: {"variation": "central"}
+      output_name: "{prefix}/{pipeline}/{name}_23_combined"
+    - name: Histogram2DCombined
+      inputs:
+        - "*/*/*/comp_mStop_vs_mChiRatio"
+        - "*/*/*/uncomp_mStop_vs_mChiRatio"
+      structure:
+        select: {dataset_name: "*202*"}
+        group: {pipeline: "*"}
+        transforms:
+          - name: MergeAxes
+            merge_axis_names: ["HT_Cat"]
+          - name: SelectAxesValues
+            select_axes_values: {"variation": "central"}
+      output_name: "{prefix}/{pipeline}/{name}_run3_combined"
       plot_configuration:
-        cms_text: "Preliminary"
-        image_type: ".pdf"
+        cms_text: ["Preliminary"]
+        lumi_text: 'Run 3'
         cms_text_color: 'black'
-        legend_num_cols: 1
+        image_type: ".png"
+    - name: Histogram2DCombined
+      inputs:
+        - "*/*/*/comp_mStop_vs_mChiRatio"
+        - "*/*/*/uncomp_mStop_vs_mChiRatio"
+      structure:
+        select: {dataset_name: "*201*"}
+        group: {pipeline: "*"}
+        transforms:
+          - name: MergeAxes
+            merge_axis_names: ["HT_Cat"]
+          - name: SelectAxesValues
+            select_axes_values: {"variation": "central"}
+      output_name: "{prefix}/{pipeline}/{name}_run2_combined"
+      plot_configuration:
+        cms_text: ["Preliminary"]
+        lumi_text: 'Run 2'
+        cms_text_color: 'black'
+        image_type: ".png"
+
   default_plot_config:
-    cms_text: "Preliminary"
+    cms_text: ["Preliminary"]
     image_type: ".png"
-    cms_text_color: Black
+    cms_text_color: 'black'
     legend_num_cols: 1
