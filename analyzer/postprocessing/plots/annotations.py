@@ -51,6 +51,7 @@ def addCMSBits(
     if plot_configuration is None:
         plot_configuration = PlotConfiguration()
     info_text = plot_configuration.lumi_text
+
     if info_text is None:
         lumis = set(str(x["era"]["lumi"]) for x in all_meta)
         energies = set(str(x["era"]["energy"]) for x in all_meta)

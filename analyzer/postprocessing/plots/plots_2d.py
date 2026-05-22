@@ -35,10 +35,18 @@ def plot2D(
     cbar_title="Events",
 ):
     pc = plot_configuration or PlotConfiguration()
-
     fig, ax = plt.subplots(layout="constrained")
-    item, meta = histogram
-    h = item.histogram
+
+    if type(histogram) is list:
+        h = histogram[0].item.histogram
+        meta_to_save = [histogram[0].metadata]
+        for (item, meta) in histogram[1:]:
+            h += item.histogram
+            meta_to_save.append(meta)
+    else:
+        item, meta = histogram
+        h = item.histogram
+        meta_to_save = [meta]
 
     if normalize:
         h = h / np.sum(h.values())
@@ -57,11 +65,11 @@ def plot2D(
         fig,
         ax,
         output_path,
-        [meta],
+        meta_to_save,
         plot_configuration=pc,
         metadata=common_meta,
-        extra_text=f"{common_meta['sample_name']}\n{common_meta['pipeline']}",
-        text_color="white",
+        extra_text=f"{common_meta['pipeline']}",
+        text_color='black'
     )
     plt.close(fig)
 
@@ -172,7 +180,6 @@ def plot2DPulls(
     h1 = item1.histogram
     h2 = item2.histogram
     if normalize:
-        print("Normalizing")
         h1 = h1 / np.sum(h1.values())
         h2 = h2 / np.sum(h2.values())
     with np.errstate(divide='ignore', invalid='ignore'):
