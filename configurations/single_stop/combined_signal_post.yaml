@@ -100,18 +100,52 @@ Postprocessing:
         - "*/*/*/uncomp_mStop_vs_mChiRatio" 
         - "*/*/*/comp_mStop_vs_mChiRatio" 
         - "*/*/*/verycomp_mStop_vs_mChiRatio" 
-      era_name: 'Run 2'
-      dataset_name: 'sm_background_run2'
+      era_name: '2018'
+      dataset_name: 'sm_background_2018'
       dataset_title: 'SM Bkg' 
       structure:
-        select: {dataset_name: '*201*'}
+        select: {dataset_name: "*2018*"}
         group: {pipeline: "*"}
         transforms:
           - name: MergeAxes
             merge_axis_names: ["HT_Cat"]
           - name: SelectAxesValues
             select_axes_values: {"variation": "central"}
-      output_name: "{prefix}/{pipeline}/run2_{name}.pklz4"
+      output_name: "{prefix}/{pipeline}/2018_{name}.pklz4"
+    - name: DumpCombined
+      inputs: 
+        - "*/*/*/uncomp_mStop_vs_mChiRatio" 
+        - "*/*/*/comp_mStop_vs_mChiRatio" 
+        - "*/*/*/verycomp_mStop_vs_mChiRatio" 
+      era_name: '2017'
+      dataset_name: 'sm_background_2017'
+      dataset_title: 'SM Bkg' 
+      structure:
+        select: {dataset_name: "*2017*"}
+        group: {pipeline: "*"}
+        transforms:
+          - name: MergeAxes
+            merge_axis_names: ["HT_Cat"]
+          - name: SelectAxesValues
+            select_axes_values: {"variation": "central"}
+      output_name: "{prefix}/{pipeline}/2017_{name}.pklz4"
+    - name: DumpCombined
+      inputs: 
+        - "*/*/*/uncomp_mStop_vs_mChiRatio" 
+        - "*/*/*/comp_mStop_vs_mChiRatio" 
+        - "*/*/*/verycomp_mStop_vs_mChiRatio" 
+      era_name: '2016'
+      dataset_name: 'sm_background_2016'
+      dataset_title: 'SM Bkg' 
+      structure:
+        select: {dataset_name: "*2016*"}
+        group: {pipeline: "*"}
+        transforms:
+          - name: MergeAxes
+            merge_axis_names: ["HT_Cat"]
+          - name: SelectAxesValues
+            select_axes_values: {"variation": "central"}
+      output_name: "{prefix}/{pipeline}/2016_{name}.pklz4"
     - name: DumpCombined
       inputs: 
         - "*/*/*/uncomp_mStop_vs_mChiRatio" 

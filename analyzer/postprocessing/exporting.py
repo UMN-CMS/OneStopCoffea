@@ -64,15 +64,12 @@ class DumpCombined(BasePostprocessor):
     compressed: bool = True
 
     def getRunFuncs(self, group, prefix=None):
-        if len(group) != 1:
-            export_hist = group[0][0].histogram
-            meta = commonDict(group)
-            lumis = set()
-            for item, group_meta in group:
-                lumis.add(float(group_meta["era"]["lumi"]))
-                export_hist += item.histogram
-        elif len(group) == 1:
-            raise RuntimeError("Only one group. Use 'Dump' instead.")
+        export_hist = group[0][0].histogram
+        meta = commonDict(group)
+        lumis = set()
+        for item, group_meta in group:
+            lumis.add(float(group_meta["era"]["lumi"]))
+            export_hist += item.histogram
         output_path = dotFormat(
             self.output_name, **dict(dictToDot(meta)), prefix=prefix
         )
