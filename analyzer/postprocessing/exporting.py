@@ -1,7 +1,11 @@
 from __future__ import annotations
 
 import functools as ft
-from analyzer.utils.structure_tools import dotFormat, dictToDot
+from analyzer.utils.structure_tools import (
+        dotFormat,
+        dictToDot,
+        commonDict,
+)
 from .processors import BasePostprocessor
 from attrs import define
 import pickle as pkl
@@ -37,7 +41,7 @@ class Dump(BasePostprocessor):
 
     def getRunFuncs(self, group, prefix=None):
         if len(group) != 1:
-            raise RuntimeError()
+            raise RuntimeError("More than one group provided.")
         item, meta = group[0]
         output_path = dotFormat(
             self.output_name, **dict(dictToDot(meta)), prefix=prefix
@@ -46,6 +50,43 @@ class Dump(BasePostprocessor):
             exportItem,
             item.histogram,
             dict(meta),
+            output_path,
+            compressed=self.compressed,
+        )
+
+@define
+class DumpCombined(BasePostprocessor):
+    output_name: str
+    era_name: str
+    dataset_name: str
+    dataset_title: str
+    era_lumi: str = None
+    compressed: bool = True
+
+    def getRunFuncs(self, group, prefix=None):
+        if len(group) != 1:
+            export_hist = group[0][0].histogram
+            meta = commonDict(group)
+            lumis = set()
+            for item, group_meta in group:
+                lumis.add(float(group_meta["era"]["lumi"]))
+                export_hist += item.histogram
+        elif len(group) == 1:
+            raise RuntimeError("Only one group. Use 'Dump' instead.")
+        output_path = dotFormat(
+            self.output_name, **dict(dictToDot(meta)), prefix=prefix
+        )
+        meta = dict(meta)
+        meta["dataset_name"] = self.dataset_name
+        meta["dataset_title"] = self.dataset_title
+        if self.era_lumi is None:
+            self.era_lumi = sum(lumis)
+        meta["era"] = {'name': self.era_name, 'lumi': self.era_lumi}
+
+        yield ft.partial(
+            exportItem,
+            export_hist,
+            meta,
             output_path,
             compressed=self.compressed,
         )

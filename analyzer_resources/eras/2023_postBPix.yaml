@@ -1,9 +1,9 @@
 - name: 2023_postBPix
   energy: 13.6
-  lumi: 9.451
+  lumi: 9.68
   sections:
     D:
-      lumi: 9.451
+      lumi: 9.68
 
   golden_json: https://cms-service-dqmdc.web.cern.ch/CAF/certification/Collisions23/Cert_Collisions2023_366442_370790_Golden.json
 
