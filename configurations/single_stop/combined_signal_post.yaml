@@ -5,6 +5,8 @@ Postprocessing:
     {{ comb2D.handle2D_comb([ "*/*/*/comp_mStop_vs_mChi",  "*/*/*/comp_mStop_vs_mChiRatio", "*/*/*/uncomp_mStop_vs_mChi",  "*/*/*/uncomp_mStop_vs_mChiRatio"], "qcd*2016_pre*", "qcd*2016_post*", '2016_pre_post') | indent(4) }}
     {{ comb2D.handle2D_comb([ "*/*/*/comp_mStop_vs_mChi",  "*/*/*/comp_mStop_vs_mChiRatio", "*/*/*/uncomp_mStop_vs_mChi",  "*/*/*/uncomp_mStop_vs_mChiRatio"], "qcd*2022_pre*", "qcd*2022_post*", '2022_pre_post') | indent(4) }}
     {{ comb2D.handle2D_comb([ "*/*/*/comp_mStop_vs_mChi",  "*/*/*/comp_mStop_vs_mChiRatio", "*/*/*/uncomp_mStop_vs_mChi",  "*/*/*/uncomp_mStop_vs_mChiRatio"], "qcd*2023_pre*", "qcd*2023_post*", '2023_pre_post') | indent(4) }}
+    {{ comb2D.handle2D_comb([ "*/*/*/comp_mStop_vs_mChi",  "*/*/*/comp_mStop_vs_mChiRatio", "*/*/*/uncomp_mStop_vs_mChi",  "*/*/*/uncomp_mStop_vs_mChiRatio"], "qcd*2022_pre*", "qcd*2023_post*", '2022_pre_2023_post') | indent(4) }}
+    {{ comb2D.handle2D_comb([ "*/*/*/comp_mStop_vs_mChi",  "*/*/*/comp_mStop_vs_mChiRatio", "*/*/*/uncomp_mStop_vs_mChi",  "*/*/*/uncomp_mStop_vs_mChiRatio"], "qcd*2022_post*", "qcd*2023_post*", '2022_post_2023_post') | indent(4) }}
     - name: Histogram2D
       inputs:
         - "*/*/*/comp_mStop_vs_mChiRatio"
@@ -93,6 +95,7 @@ Postprocessing:
         lumi_text: 'Run 2'
         cms_text_color: 'black'
         image_type: ".png"
+
 
   default_plot_config:
     cms_text: ["Preliminary"]
