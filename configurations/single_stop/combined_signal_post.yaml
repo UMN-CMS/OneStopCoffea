@@ -95,6 +95,40 @@ Postprocessing:
         lumi_text: 'Run 2'
         cms_text_color: 'black'
         image_type: ".png"
+    - name: DumpCombined
+      inputs: 
+        - "*/*/*/uncomp_mStop_vs_mChiRatio" 
+        - "*/*/*/comp_mStop_vs_mChiRatio" 
+        - "*/*/*/verycomp_mStop_vs_mChiRatio" 
+      era_name: 'Run 2'
+      dataset_name: 'sm_background_run2'
+      dataset_title: 'SM Bkg' 
+      structure:
+        select: {dataset_name: '*201*'}
+        group: {pipeline: "*"}
+        transforms:
+          - name: MergeAxes
+            merge_axis_names: ["HT_Cat"]
+          - name: SelectAxesValues
+            select_axes_values: {"variation": "central"}
+      output_name: "{prefix}/{pipeline}/run2_{name}.pklz4"
+    - name: DumpCombined
+      inputs: 
+        - "*/*/*/uncomp_mStop_vs_mChiRatio" 
+        - "*/*/*/comp_mStop_vs_mChiRatio" 
+        - "*/*/*/verycomp_mStop_vs_mChiRatio" 
+      era_name: 'Run 3'
+      dataset_name: 'sm_background_run3'
+      dataset_title: 'SM Bkg' 
+      structure:
+        select: {dataset_name: {"or_exprs": ["*2022_post*", "*2023*"]}}
+        group: {pipeline: "*"}
+        transforms:
+          - name: MergeAxes
+            merge_axis_names: ["HT_Cat"]
+          - name: SelectAxesValues
+            select_axes_values: {"variation": "central"}
+      output_name: "{prefix}/{pipeline}/run3_{name}.pklz4"
 
 
   default_plot_config:
