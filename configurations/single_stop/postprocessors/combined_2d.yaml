@@ -5,7 +5,7 @@
   scale: linear
   structure:
     select: {dataset_name: "*"}
-    group: {pipeline: '*'}
+    group: {pipeline: "*"}
     subgroups:
       hist1:
         select: {dataset_name: {{dataset_name_1}} }
