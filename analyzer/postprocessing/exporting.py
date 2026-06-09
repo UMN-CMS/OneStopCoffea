@@ -60,6 +60,7 @@ class DumpCombined(BasePostprocessor):
     era_name: str
     dataset_name: str
     dataset_title: str
+    era_energy: float
     era_lumi: str = None
     compressed: bool = True
 
@@ -78,7 +79,7 @@ class DumpCombined(BasePostprocessor):
         meta["dataset_title"] = self.dataset_title
         if self.era_lumi is None:
             self.era_lumi = sum(lumis)
-        meta["era"] = {'name': self.era_name, 'lumi': self.era_lumi}
+        meta["era"] = {'name': self.era_name, 'lumi': self.era_lumi, 'energy': self.era_energy}
 
         yield ft.partial(
             exportItem,

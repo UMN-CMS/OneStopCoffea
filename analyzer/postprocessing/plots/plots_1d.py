@@ -7,6 +7,7 @@ import functools as ft
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import mplhep
+import hist
 from analyzer.postprocessing.style import Styler
 
 # from ..grouping import doFormatting
@@ -88,7 +89,7 @@ def plotOne(
         )
 
     if h is None:
-        h = stacked_hists[0]
+        h = stacked_hists[0][0].histogram
 
     labelAxis(ax, "y", h.axes, label=pc.y_label)
     labelAxis(ax, "x", h.axes, label=pc.x_label)

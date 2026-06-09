@@ -55,7 +55,47 @@ class Histogram1D(BasePostprocessor):
             plot_configuration=pc,
             show_stacked_unc=self.show_stacked_unc,
         )
+@define
+class Histogram1DCombined(BasePostprocessor):
+    output_name: str
+    style_set: str | StyleSet = field(factory=StyleSet)
+    scale: Literal["log", "linear"] = "linear"
+    normalize: bool = False
+    show_stacked_unc: bool = True
+    override_meta: bool = False
+    era_name: str = ''
+    era_lumi: float = 0
+    era_energy: float = 13.6
+    dataset_name: str = ''
+    dataset_title: str = ''
 
+    def getRunFuncs(self, group, prefix=None):
+        export_hist = group[0][0]
+        common_meta = commonDict(group)
+        lumis = set()
+        for item, group_meta in group:
+            lumis.add(float(group_meta["era"]["lumi"]))
+            export_hist += item
+        if self.override_meta:
+            if self.era_lumi == 0:
+                self.era_lumi = sum(lumis)
+            common_meta.update({'era':{'name': self.era_name, 'energy': self.era_energy, 'lumi': self.era_lumi},'dataset_name': self.dataset_name, 'dataset_title': self.dataset_title})
+        output_path = dotFormat(
+            self.output_name, **dict(dictToDot(common_meta)), prefix=prefix
+        )
+        pc = self.plot_configuration.makeFormatted(common_meta)
+        yield ft.partial(
+            plotOne,
+            [ItemWithMeta(export_hist,common_meta)],
+            None,
+            common_meta,
+            output_path,
+            scale=self.scale,
+            style_set=self.style_set,
+            normalize=self.normalize,
+            plot_configuration=pc,
+            show_stacked_unc=self.show_stacked_unc,
+        )
 
 @define
 class RatioPlot(BasePostprocessor):
