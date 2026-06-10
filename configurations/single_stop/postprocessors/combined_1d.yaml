@@ -1,25 +1,27 @@
 {% macro  handle1D_comb(inputs, dataset_name, output_str) %}
-- name: Histogram1DCombined
-  inputs: {{ inputs | tojson }}
-  override_meta: True
-  era_name: {{output_str}}
-  dataset_title: "SM Background" 
-  dataset_name: "sm_background" 
-  era_energy: 13.6 
-  structure:
-    select: {dataset_name: {{dataset_name}} }
-    group: {pipeline: "*", name: "*"}
-    transforms:
-      - name: NormalizeSystematicByProjection
-        normalize_within: ["HT_Cat"]
-        pre_sf_name: "bjetshapesf-variation_disabled"
-        variation_axis: "variation"
-        should_run:
-          dataset_name: "signal*"
-      - name: MergeAxes
-        merge_axis_names: ["HT_Cat"]
-      - name: SelectAxesValues
-        select_axes_values: 
-          variation: ["central"]
-  output_name: "{prefix}/{pipeline}/{{output_str}}/{name}.png"
+#- name: Histogram1DCombined
+#  inputs: {{ inputs | tojson }}
+#  override_meta: True
+#  era_name: {{output_str}}
+#  dataset_title: "SM Background" 
+#  dataset_name: "sm_background" 
+#  era_energy: 13.6 
+#  structure:
+#    select: {dataset_name: {{dataset_name}} }
+#    group: {pipeline: "*", name: "*"}
+#    transforms:
+#      - name: NormalizeSystematicByProjection
+#        normalize_within: ["HT_Cat"]
+#        pre_sf_name: "bjetshapesf-variation_disabled"
+#        variation_axis: "variation"
+#        should_run:
+#          dataset_name: "signal*"
+#      - name: MergeAxes
+#        merge_axis_names: ["HT_Cat"]
+#        should_run:
+#          sample_type: MC 
+#      - name: SelectAxesValues
+#        select_axes_values: 
+#          variation: ["central"]
+#  output_name: "{prefix}/{pipeline}/{{output_str}}/{name}.png"
 {% endmacro %}
