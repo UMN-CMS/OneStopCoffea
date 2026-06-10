@@ -396,7 +396,7 @@ class LocalDaskExecutor(Executor):
     client: Any = None
     reduction_factor: int = 2
     target_final_count: int = 1
-    timeout: int = 120
+    timeout: int = 600
 
     def setup(self, needed_resources):
         configureDask()
@@ -440,7 +440,7 @@ class LPCCondorDask(Executor):
     adapt: bool = True
     chunk_size: int | None = 100000
     reduction_factor: int = 5
-    timeout: int = 600
+    timeout: int = 1200
     cluster: Any = None
     client: Any = None
     target_final_count: int = 1
