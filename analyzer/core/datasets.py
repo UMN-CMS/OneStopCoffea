@@ -149,7 +149,7 @@ class DatasetRepo:
         try:
             data = getDatasetFromPathMTime(path, path.stat().st_mtime)
             for d in data:
-                logger.debug(f"Adding dataset {d.name} to repo")
+                # logger.debug(f"Adding dataset {d.name} to repo")
                 if d.name in self.datasets:
                     raise KeyError(f"A dataset with the name {d.name} already exists")
                 self.datasets[d.name] = d
