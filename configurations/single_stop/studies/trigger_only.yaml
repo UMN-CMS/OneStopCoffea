@@ -1,0 +1,65 @@
+{% import 'singlestop_base.yaml' as base %}
+analyzer:
+  default_run_builder:
+    strategy_name: WeightsOnly
+  Trigger:
+    - module_name: SimpleHLT
+      triggers: [HT,AK8SingleJetPtNoTrim, AK8SingleJetPt]
+    {{ base.event_level_cleanup() | indent(4) }}
+    - module_name: SaveHLT
+      triggers: [HT,AK8SingleJetPtNoTrim, AK8SingleJetPt]
+    - module_name: SelectOnColumns
+      sel_name: selection
+    {{ base.singlestop_objects() | indent(4) }}
+    {{ base.weights() | indent(4) }}
+    - module_name: PromoteIndex
+      input_col: GoodFatJet
+      output_col: TopAK8
+    - module_name: SimpleCategory
+      input_col: "SavedHLT.HT"
+      cat_name: PassHT
+      bins: 2
+      start: 0
+      stop: 2 
+    - module_name: SimpleCategory
+      input_col: "SavedHLT.AK8SingleJetPtNoTrim"
+      cat_name: PassAK8SingleJetPtNoTrim
+      bins: 2
+      start: 0
+      stop: 2 
+    - module_name: SimpleCategory
+      input_col: "SavedHLT.AK8SingleJetPt"
+      cat_name: PassAK8SingleJetPt
+      bins: 2
+      start: 0
+      stop: 2
+    - module_name: HTvpTHistogram
+      ht_column: HT
+      fatjet_column: TopAK8
+location_priorities: [".*FNAL.*", ".*US.*", ".*(DE|IT|CH|FR).*", ".*(T0|T1|T2).*","eos"]
+event_collections:
+  - dataset: 'data_JetHT_*'
+    pipelines: [Trigger]
+  # Background MC Samples
+  - dataset: 'qcd*'
+    pipelines: [Trigger]
+  - dataset: 'diboson*'
+    pipelines: [Trigger]
+  - dataset: 'tt_to_hadronic*'
+    pipelines: [Trigger]
+  - dataset: 'zjets_to_qq*'
+    pipelines: [Trigger]
+  - dataset: 'wjets_to_qq*'
+    pipelines: [Trigger]
+  - dataset: 'single_top*hadronic*'
+    pipelines: [Trigger]
+extra_executors:
+  test:
+    executor_name: ImmediateExecutor
+    chunk_size: 10000
+  test2:
+    executor_name: LocalDaskExecutor
+    chunk_size: 100000
+    min_workers: 1
+    max_workers: 3
+    reduction_factor: 2
