@@ -5,7 +5,7 @@
   scale: linear
   structure:
     select: {dataset_name: "*"}
-    group: {pipeline: "*"}
+    group: {pipeline: "ControlEmulation"}
     subgroups:
       hist1:
         select: {dataset_name: {{dataset_name_1}} }
@@ -18,6 +18,8 @@
               dataset_name: "signal*"
           - name: MergeAxes
             merge_axis_names: ["HT_Cat"]
+            should_run:
+              sample_type: MC 
           - name: SelectAxesValues
             select_axes_values: {"variation": "central"}
       hist2:
@@ -31,6 +33,8 @@
               dataset_name: "signal*"
           - name: MergeAxes
             merge_axis_names: ["HT_Cat"]
+            should_run:
+              sample_type: MC 
           - name: SelectAxesValues
             select_axes_values: {"variation": "central"}
   output_name: "{prefix}/{pipeline}/{name}_combined_{{output_str}}_pulls.pdf"
