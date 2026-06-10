@@ -968,3 +968,48 @@ class PileupJetIdSF(AnalyzerModule):
 
     def outputs(self, metadata):
         return [Column(("Weights", self.weight_name))]
+
+@define
+class HTvpTHistogram(AnalyzerModule):
+    ht_column: Column
+    fatjet_column: Column
+
+    def run(self, columns, params):
+        HT = columns[self.ht_column]
+        fatjet = columns[self.fatjet_column]
+        mask = ~(ak.is_none(fatjet) | ak.is_none(HT))
+        ret = []
+        ret.append(
+            makeHistogram(
+                f"HT_v_pt",
+                columns,
+                [
+                    RegularAxis(60, 0, 3000, f"HT", unit="GeV"),
+                    RegularAxis(20, 0, 1000, f"$p_{{T}}$", unit="GeV"),
+                ],
+                [HT, fatjet.pt],
+                description=f"HT v pT of leading AK8 Jet.",
+                mask=mask,
+            )
+        )
+        return columns, ret
+
+    def outputs(self, metadata):
+        return []
+
+    def inputs(self, metadata):
+        return [self.ht_column, self.fatjet_column]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
