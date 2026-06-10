@@ -137,6 +137,43 @@ Postprocessing:
         - "*/*/*/uncomp_mStop_vs_mChiRatio"
         - "*/*/*/verycomp_mStop_vs_mChiRatio"
       structure:
+        select: {dataset_name: "data*202*"}
+        group: {pipeline: "*", name: "*"}
+        transforms:
+          - name: MergeAxes
+            merge_axis_names: ["HT_Cat"]
+            should_run:
+              sample_type: MC 
+          - name: SelectAxesValues
+            select_axes_values: {"variation": "central"}
+      output_name: "{prefix}/{pipeline}/Run3/{name}_data"
+      plot_configuration:
+        cms_text: ["Preliminary"]
+        lumi_text: 'Run 3'
+        cms_text_color: 'black'
+        image_type: ".png"
+    - name: Histogram2DCombined
+      inputs:
+        - "*/*/*/comp_mStop_vs_mChiRatio"
+        - "*/*/*/uncomp_mStop_vs_mChiRatio"
+        - "*/*/*/verycomp_mStop_vs_mChiRatio"
+      structure:
+        select: {dataset_name: "!(data)*202*"}
+        group: {pipeline: "*", name: "*"}
+        transforms:
+          - name: MergeAxes
+            merge_axis_names: ["HT_Cat"]
+            should_run:
+              sample_type: MC 
+          - name: SelectAxesValues
+            select_axes_values: {"variation": "central"}
+      output_name: "{prefix}/{pipeline}/Run3/{name}_mc"
+    - name: Histogram2DCombined
+      inputs:
+        - "*/*/*/comp_mStop_vs_mChiRatio"
+        - "*/*/*/uncomp_mStop_vs_mChiRatio"
+        - "*/*/*/verycomp_mStop_vs_mChiRatio"
+      structure:
         select: {dataset_name: "!data*2018*"}
         group: {pipeline: "*", name: "*"}
         transforms:
