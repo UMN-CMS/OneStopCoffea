@@ -23,6 +23,8 @@ Postprocessing:
         transforms:
           - name: MergeAxes
             merge_axis_names: ["HT_Cat"]
+            should_run:
+              sample_type: MC 
           - name: SelectAxesValues
             select_axes_values: {"variation": "central"}
       output_name: "{prefix}/{pipeline}/{dataset_name}/{name}"
@@ -37,6 +39,8 @@ Postprocessing:
         transforms:
           - name: MergeAxes
             merge_axis_names: ["HT_Cat"]
+            should_run:
+              sample_type: MC 
           - name: SelectAxesValues
             select_axes_values: {"variation": "central"}
       output_name: "{prefix}/{pipeline}/2016/{name}"
@@ -51,6 +55,8 @@ Postprocessing:
         transforms:
           - name: MergeAxes
             merge_axis_names: ["HT_Cat"]
+            should_run:
+              sample_type: MC 
           - name: SelectAxesValues
             select_axes_values: {"variation": "central"}
       output_name: "{prefix}/{pipeline}/2017/{name}"
@@ -65,6 +71,8 @@ Postprocessing:
         transforms:
           - name: MergeAxes
             merge_axis_names: ["HT_Cat"]
+            should_run:
+              sample_type: MC 
           - name: SelectAxesValues
             select_axes_values: {"variation": "central"}
       output_name: "{prefix}/{pipeline}/2018/{name}"
@@ -79,6 +87,8 @@ Postprocessing:
         transforms:
           - name: MergeAxes
             merge_axis_names: ["HT_Cat"]
+            should_run:
+              sample_type: MC 
           - name: SelectAxesValues
             select_axes_values: {"variation": "central"}
       output_name: "{prefix}/{pipeline}/Run3/{name}"
@@ -102,6 +112,8 @@ Postprocessing:
         transforms:
           - name: MergeAxes
             merge_axis_names: ["HT_Cat"]
+            should_run:
+              sample_type: MC 
           - name: SelectAxesValues
             select_axes_values: {"variation": "central"}
       output_name: "{prefix}/{pipeline}/2018/{name}.pklz4"
@@ -120,6 +132,8 @@ Postprocessing:
         transforms:
           - name: MergeAxes
             merge_axis_names: ["HT_Cat"]
+            should_run:
+              sample_type: MC 
           - name: SelectAxesValues
             select_axes_values: {"variation": "central"}
       output_name: "{prefix}/{pipeline}/2017/{name}.pklz4"
@@ -138,6 +152,8 @@ Postprocessing:
         transforms:
           - name: MergeAxes
             merge_axis_names: ["HT_Cat"]
+            should_run:
+              sample_type: MC 
           - name: SelectAxesValues
             select_axes_values: {"variation": "central"}
       output_name: "{prefix}/{pipeline}/2016/{name}.pklz4"
@@ -156,6 +172,8 @@ Postprocessing:
         transforms:
           - name: MergeAxes
             merge_axis_names: ["HT_Cat"]
+            should_run:
+              sample_type: MC 
           - name: SelectAxesValues
             select_axes_values: {"variation": "central"}
       output_name: "{prefix}/{pipeline}/Run3/{name}.pklz4"
