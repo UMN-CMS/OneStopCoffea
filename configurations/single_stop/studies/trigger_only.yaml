@@ -11,7 +11,8 @@ analyzer:
     - module_name: SelectOnColumns
       sel_name: selection
     {{ base.singlestop_objects() | indent(4) }}
-    {{ base.weights() | indent(4) }}
+    - module_name: PileupSF
+    - module_name: L1PrefiringSF
     - module_name: PromoteIndex
       input_col: GoodFatJet
       output_col: TopAK8
@@ -38,7 +39,7 @@ analyzer:
       fatjet_column: TopAK8
 location_priorities: [".*FNAL.*", ".*US.*", ".*(DE|IT|CH|FR).*", ".*(T0|T1|T2).*","eos"]
 event_collections:
-  - dataset: 'data_JetHT_*'
+  - dataset: 'data_Jet*'
     pipelines: [Trigger]
   # Background MC Samples
   - dataset: 'qcd*'
