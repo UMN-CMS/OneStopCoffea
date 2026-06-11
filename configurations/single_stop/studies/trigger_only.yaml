@@ -64,3 +64,23 @@ extra_executors:
     min_workers: 1
     max_workers: 3
     reduction_factor: 2
+
+Postprocessing:
+  processors:
+    - name: Histogram2D
+      inputs:
+        - "*/*/*/HT_v_pt"
+      structure:
+        select: {dataset_name: "*"}
+        group: {pipeline: "*", dataset_name: "*"}
+        transforms:
+          - name: OrBinaryAxes 
+            or_axis_names: ["PassHT","PassAK8SingleJetPtNoTrim","PassAK8SingleJetPt"]  
+          - name: SelectAxesValues
+            select_axes_values: {"variation": "central"}
+      output_name: "{prefix}/{pipeline}/{dataset_name}/{name}"
+      plot_configuration:
+        cms_text: "Preliminary"
+        image_type: ".png"
+        cms_text_color: 'black'
+        legend_num_cols: 1
