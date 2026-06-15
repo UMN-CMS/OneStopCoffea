@@ -194,6 +194,7 @@ class AnalyzerModule(BaseAnalyzerModule):
         ret = hash((self.selfkey, self.name(), k))
         return ret
 
+
     def __run(self, columns, params):
         orig_columns = columns
         columns = columns.copy()
@@ -273,6 +274,7 @@ class EventSourceModule(BaseAnalyzerModule):
         ret = hash((self.name(), self.selfkey, freeze(params)))
         return ret
 
+
     def __call__(self, params):
         try:
             spec = self.getParameterSpec(None)
@@ -309,6 +311,7 @@ class PureResultModule(BaseAnalyzerModule):
         self, columns: MultiColumns, params: ModuleParameterValues
     ) -> list[ResultBase]:
         pass
+
 
     def getKey(self, columns: MultiColumns, params: ModuleParameterValues):
         ret = hash(

@@ -4,7 +4,8 @@ import copy
 from attrs import define, field, asdict
 
 
-from collections import deque
+from collections import deque, OrderedDict, ChainMap
+import functools as ft
 
 from analyzer.core.analysis_modules import (
     AnalyzerModule,
@@ -135,8 +136,16 @@ class Analyzer:
         self.base_pipelines[name] = ret
 
     def runPipelineWithParameters(
-        self, pipeline, params, freeze_pipeline=False, result_container_name=None
+        self,
+        pipeline,
+        params,
+        freeze_pipeline=False,
+        result_container_name=None,
+        *,
+        tracing_vis=True,
     ):
+        vis_modules, vis_edges, vis_last_mod = OrderedDict(), set(), None
+
         module_keys = [x.selfkey for x in pipeline]
         key = hash(freeze((module_keys, params)))
 
@@ -171,8 +180,22 @@ class Analyzer:
                 columns = columns.copy()
                 current_spec = getPipelineSpecs(complete_pipeline, columns.metadata)
                 columns, results = head(columns, params)
+
+                if tracing_vis:
+                    p = head.filterParams(columns.metadata, params)
+                    vis_key = head.getKey(columns, p)
             else:
+                if tracing_vis:
+                    s = head.getParameterSpec(None)
+                    p = {x: y for x, y in params.items() if x in s}
+                    vis_key = head.getKey(p)
                 columns, results = head(params), []
+
+            if tracing_vis:
+                vis_modules[vis_key] = (head.name(), p)
+                if vis_last_mod is not None:
+                    vis_edges.add((vis_last_mod, vis_key))
+                vis_last_mod = vis_key
 
             if not result_container:
                 continue
@@ -206,15 +229,30 @@ class Analyzer:
                             (x, getWithValues(current_spec, params | y))
                             for x, y in param_dicts
                         ]
+
                         everything = []
+                        multi_vis_info = []
                         for name, params_set in to_run:
-                            c, _ = self.runPipelineWithParameters(
+                            c, _, vis_info = self.runPipelineWithParameters(
                                 complete_pipeline,
                                 params_set,
                                 freeze_pipeline=True,
                                 result_container_name=None,
+                                tracing_vis=tracing_vis,
                             )
                             everything.append((name, c))
+                            multi_vis_info.append(vis_info)
+
+                        if tracing_vis:
+                            s = module.getParameterSpec(None)
+                            p = {x: y for x, y in params.items() if x in s}
+                            vis_key = module.getKey(everything, p)
+                            vis_modules[vis_key] = (module.name(), p)
+                            for vi in multi_vis_info:
+                                vis_edges.add((next(reversed(vi[0])), vis_key))
+                                vis_modules = vi[0] | vis_modules
+                                vis_edges |= vi[1]
+
                         logger.debug(
                             f"Running node {module} with {len(everything)} parameter sets"
                         )
@@ -226,7 +264,7 @@ class Analyzer:
                         f"Invalid object type returned from analyzer module. {res}"
                     )
         self._cache[key] = columns
-        return columns, result_container
+        return columns, result_container, (vis_modules, vis_edges)
 
     def run(self, chunk, metadata, pipelines=None):
         pipelines = pipelines or list(self.base_pipelines)
@@ -242,18 +280,24 @@ class Analyzer:
         sample_container.addResult(pipeline_container)
         metadata = copy.deepcopy(metadata)
         metadata["chunk"] = asdict(chunk)
-
+        all_vis_info = []
         for k, pipeline in self.base_pipelines.items():
             if k not in pipelines:
                 continue
             spec = getPipelineSpecs(pipeline, metadata)
             vals = getWithValues(spec, {"chunk": chunk, "metadata": metadata})
-            _, result = self.runPipelineWithParameters(
+            _, result, vis_info = self.runPipelineWithParameters(
                 pipeline,
                 vals,
                 result_container_name=k,
+                tracing_vis=True,
             )
             pipeline_container.addResult(result)
+            all_vis_info.append(vis_info)
+        vis_all_modules = ft.reduce(lambda x, y: x | y, (x[0] for x in all_vis_info))
+        vis_all_edges = ft.reduce(lambda x, y: x | y, (x[1] for x in all_vis_info))
+        renderGraph(vis_all_modules, vis_all_edges)
+
         return root_container
 
     @classmethod
@@ -274,3 +318,24 @@ class Analyzer:
             x: conv.unstructure([z.analyzer_module for z in y])
             for x, y in self.base_pipelines.items()
         }
+
+
+def intToAlpaStr(x, char_base="A"):
+    ret = ""
+    b = ord(char_base)
+    while x != 0:
+        x, r = divmod(x, 26)
+        ret += chr(b + r)
+    return ret[::-1]
+
+
+def renderGraph(modules, edges):
+    import graphviz
+
+    dot = graphviz.Digraph("Analyzer")
+    for m, (name, params) in modules.items():
+        dot.node(intToAlpaStr(abs(m)), label=name)
+    for v1, v2 in edges:
+        dot.edge(intToAlpaStr(abs(v1)), intToAlpaStr(abs(v2)))
+
+    print(dot.source)
