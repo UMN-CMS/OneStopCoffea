@@ -62,3 +62,11 @@ oldpkl/
 
 trained_bnns/
 nn_models/
+postprocessing/
+
+.bash_history
+.cmslpc-local-conf
+.sites_map.json
+analyzer_resources/datavmc_sf/
+cutflow_table.csv
+signal_yields/

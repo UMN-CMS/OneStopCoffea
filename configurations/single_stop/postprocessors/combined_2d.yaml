@@ -39,3 +39,86 @@
             select_axes_values: {"variation": "central"}
   output_name: "{prefix}/{pipeline}/{name}_combined_{{output_str}}_pulls.pdf"
 {% endmacro %}
+
+{% macro  handle2D_comb_trig(inputs, dataset_name_1, dataset_name_2, output_str) %}
+- name: HistogramPulls2D
+  inputs: {{ inputs | tojson }}
+  normalize: true 
+  scale: linear
+  structure:
+    select: {dataset_name: "*"}
+    group: {pipeline: "Trigger"}
+    subgroups:
+      hist1:
+        select: {dataset_name: {{dataset_name_1}} }
+        transforms:
+          - name: OrBinaryAxes 
+            or_axis_names: ["PassHT","PassAK8SingleJetPtNoTrim","PassAK8SingleJetPt"]  
+          - name: SelectAxesValues
+            select_axes_values: {"variation": "central"}
+      hist2:
+        select: {dataset_name: {{dataset_name_2}} }
+        transforms:
+          - name: OrBinaryAxes 
+            or_axis_names: ["PassHT","PassAK8SingleJetPtNoTrim","PassAK8SingleJetPt"]  
+          - name: SelectAxesValues
+            select_axes_values: {"variation": "central"}
+  output_name: "{prefix}/{pipeline}/{name}_pass_hlt_{{output_str}}_pulls.pdf"
+- name: HistogramPulls2D
+  inputs: {{ inputs | tojson }}
+  normalize: true 
+  scale: linear
+  structure:
+    select: {dataset_name: "*"}
+    group: {pipeline: "Trigger"}
+    subgroups:
+      hist1:
+        select: {dataset_name: {{dataset_name_1}} }
+        transforms:
+          - name: SelectAxesValues
+            select_axes_values: {"variation": "central", "PassHT": [1], "PassAK8SingleJetPtNoTrim": [0], "PassAK8SingleJetPt": [0]}
+      hist2:
+        select: {dataset_name: {{dataset_name_2}} }
+        transforms:
+          - name: SelectAxesValues
+            select_axes_values: {"variation": "central", "PassHT": [1], "PassAK8SingleJetPtNoTrim": [0], "PassAK8SingleJetPt": [0]}
+  output_name: "{prefix}/{pipeline}/{name}_100_{{output_str}}_pulls.pdf"
+- name: HistogramPulls2D
+  inputs: {{ inputs | tojson }}
+  normalize: true 
+  scale: linear
+  structure:
+    select: {dataset_name: "*"}
+    group: {pipeline: "Trigger"}
+    subgroups:
+      hist1:
+        select: {dataset_name: {{dataset_name_1}} }
+        transforms:
+          - name: SelectAxesValues
+            select_axes_values: {"variation": "central", "PassHT": [0], "PassAK8SingleJetPtNoTrim": [1], "PassAK8SingleJetPt": [0]}
+      hist2:
+        select: {dataset_name: {{dataset_name_2}} }
+        transforms:
+          - name: SelectAxesValues
+            select_axes_values: {"variation": "central", "PassHT": [0], "PassAK8SingleJetPtNoTrim": [1], "PassAK8SingleJetPt": [0]}
+  output_name: "{prefix}/{pipeline}/{name}_010_{{output_str}}_pulls.pdf"
+- name: HistogramPulls2D
+  inputs: {{ inputs | tojson }}
+  normalize: true 
+  scale: linear
+  structure:
+    select: {dataset_name: "*"}
+    group: {pipeline: "Trigger"}
+    subgroups:
+      hist1:
+        select: {dataset_name: {{dataset_name_1}} }
+        transforms:
+          - name: SelectAxesValues
+            select_axes_values: {"variation": "central", "PassHT": [0], "PassAK8SingleJetPtNoTrim": [0], "PassAK8SingleJetPt": [1]}
+      hist2:
+        select: {dataset_name: {{dataset_name_2}} }
+        transforms:
+          - name: SelectAxesValues
+            select_axes_values: {"variation": "central", "PassHT": [0], "PassAK8SingleJetPtNoTrim": [0], "PassAK8SingleJetPt": [1]}
+  output_name: "{prefix}/{pipeline}/{name}_001_{{output_str}}_pulls.pdf"
+{% endmacro %}

@@ -1,4 +1,5 @@
 {% import 'singlestop_base.yaml' as base %}
+{% import 'postprocessors/combined_2d.yaml' as comb2D %}
 analyzer:
   default_run_builder:
     strategy_name: WeightsOnly
@@ -67,6 +68,10 @@ extra_executors:
 
 Postprocessing:
   processors:
+    {{ comb2D.handle2D_comb_trig(["*/*/*/HT_v_pt"], "data*2022_pre*", "data*2022_post*", '2022_pre_2022_post_data') | indent(4) }}
+    {{ comb2D.handle2D_comb_trig(["*/*/*/HT_v_pt"], "data*2023_pre*", "data*2023_post*", '2023_pre_2023_post_data') | indent(4) }}
+    {{ comb2D.handle2D_comb_trig(["*/*/*/HT_v_pt"], "data*2023_pre*", "data*2022_post*", '2023_pre_2022_post_data') | indent(4) }}
+    {{ comb2D.handle2D_comb_trig(["*/*/*/HT_v_pt"], "data*2023_pre*", "data*2022_pre*", '2023_pre_2022_pre_data') | indent(4) }}
     - name: Histogram2D
       inputs:
         - "*/*/*/HT_v_pt"
@@ -79,8 +84,360 @@ Postprocessing:
           - name: SelectAxesValues
             select_axes_values: {"variation": "central"}
       output_name: "{prefix}/{pipeline}/{dataset_name}/{name}"
-      plot_configuration:
-        cms_text: "Preliminary"
-        image_type: ".png"
-        cms_text_color: 'black'
-        legend_num_cols: 1
+    - name: RatioPlot
+      inputs:
+        - "*/*/*/HT_v_pt"
+      scale: log
+      normalize: True
+      structure:
+        select: {dataset_name: "data*2022*"}
+        group: {pipeline: "*"}
+        subgroups:
+          denominator:
+            select: {dataset_name: "data*2022*post*"}
+            transforms:
+              - name: OrBinaryAxes 
+                or_axis_names: ["PassHT","PassAK8SingleJetPtNoTrim","PassAK8SingleJetPt"]
+              - name: SelectAxesValues
+                select_axes_values: {"variation": "central"}
+              - name: MergeAxes
+                merge_axis_names: ["$p_{T}$"]
+              - name: FormatTitle
+                title_format: "{dataset_name}_{era.name}"
+          numerator:
+            select: {dataset_name: "data*2022*pre*"}
+            transforms:
+              - name: OrBinaryAxes 
+                or_axis_names: ["PassHT","PassAK8SingleJetPtNoTrim","PassAK8SingleJetPt"]
+              - name: SelectAxesValues
+                select_axes_values: {"variation": "central"}
+              - name: MergeAxes
+                merge_axis_names: ["$p_{T}$"]
+              - name: FormatTitle
+                title_format: "{dataset_name}_{era.name}"
+      output_name: "{prefix}/{pipeline}/2022/ratio_pre_post__pass_hlt__ht_{name}"
+    - name: RatioPlot
+      inputs:
+        - "*/*/*/HT_v_pt"
+      scale: log
+      normalize: True
+      structure:
+        select: {dataset_name: "data*2023*"}
+        group: {pipeline: "*"}
+        subgroups:
+          denominator:
+            select: {dataset_name: "data*2023*post*"}
+            transforms:
+              - name: OrBinaryAxes 
+                or_axis_names: ["PassHT","PassAK8SingleJetPtNoTrim","PassAK8SingleJetPt"]
+              - name: SelectAxesValues
+                select_axes_values: {"variation": "central"}
+              - name: MergeAxes
+                merge_axis_names: ["$p_{T}$"]
+              - name: FormatTitle
+                title_format: "{dataset_name}_{era.name}"
+          numerator:
+            select: {dataset_name: "data*2023*pre*"}
+            transforms:
+              - name: OrBinaryAxes 
+                or_axis_names: ["PassHT","PassAK8SingleJetPtNoTrim","PassAK8SingleJetPt"]
+              - name: SelectAxesValues
+                select_axes_values: {"variation": "central"}
+              - name: MergeAxes
+                merge_axis_names: ["$p_{T}$"]
+              - name: FormatTitle
+                title_format: "{dataset_name}_{era.name}"
+      output_name: "{prefix}/{pipeline}/2023/ratio_pre_post__pass_hlt__ht_{name}"
+    - name: RatioPlot
+      inputs:
+        - "*/*/*/HT_v_pt"
+      scale: log
+      normalize: True
+      structure:
+        select: {dataset_name: "data*2022*"}
+        group: {pipeline: "*"}
+        subgroups:
+          denominator:
+            select: {dataset_name: "data*2022*post*"}
+            transforms:
+              - name: SelectAxesValues
+                select_axes_values: {"variation": "central", "PassHT": [1]}
+              - name: MergeAxes
+                merge_axis_names: ["$p_{T}$", "PassAK8SingleJetPtNoTrim", "PassAK8SingleJetPt"]
+              - name: FormatTitle
+                title_format: "{dataset_name}_{era.name}"
+          numerator:
+            select: {dataset_name: "data*2022*pre*"}
+            transforms:
+              - name: SelectAxesValues
+                select_axes_values: {"variation": "central", "PassHT": [1]}
+              - name: MergeAxes
+                merge_axis_names: ["$p_{T}$", "PassAK8SingleJetPtNoTrim", "PassAK8SingleJetPt"]
+              - name: FormatTitle
+                title_format: "{dataset_name}_{era.name}"
+      output_name: "{prefix}/{pipeline}/2022/ratio_pre_post__passht_sum_pt_trig__ht_{name}"
+    - name: RatioPlot
+      inputs:
+        - "*/*/*/HT_v_pt"
+      scale: log
+      normalize: True
+      structure:
+        select: {dataset_name: "data*2022*"}
+        group: {pipeline: "*"}
+        subgroups:
+          denominator:
+            select: {dataset_name: "data*2022*post*"}
+            transforms:
+              - name: SelectAxesValues
+                select_axes_values: {"variation": "central", "PassHT": [1], "PassAK8SingleJetPtNoTrim": [0], "PassAK8SingleJetPt": [0]}
+              - name: MergeAxes
+                merge_axis_names: ["$p_{T}$"]
+              - name: FormatTitle
+                title_format: "{dataset_name}_{era.name}"
+          numerator:
+            select: {dataset_name: "data*2022*pre*"}
+            transforms:
+              - name: SelectAxesValues
+                select_axes_values: {"variation": "central", "PassHT": [1], "PassAK8SingleJetPtNoTrim": [0], "PassAK8SingleJetPt": [0]}
+              - name: MergeAxes
+                merge_axis_names: ["$p_{T}$"]
+              - name: FormatTitle
+                title_format: "{dataset_name}_{era.name}"
+      output_name: "{prefix}/{pipeline}/2022/ratio_pre_post__100_passht_fail_pt_trig__ht_{name}"
+    - name: RatioPlot
+      inputs:
+        - "*/*/*/HT_v_pt"
+      scale: log
+      normalize: True
+      structure:
+        select: {dataset_name: "data*2022*"}
+        group: {pipeline: "*"}
+        subgroups:
+          denominator:
+            select: {dataset_name: "data*2022*post*"}
+            transforms:
+              - name: SelectAxesValues
+                select_axes_values: {"variation": "central", "PassHT": [0], "PassAK8SingleJetPtNoTrim": [1], "PassAK8SingleJetPt": [1]}
+              - name: MergeAxes
+                merge_axis_names: ["HT"]
+              - name: FormatTitle
+                title_format: "{dataset_name}_{era.name}"
+          numerator:
+            select: {dataset_name: "data*2022*pre*"}
+            transforms:
+              - name: SelectAxesValues
+                select_axes_values: {"variation": "central", "PassHT": [0], "PassAK8SingleJetPtNoTrim": [1], "PassAK8SingleJetPt": [1]}
+              - name: MergeAxes
+                merge_axis_names: ["HT"]
+              - name: FormatTitle
+                title_format: "{dataset_name}_{era.name}"
+      output_name: "{prefix}/{pipeline}/2022/ratio_pre_post__011_and_pt_trig_fail_ht__pt_{name}"
+    - name: RatioPlot
+      inputs:
+        - "*/*/*/HT_v_pt"
+      scale: log
+      normalize: True
+      structure:
+        select: {dataset_name: "data*2022*"}
+        group: {pipeline: "*"}
+        subgroups:
+          denominator:
+            select: {dataset_name: "data*2022*post*"}
+            transforms:
+              - name: SelectAxesValues
+                select_axes_values: {"variation": "central", "PassHT": [0], "PassAK8SingleJetPtNoTrim": [0], "PassAK8SingleJetPt": [1]}
+              - name: MergeAxes
+                merge_axis_names: ["HT"]
+              - name: FormatTitle
+                title_format: "{dataset_name}_{era.name}"
+          numerator:
+            select: {dataset_name: "data*2022*pre*"}
+            transforms:
+              - name: SelectAxesValues
+                select_axes_values: {"variation": "central", "PassHT": [0], "PassAK8SingleJetPtNoTrim": [0], "PassAK8SingleJetPt": [1]}
+              - name: MergeAxes
+                merge_axis_names: ["HT"]
+              - name: FormatTitle
+                title_format: "{dataset_name}_{era.name}"
+      output_name: "{prefix}/{pipeline}/2022/ratio_pre_post__001_pass_pt_trig_fail_ht_fail_no_trim__pt_{name}"
+    - name: RatioPlot
+      inputs:
+        - "*/*/*/HT_v_pt"
+      scale: log
+      normalize: True
+      structure:
+        select: {dataset_name: "data*2022*"}
+        group: {pipeline: "*"}
+        subgroups:
+          denominator:
+            select: {dataset_name: "data*2022*post*"}
+            transforms:
+              - name: SelectAxesValues
+                select_axes_values: {"variation": "central", "PassHT": [0], "PassAK8SingleJetPtNoTrim": [1], "PassAK8SingleJetPt": [0]}
+              - name: MergeAxes
+                merge_axis_names: ["HT"]
+              - name: FormatTitle
+                title_format: "{dataset_name}_{era.name}"
+          numerator:
+            select: {dataset_name: "data*2022*pre*"}
+            transforms:
+              - name: SelectAxesValues
+                select_axes_values: {"variation": "central", "PassHT": [0], "PassAK8SingleJetPtNoTrim": [1], "PassAK8SingleJetPt": [0]}
+              - name: MergeAxes
+                merge_axis_names: ["HT"]
+              - name: FormatTitle
+                title_format: "{dataset_name}_{era.name}"
+      output_name: "{prefix}/{pipeline}/2022/ratio_pre_post__010_pass_no_trim_fail_ht_fail_pt_trig__pt_{name}"
+    - name: RatioPlot
+      inputs:
+        - "*/*/*/HT_v_pt"
+      scale: log
+      normalize: True
+      structure:
+        select: {dataset_name: "data*2022*"}
+        group: {pipeline: "*"}
+        subgroups:
+          denominator:
+            select: {dataset_name: "data*2022*post*"}
+            transforms:
+              - name: OrBinaryAxes 
+                or_axis_names: ["PassAK8SingleJetPtNoTrim","PassAK8SingleJetPt"]  
+              - name: SelectAxesValues
+                select_axes_values: {"variation": "central", "PassHT": [0]}
+              - name: MergeAxes
+                merge_axis_names: ["HT"]
+              - name: FormatTitle
+                title_format: "{dataset_name}_{era.name}"
+          numerator:
+            select: {dataset_name: "data*2022*pre*"}
+            transforms:
+              - name: OrBinaryAxes 
+                or_axis_names: ["PassAK8SingleJetPtNoTrim","PassAK8SingleJetPt"]  
+              - name: SelectAxesValues
+                select_axes_values: {"variation": "central", "PassHT": [0]}
+              - name: MergeAxes
+                merge_axis_names: ["HT"]
+              - name: FormatTitle
+                title_format: "{dataset_name}_{era.name}"
+      output_name: "{prefix}/{pipeline}/2022/ratio_pre_post__or_pt_trig_fail_ht__pt_{name}"
+    - name: RatioPlot
+      inputs:
+        - "*/*/*/HT_v_pt"
+      scale: log
+      normalize: True
+      structure:
+        select: {dataset_name: "data*2022*"}
+        group: {pipeline: "*"}
+        subgroups:
+          denominator:
+            select: {dataset_name: "data*2022*post*"}
+            transforms:
+              - name: OrBinaryAxes 
+                or_axis_names: ["PassAK8SingleJetPtNoTrim","PassAK8SingleJetPt"]  
+              - name: SelectAxesValues
+                select_axes_values: {"variation": "central"}
+              - name: MergeAxes
+                merge_axis_names: ["HT", "PassHT"]
+              - name: FormatTitle
+                title_format: "{dataset_name}_{era.name}"
+          numerator:
+            select: {dataset_name: "data*2022*pre*"}
+            transforms:
+              - name: OrBinaryAxes 
+                or_axis_names: ["PassAK8SingleJetPtNoTrim","PassAK8SingleJetPt"]  
+              - name: SelectAxesValues
+                select_axes_values: {"variation": "central"}
+              - name: MergeAxes
+                merge_axis_names: ["HT", "PassHT"]
+              - name: FormatTitle
+                title_format: "{dataset_name}_{era.name}"
+      output_name: "{prefix}/{pipeline}/2022/ratio_pre_post__or_pt_trig_sum_ht__pt_{name}"
+    - name: RatioPlot
+      inputs:
+        - "*/*/*/HT_v_pt"
+      scale: log
+      normalize: True
+      structure:
+        select: {dataset_name: "data*2022*"}
+        group: {pipeline: "*"}
+        subgroups:
+          denominator:
+            select: {dataset_name: "data*2022*post*"}
+            transforms:
+              - name: SelectAxesValues
+                select_axes_values: {"variation": "central", "PassAK8SingleJetPtNoTrim": [1], "PassAK8SingleJetPt": [1]}
+              - name: MergeAxes
+                merge_axis_names: ["HT", "PassHT"]
+              - name: FormatTitle
+                title_format: "{dataset_name}_{era.name}"
+          numerator:
+            select: {dataset_name: "data*2022*pre*"}
+            transforms:
+              - name: SelectAxesValues
+                select_axes_values: {"variation": "central", "PassAK8SingleJetPtNoTrim": [1], "PassAK8SingleJetPt": [1]}
+              - name: MergeAxes
+                merge_axis_names: ["HT","PassHT"]
+              - name: FormatTitle
+                title_format: "{dataset_name}_{era.name}"
+      output_name: "{prefix}/{pipeline}/2022/ratio_pre_post__and_pt_trig_sum_ht__pt_{name}"
+    - name: RatioPlot
+      inputs:
+        - "*/*/*/HT_v_pt"
+      scale: log
+      normalize: True
+      structure:
+        select: {dataset_name: "data*2022*"}
+        group: {pipeline: "*"}
+        subgroups:
+          denominator:
+            select: {dataset_name: "data*2022*post*"}
+            transforms:
+              - name: SelectAxesValues
+                select_axes_values: {"variation": "central", "PassAK8SingleJetPt": [1]}
+              - name: MergeAxes
+                merge_axis_names: ["HT", "PassHT","PassAK8SingleJetPtNoTrim"]
+              - name: FormatTitle
+                title_format: "{dataset_name}_{era.name}"
+          numerator:
+            select: {dataset_name: "data*2022*pre*"}
+            transforms:
+              - name: SelectAxesValues
+                select_axes_values: {"variation": "central", "PassAK8SingleJetPt": [1]}
+              - name: MergeAxes
+                merge_axis_names: ["HT","PassHT","PassAK8SingleJetPtNoTrim"]
+              - name: FormatTitle
+                title_format: "{dataset_name}_{era.name}"
+      output_name: "{prefix}/{pipeline}/2022/ratio_pre_post__pass_pt_trig_sum_ht_sum_no_trim__pt_{name}"
+    - name: RatioPlot
+      inputs:
+        - "*/*/*/HT_v_pt"
+      scale: log
+      normalize: True
+      structure:
+        select: {dataset_name: "data*2022*"}
+        group: {pipeline: "*"}
+        subgroups:
+          denominator:
+            select: {dataset_name: "data*2022*post*"}
+            transforms:
+              - name: SelectAxesValues
+                select_axes_values: {"variation": "central", "PassAK8SingleJetPtNoTrim": [1]}
+              - name: MergeAxes
+                merge_axis_names: ["HT", "PassHT","PassAK8SingleJetPt"]
+              - name: FormatTitle
+                title_format: "{dataset_name}_{era.name}"
+          numerator:
+            select: {dataset_name: "data*2022*pre*"}
+            transforms:
+              - name: SelectAxesValues
+                select_axes_values: {"variation": "central", "PassAK8SingleJetPtNoTrim": [1]}
+              - name: MergeAxes
+                merge_axis_names: ["HT","PassHT","PassAK8SingleJetPt"]
+              - name: FormatTitle
+                title_format: "{dataset_name}_{era.name}"
+      output_name: "{prefix}/{pipeline}/2022/ratio_pre_post__pass_no_trim_sum_ht_sum_pt_trig__pt_{name}"
+  default_plot_config:
+    cms_text: ["Preliminary"]
+    image_type: ".png"
+    cms_text_color: 'black'
+    legend_num_cols: 1
