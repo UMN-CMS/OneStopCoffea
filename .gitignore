@@ -59,7 +59,6 @@ oldpkl/
 *.png
 *.pdf
 
-
 /trained_bnns/
 /knn_models/
 /*export*/
@@ -71,3 +70,12 @@ oldpkl/
 /*forseth*/
 /*forjoe*/
 /docs/source/api/
+nn_models/
+postprocessing/
+
+.bash_history
+.cmslpc-local-conf
+.sites_map.json
+analyzer_resources/datavmc_sf/
+cutflow_table.csv
+signal_yields/
