@@ -4,11 +4,24 @@ analyzer:
   default_run_builder:
     strategy_name: WeightsOnly
   Trigger:
+    - module_name: GoldenLumi
+    - module_name: JetScaleCorrections
+      input_col: Jet
+      output_col: Jet
+    - module_name: VetoMapFilter
+      input_col: Jet
+      output_col: Jet
+    - module_name: NoiseFilter
+    - module_name: SelectOnColumns
+      sel_name: pre_selection
     - module_name: SimpleHLT
-      triggers: [HT,AK8SingleJetPtNoTrim, AK8SingleJetPt]
-    {{ base.event_level_cleanup() | indent(4) }}
+      triggers: [HT350, HT450, HT500, HT600, AK8_200, AK8_250, AK8_300]
+      selection_name: 'PassPrescaled'
+    - module_name: SimpleHLT
+      triggers: [HT, AK8SingleJetPtNoTrim, AK8SingleJetPt]
+      selection_name: 'PassHLT'
     - module_name: SaveHLT
-      triggers: [HT,AK8SingleJetPtNoTrim, AK8SingleJetPt]
+      triggers: [HT, AK8SingleJetPtNoTrim, AK8SingleJetPt]
     - module_name: SelectOnColumns
       sel_name: selection
     {{ base.singlestop_objects() | indent(4) }}
@@ -17,6 +30,12 @@ analyzer:
     - module_name: PromoteIndex
       input_col: GoodFatJet
       output_col: TopAK8
+    - module_name: SimpleCategory
+      input_col: "Selection.PassPrescaled"
+      cat_name: PassPrescaled
+      bins: 2
+      start: 0
+      stop: 2 
     - module_name: SimpleCategory
       input_col: "SavedHLT.HT"
       cat_name: PassHT
@@ -38,23 +57,25 @@ analyzer:
     - module_name: HTvpTHistogram
       ht_column: HT
       fatjet_column: TopAK8
-location_priorities: [".*FNAL.*", ".*US.*", ".*(DE|IT|CH|FR).*", ".*(T0|T1|T2).*","eos"]
+location_priorities: [".*FNAL.*", ".*US.*", ".*(DE|IT|CH|FR).*", ".*(T0|T1|T2).*", "eos"]
 event_collections:
-  - dataset: 'data_Jet*'
+  - dataset: 'data_Jet*2022*'
     pipelines: [Trigger]
+  #- dataset: 'signal*2023*'
+  #  pipelines: [Trigger]
   # Background MC Samples
-  - dataset: 'qcd*'
-    pipelines: [Trigger]
-  - dataset: 'diboson*'
-    pipelines: [Trigger]
-  - dataset: 'tt_to_hadronic*'
-    pipelines: [Trigger]
-  - dataset: 'zjets_to_qq*'
-    pipelines: [Trigger]
-  - dataset: 'wjets_to_qq*'
-    pipelines: [Trigger]
-  - dataset: 'single_top*hadronic*'
-    pipelines: [Trigger]
+  #- dataset: 'qcd*2022*'
+  #  pipelines: [Trigger]
+  #- dataset: 'diboson*2022*'
+  #  pipelines: [Trigger]
+  #- dataset: 'tt_to_hadronic*2022*'
+  #  pipelines: [Trigger]
+  #- dataset: 'zjets_to_qq*2022*'
+  #  pipelines: [Trigger]
+  #- dataset: 'wjets_to_qq*2022*'
+  #  pipelines: [Trigger]
+  #- dataset: 'single_top*hadronic*2022*'
+  #  pipelines: [Trigger]
 extra_executors:
   test:
     executor_name: ImmediateExecutor
@@ -69,9 +90,6 @@ extra_executors:
 Postprocessing:
   processors:
     {{ comb2D.handle2D_comb_trig(["*/*/*/HT_v_pt"], "data*2022_pre*", "data*2022_post*", '2022_pre_2022_post_data') | indent(4) }}
-    {{ comb2D.handle2D_comb_trig(["*/*/*/HT_v_pt"], "data*2023_pre*", "data*2023_post*", '2023_pre_2023_post_data') | indent(4) }}
-    {{ comb2D.handle2D_comb_trig(["*/*/*/HT_v_pt"], "data*2023_pre*", "data*2022_post*", '2023_pre_2022_post_data') | indent(4) }}
-    {{ comb2D.handle2D_comb_trig(["*/*/*/HT_v_pt"], "data*2023_pre*", "data*2022_pre*", '2023_pre_2022_pre_data') | indent(4) }}
     - name: Histogram2D
       inputs:
         - "*/*/*/HT_v_pt"
@@ -116,38 +134,38 @@ Postprocessing:
               - name: FormatTitle
                 title_format: "{dataset_name}_{era.name}"
       output_name: "{prefix}/{pipeline}/2022/ratio_pre_post__pass_hlt__ht_{name}"
-    - name: RatioPlot
-      inputs:
-        - "*/*/*/HT_v_pt"
-      scale: log
-      normalize: True
-      structure:
-        select: {dataset_name: "data*2023*"}
-        group: {pipeline: "*"}
-        subgroups:
-          denominator:
-            select: {dataset_name: "data*2023*post*"}
-            transforms:
-              - name: OrBinaryAxes 
-                or_axis_names: ["PassHT","PassAK8SingleJetPtNoTrim","PassAK8SingleJetPt"]
-              - name: SelectAxesValues
-                select_axes_values: {"variation": "central"}
-              - name: MergeAxes
-                merge_axis_names: ["$p_{T}$"]
-              - name: FormatTitle
-                title_format: "{dataset_name}_{era.name}"
-          numerator:
-            select: {dataset_name: "data*2023*pre*"}
-            transforms:
-              - name: OrBinaryAxes 
-                or_axis_names: ["PassHT","PassAK8SingleJetPtNoTrim","PassAK8SingleJetPt"]
-              - name: SelectAxesValues
-                select_axes_values: {"variation": "central"}
-              - name: MergeAxes
-                merge_axis_names: ["$p_{T}$"]
-              - name: FormatTitle
-                title_format: "{dataset_name}_{era.name}"
-      output_name: "{prefix}/{pipeline}/2023/ratio_pre_post__pass_hlt__ht_{name}"
+        #- name: RatioPlot
+        #  inputs:
+        #    - "*/*/*/HT_v_pt"
+        #  scale: log
+        #  normalize: True
+        #  structure:
+        #    select: {dataset_name: "data*2023*"}
+        #    group: {pipeline: "*"}
+        #    subgroups:
+        #      denominator:
+        #        select: {dataset_name: "data*2023*post*"}
+        #        transforms:
+        #          - name: OrBinaryAxes 
+        #            or_axis_names: ["PassHT","PassAK8SingleJetPtNoTrim","PassAK8SingleJetPt"]
+        #          - name: SelectAxesValues
+        #            select_axes_values: {"variation": "central"}
+        #          - name: MergeAxes
+        #            merge_axis_names: ["$p_{T}$"]
+        #          - name: FormatTitle
+        #            title_format: "{dataset_name}_{era.name}"
+        #      numerator:
+        #        select: {dataset_name: "data*2023*pre*"}
+        #        transforms:
+        #          - name: OrBinaryAxes 
+        #            or_axis_names: ["PassHT","PassAK8SingleJetPtNoTrim","PassAK8SingleJetPt"]
+        #          - name: SelectAxesValues
+        #            select_axes_values: {"variation": "central"}
+        #          - name: MergeAxes
+        #            merge_axis_names: ["$p_{T}$"]
+        #          - name: FormatTitle
+        #            title_format: "{dataset_name}_{era.name}"
+        #  output_name: "{prefix}/{pipeline}/2023/ratio_pre_post__pass_hlt__ht_{name}"
     - name: RatioPlot
       inputs:
         - "*/*/*/HT_v_pt"
