@@ -44,13 +44,17 @@ class PlotSelectionFlow(BasePostprocessor):
         )
 
 
+ALLOWED_COLS = Literal["count", "rel", "abs"]
+
+
 @define
 class CutflowTable(BasePostprocessor):
     output_name: str
     format: Literal["markdown", "csv", "latex"] = "csv"
     key: str = "{dataset_name}"
     standalone: bool = False
-    highlight_rows: list[tuple[int,str]] | None  = None
+    highlight_rows: list[tuple[int, str]] | None = None
+    cols: list[ALLOWED_COLS] = ["count", "rel", "abs"]
 
     def getRunFuncs(self, group, prefix=None):
         common_meta = commonDict(group)
@@ -66,13 +70,15 @@ class CutflowTable(BasePostprocessor):
             format=self.format,
             key=self.key,
             standalone=self.standalone,
-            highlight_rows=self.highlight_rows
+            highlight_rows=self.highlight_rows,
+            cols=self.cols,
         )
 
 
-def makeCutflowDf(group, key="{dataset_name}"):
+def makeCutflowDf(group, key="{dataset_name}", cols=None):
     import pandas as pd
 
+    cols = cols or ["count", "rel", "abs"]
     dataset_cutflows = {}
     cut_order = None
     for selection_flow, metadata in group:
@@ -89,12 +95,14 @@ def makeCutflowDf(group, key="{dataset_name}"):
 
     df = pd.DataFrame(all_data)
     for col in df.columns:
-        df.loc[:, (col[0], "Eff. Abs.")] = (
-            df.loc[:, (col[0], "Events")] / df.loc[:, (col[0], "Events")].iloc[0]
-        )
-        df.loc[:, (col[0], "Eff. Rel.")] = (
-            df.loc[:, (col[0], "Events")] / df.loc[:, (col[0], "Events")].shift(1)
-        ).fillna(1)
+        if "abs" in cols:
+            df.loc[:, (col[0], "Eff. Abs.")] = (
+                df.loc[:, (col[0], "Events")] / df.loc[:, (col[0], "Events")].iloc[0]
+            )
+        if "rel" in cols:
+            df.loc[:, (col[0], "Eff. Rel.")] = (
+                df.loc[:, (col[0], "Events")] / df.loc[:, (col[0], "Events")].shift(1)
+            ).fillna(1)
     df.sort_index(axis=1, level=[0, 1], ascending=[True, False], inplace=True)
     return df
 
@@ -118,19 +126,24 @@ def makeAndSaveCutflowTable(
     key="{dataset_name}",
     standalone=False,
     highlight_rows=None,
+    cols=None,
 ):
     import numpy as np
 
+    cols = cols or ["count", "rel", "abs"]
+
     highlight_rows = highlight_rows or []
 
-    df = makeCutflowDf(group, key=key)
+    df = makeCutflowDf(group, key=key, cols=cols)
     output_path = Path(output_path)
     output_path.parent.mkdir(exist_ok=True, parents=True)
 
     s = (
         df.style.apply(
             lambda x: np.where(
-                (np.arange(len(x)) % 6 > 2), "background-color: lightgray", ""
+                (np.arange(len(x)) % (2 * len(cols))) >= len(cols),
+                "background-color: lightgray",
+                "",
             ),
             axis=1,
         )
@@ -138,7 +151,7 @@ def makeAndSaveCutflowTable(
         .format_index(escape="latex", axis=0)
         # .format_index(escape="latex",axis=1)
     )
-    for row,color in highlight_rows:
+    for row, color in highlight_rows:
         s = s.apply(
             lambda x: np.where(
                 (np.arange(len(x)) == row), f"background-color: {color}", ""
