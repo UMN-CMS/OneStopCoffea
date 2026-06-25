@@ -4,14 +4,10 @@
 
 analyzer:
   default_run_builder:
-    # strategy_name: CompleteSysts
-    # strategy_name: LimitSysts
-    # systs:
-    #   or_exprs:
-    #     - "bjetshapesf*disabled"
-    #     - "trigger*"
-    # strategy_name: SignalOnlySysts
-    strategy_name: NoSystematics
+    strategy_name: MultiRunBuilder
+    components:
+      - strategy_name: NoSystematics
+      - strategy_name: UnscaledOnly
 
   Signal312:
     - module_name: SimpleHLT
@@ -42,6 +38,8 @@ analyzer:
     {{ base.singlestop_common_selection() | indent(4) }}
     - module_name: SelectOnColumns
       sel_name: selection
+    {{ base.ht_cat() | indent(4) }}
+    {{ base.singlestop_common_histograms() | indent(4) }}
 
   Signal313:
     - module_name: SimpleHLT
@@ -68,6 +66,8 @@ analyzer:
     {{ base.singlestop_common_selection() | indent(4) }}
     - module_name: SelectOnColumns
       sel_name: selection
+    {{ base.ht_cat() | indent(4) }}
+    {{ base.singlestop_common_histograms() | indent(4) }}
 
 location_priorities: [".*FNAL.*", ".*US.*", ".*(DE|IT|CH|FR).*", ".*(T0|T1|T2).*","eos"]
 
@@ -77,32 +77,25 @@ event_collections:
   #   pipelines: [Signal312, Signal313]
 
   # Data samples
-  - dataset: 'signal_2018_312_900_400_official'
+  - dataset: 'signal_*_312_*_official'
     pipelines: [Signal312]
-  - dataset: 'signal_2018_312_1000_900_official'
-    pipelines: [Signal312]
-  - dataset: 'signal_2018_312_1500_600_official'
-    pipelines: [Signal312]
-  - dataset: 'signal_2018_312_1700_1600_official'
-    pipelines: [Signal312]
-  - dataset: 'signal_2018_312_2000_600_official'
-    pipelines: [Signal312]
-  - dataset: 'signal_2018_312_2000_1400_official'
-    pipelines: [Signal312]
-
-  - dataset: 'signal_2018_313_900_400_official'
-    pipelines: [Signal313]
-  - dataset: 'signal_2018_313_1000_900_official'
-    pipelines: [Signal313]
-  - dataset: 'signal_2018_313_1500_600_official'
-    pipelines: [Signal313]
-  - dataset: 'signal_2018_313_1700_1600_official'
-    pipelines: [Signal313]
-  - dataset: 'signal_2018_313_2000_600_official'
-    pipelines: [Signal313]
-  - dataset: 'signal_2018_313_2000_1400_official'
+  - dataset: 'signal_*_313_*_official'
     pipelines: [Signal313]
   
+  # Background MC Samples
+  - dataset: 'qcd*'
+    pipelines: [Signal312, Signal313]
+  - dataset: 'diboson*'
+    pipelines: [Signal312, Signal313]
+  - dataset: 'tt_to_hadronic*'
+    pipelines: [Signal312, Signal313]
+  - dataset: 'zjets_to_qq*'
+    pipelines: [Signal312, Signal313]
+  - dataset: 'wjets_to_qq*'
+    pipelines: [Signal312, Signal313]
+  - dataset: 'single_top*hadronic*'
+    pipelines: [Signal312, Signal313]
+
   
 extra_executors:
   test:
@@ -129,30 +122,18 @@ extra_executors:
 
 Postprocessing:
   processors:
-    - name: CutflowTable
-      inputs:
-        - "*/*/*/selection"
-      key: "{other_data.stop_mass}_{other_data.chargino_mass}"
-      structure:
-        group: {era.name: "*", pipeline: "*"}
-      output_name: "{prefix}/{era.name}_{pipeline}.csv"
-    - name: CutflowTable
-      inputs:
-        - "*/*/*/selection"
-      # key: "{dataset_title}"
-      key: "({other_data.stop_mass},{other_data.chargino_mass})"
-      # highlight_rows: [[4,"LightCoral"]]
-      format: latex
-      # standalone: true
-      cols: [count,abs]
-      structure:
-        group: {era.name: "*", pipeline: "*"}
-      output_name: "{prefix}/{era.name}_{pipeline}.tex"
-
+    {{ post.handle2D([ "*/*/*/uncomp_mStop_vs_mChi",  "*/*/*/uncomp_mStop_vs_mChiRatio"]) | indent(4) }}
+    {{ post1d.handle1D([ "*/*/*/uncomp_mStop",  "*/*/*/uncomp_mChi"]) | indent(4) }}
+    {{ post.handle2D([ "*/*/*/comp_mStop_vs_mChi",  "*/*/*/comp_mStop_vs_mChiRatio"]) | indent(4) }}
+    {{ post1d.handle1D([ "*/*/*/comp_mStop",  "*/*/*/comp_mChi"]) | indent(4) }}
+    {{ post1d.handle1D([ "*/*/*/composite_13_m",  "*/*/*/composite_14_m", "*/*/*/composite_24_m"]) | indent(4) }}
+    # {{ post.ratio_variation("bsf",["*/*/*/uncomp_mChi", "*/*/*/uncomp_mStop"], ["b*hf*"]) | indent(4) }}
+    # {{ post.ratio_variation("jesrel",["*/*/*/uncomp_mChi", "*/*/*/uncomp_mStop"], ["jes*Rel*"]) | indent(4) }}
+    # {{ post.ratio_variation("jer",["*/*/*/uncomp_mChi", "*/*/*/uncomp_mStop"], ["jer*"]) | indent(4) }}
+    # {{ post.ratio_variation("trigger",["*/*/*/uncomp_mChi", "*/*/*/uncomp_mStop"], ["trigger*"]) | indent(4) }}
 
   default_plot_config:
     cms_text: "Preliminary"
     image_type: ".png"
     cms_text_color: Black
     legend_num_cols: 1
-

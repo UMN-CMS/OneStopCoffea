@@ -10,8 +10,8 @@ analyzer:
     #   or_exprs:
     #     - "bjetshapesf*disabled"
     #     - "trigger*"
-    # strategy_name: SignalOnlySysts
-    strategy_name: NoSystematics
+    strategy_name: SignalOnlySysts
+    # strategy_name: NoSystematics
 
   Signal312:
     - module_name: SimpleHLT
@@ -43,7 +43,8 @@ analyzer:
     - module_name: SelectOnColumns
       sel_name: selection
     {{ base.ht_cat() | indent(4) }}
-    {{ base.singlestop_common_histograms() | indent(4) }}
+    {# {{ base.singlestop_common_histograms() | indent(4) }} #}
+    {{ base.singlestop_high_res_histograms() | indent(4) }}
 
   Signal313:
     - module_name: SimpleHLT
@@ -71,7 +72,8 @@ analyzer:
     - module_name: SelectOnColumns
       sel_name: selection
     {{ base.ht_cat() | indent(4) }}
-    {{ base.singlestop_common_histograms() | indent(4) }}
+    {# {{ base.singlestop_common_histograms() | indent(4) }} #}
+    {{ base.singlestop_high_res_histograms() | indent(4) }}
 
   Control:
     - module_name: SimpleHLT
@@ -95,14 +97,15 @@ analyzer:
     - module_name: SelectOnColumns
       sel_name: selection
     {{ base.ht_cat() | indent(4) }}
-    {{ base.singlestop_common_histograms() | indent(4) }}
+    {# {{ base.singlestop_common_histograms() | indent(4) }} #}
+    {{ base.singlestop_high_res_histograms() | indent(4) }}
 
 location_priorities: [".*FNAL.*", ".*US.*", ".*(DE|IT|CH|FR).*", ".*(T0|T1|T2).*","eos"]
 
 event_collections:
   # DO NOT UNCOMMENT!!!!!!!
-  # - dataset: 'data_JetHT_*'
-  #   pipelines: [Signal312, Signal313, Control]
+  - dataset: 'data_JetHT_*'
+    pipelines: [Signal312, Signal313, Control]
 
   # Data samples
   - dataset: 'signal_*_312_*_official'
