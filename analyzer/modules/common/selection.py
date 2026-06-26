@@ -198,3 +198,72 @@ class SelectAllTriggers(AnalyzerModule):
 
     def outputs(self, metadata):
         return "EVENTS"
+
+@define
+class ScalarSelection(AnalyzerModule):
+    """
+    Select events based on the number of objects in a collection.
+
+    This analyzer filters events according to the number of objects
+     in a given column, requiring the count to be within specified limits.
+
+    Parameters
+    ----------
+    selection_name : str
+        Name of the selection to store the result.
+    input_col : Column
+        Column containing the collection of...
+    min_count : int or None, optional
+        Minimum number of objects required to pass, by default None.
+    max_count : int or None, optional
+        Maximum number of objects allowed to pass, by default None.
+    """
+
+    selection_name: str
+    input_col: Column
+    min_count: int | None = None
+    max_count: int | None = None
+
+    def run(self, columns, params):
+        objs = columns[self.input_col]
+        count = ak.num(objs, axis=1)
+        sel = None
+        if self.min_count is not None:
+            sel = count >= self.min_count
+        if self.max_count is not None:
+            if sel is not None:
+                sel = sel & (count <= self.max_count)
+            else:
+                sel = count <= self.max_count
+        addSelection(columns, self.selection_name, sel)
+        return columns, []
+
+    def inputs(self, metadata):
+        return [self.input_col]
+
+    def outputs(self, metadata):
+        return [Column(("Selection", self.selection_name))]
+
+    def adlExport(self, metadata):
+        statements = []
+        col_name = self.input_col.adl_name
+        if (
+            self.min_count is not None
+            and self.max_count is not None
+            and self.min_count == self.max_count
+        ):
+            statements.append(
+                ADLStatement("select", f"size({col_name}) == {self.min_count}")
+            )
+        else:
+            if self.min_count is not None:
+                statements.append(
+                    ADLStatement("select", f"size({col_name}) >= {self.min_count}")
+                )
+            if self.max_count is not None:
+                statements.append(
+                    ADLStatement("select", f"size({col_name}) <= {self.max_count}")
+                )
+
+        return [ADLBlock(block_type="region_statement", name="", statements=statements)]
+

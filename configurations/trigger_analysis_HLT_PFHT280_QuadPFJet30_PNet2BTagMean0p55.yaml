@@ -1,0 +1,92 @@
+analyzer:
+  default_run_builder:
+    strategy_name: NoSystematics
+
+  supercool_first_pipeline:   
+      
+    - module_name: JetFilter               # Make a column of the good jets per event
+      input_col: Jet
+      output_col: GoodJet
+
+    - module_name: NObjFilter                # Specify that I want at least 4 of them
+      selection_name: 'FourPlusGoodJets'
+      input_col: GoodJet
+      min_count: 4      
+
+    - module_name: SimpleCategory
+      input_col: "HLT.PFHT280_QuadPFJet30_PNet2BTagMean0p55"
+      cat_name: PassHT
+      bins: 2
+      start: 0
+      stop: 2
+
+    - module_name: HT                                      # Make HT values available
+      input_col: GoodJet
+      output_col: ht
+
+    - module_name: SelectOnColumns
+      sel_name: 'Selection'
+
+    - module_name: SimpleHistogram
+      hist_name: HT
+      input_cols: [ht]
+      axes:
+        - name: HT
+          start: 0
+          stop: 2000
+          bins: 60
+          unit: GeV
+
+    - module_name: ObjCompare...    #  Looking for something to make mask ht > ht_flat
+      input_col: ht
+      output_col: ht_greater
+
+    - module_name:  SelectOnColumns
+      sel_name: 'HTGreaterHTFlat'
+
+    - module_name: PromoteIndex # Makes a certain index in a column into its own column
+      input_col: GoodJet
+      output_col: FourthGoodJet
+      index: 3
+
+    - module_name: SimpleHistogram
+      hist_name: PT4
+      input_cols: [FourthGoodJet]
+      axes:
+        - name:
+          start: 0
+          stop: 350
+          bins: 50
+          unit: GeV
+
+    - module_name: BQuarkMaker
+      input_col: GoodJet
+      output_col: BGoodJet
+      working_point: 'T'
+
+event_collections:
+  - dataset: '*run3hlt*'
+    pipelines: [supercool_first_pipeline]
+location_priorities: [".*(T0|T1|T2).*","eos"]
+
+Postprocessing: 
+  processors:
+    - name: RatioPlot
+      inputs: 
+        - "*/*/*/HT"
+      ratio_type: "efficiency"
+      structure: 
+        group: {pipeline: "*", dataset_name: "*"}
+        subgroups:
+          denominator:
+            transforms: 
+              - name: SelectAxesValues
+                select_axes_values: {"variation":"central"}
+              - name: MergeAxes
+                merge_axis_names: ["PassHT"]
+          numerator:
+            transforms:
+              - name: SelectAxesValues
+                select_axes_values: {"variation":"central","PassHT":[1]}
+      output_name: "{prefix}/{pipeline}/{dataset_name}/{name}.png"
+                
