@@ -37,9 +37,8 @@ Executor Types
 Runs everything in a single process on the local machine.
 This is the best choice for testing and debugging.
 
-- No distributed overhead.
 - Python debuggers and print statements work normally.
-- Limited by the local machine's memory and CPU.
+- Only limited by the local machine's memory and CPU.
 
 Premade variants:
 

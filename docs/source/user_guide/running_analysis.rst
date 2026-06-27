@@ -1,7 +1,9 @@
 Running an Analysis
 ====================
 
-This page covers the practical workflow of running an analysis, from initial testing through full-scale production and result recovery.
+Once you have constructed your configuration file, added your needed datasets, and written and custum modules, it is time to run!
+This page covers the practical workflow of running an analysis, from initial testing through full-scale production and result patching.
+Postprocessing, the process of creating plots and tables from the analyzer outputs, will be covered in :doc:`../postprocessing/postprocessing`.
 
 
 Development Workflow
@@ -28,7 +30,7 @@ Use the ``ImmediateExecutor`` with a small event limit:
       config/analysis.yaml test_output/
 
 This runs a single dataset locally, processing at most 10000 events.
-It is fast and lets you use standard Python debugging tools.
+It is fast and lets you use standard Python debugging tools, such as breakpoints.
 
 .. tip::
    When developing, add ``--log-level DEBUG`` to see detailed information about module execution, caching, and parameter resolution.
@@ -56,8 +58,7 @@ For full-scale processing at the LPC, switch to Condor:
     ./osca run -e lpc-dask-condor-4G-100000 \
       config/analysis.yaml full_output/
 
-This distributes work across many workers.
-Monitor progress through the Dask dashboard URL printed at startup.
+This distributes work across many workers using dask-condor.
 
 
 Step 4: Check Completeness
@@ -88,17 +89,7 @@ The ``patch`` command reads the provenance from existing result files, determine
 The new results are written alongside the existing ones.
 
 
-Step 6: Merge Results
-^^^^^^^^^^^^^^^^^^^^^
-
-If you have accumulated many ``.result`` files from patching, merge them:
-
-.. code-block:: bash
-
-    ./osca merge full_output/**/*.result -o full_output/merged/
-
-
-Step 7: Postprocess
+Step 6: Postprocess
 ^^^^^^^^^^^^^^^^^^^^
 
 Generate plots and tables using a postprocessing configuration:
@@ -169,4 +160,3 @@ Debugging Tips
 
 - Use ``--log-level DEBUG`` to see module execution order, cache hits/misses, and parameter resolution.
 - Test locally with ``imm-10000`` for debugging. These run in a single process where breakpoints and print statements work.
-- If you see cryptic errors from Dask workers, reproduce the issue locally with the immediate executor first.
