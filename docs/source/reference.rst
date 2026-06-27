@@ -1,12 +1,27 @@
-===========
- Reference
-===========
+=========
+Reference
+=========
+
+API Reference
+--------------
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
 
    builtin_modules
-   custom_modules
-   handling_results
-   postprocessing_in_detail
+
+
+Module Auto-Documentation
+--------------------------
+
+.. automodule:: analyzer.core.analysis_modules
+   :members:
+   :undoc-members:
+
+.. automodule:: analyzer.core.columns
+   :members:
+   :undoc-members:
+
+.. automodule:: analyzer.core.results
+   :members:
+   :undoc-members:
