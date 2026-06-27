@@ -9,6 +9,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.abspath("../.."))
+sys.path.insert(0, os.path.abspath("_ext"))
 
 extensions = [
     "sphinx.ext.autodoc",
@@ -16,6 +17,7 @@ extensions = [
     "sphinx.ext.viewcode",
     "sphinx.ext.mathjax",
     "sphinx_autodoc_typehints",
+    "yaml_links",
 ]
 
 autosummary_generate = True
