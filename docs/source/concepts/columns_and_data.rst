@@ -2,7 +2,7 @@ Columns and Data
 =================
 
 The ``TrackedColumns`` object is the central data container in the framework.
-It is what modules receive as input and return as output.
+It is what modules receive as input and return as output (potentially along with results).
 Understanding how it works is important both for writing modules and for debugging unexpected behavior.
 
 
@@ -35,7 +35,7 @@ Columns support a few useful operations:
 ``TrackedColumns`` wraps a coffea NanoEvents array and adds three important capabilities:
 
 1. **Provenance tracking** for caching (see :doc:`architecture`).
-2. **Lazy column writes** to avoid expensive array synchronization.
+2. **Lazy column writes** to avoid potentially expensive array synchronization.
 3. **Input/output enforcement** to catch bugs where modules access columns they did not declare as inputs.
 
 Reading and Writing Columns
@@ -60,7 +60,6 @@ When you write a column, ``TrackedColumns`` updates the provenance for that colu
 
 .. note::
    Writes are lazy by default -- the data is not immediately synchronized to the underlying events array.
-   This is an optimization.
    If you need to read the raw ``events`` array directly (which you generally should not), call ``columns.flush()`` first.
 
 Accessing the Raw Events
@@ -73,6 +72,11 @@ In rare cases, you may need access to the underlying awkward array:
     events = columns.events   # Triggers a flush of lazy columns
 
 However, you should prefer using ``columns[col]`` for both reading and writing, as this ensures provenance tracking works correctly.
+
+.. danger:: 
+    
+    Manipulating the ``events`` object directly (e.g. using ``columns.events``) can lead to unexpected behavior.  Always prefer using the ``columns[col]`` syntax.
+
 
 Filtering Events
 ^^^^^^^^^^^^^^^^^
@@ -90,6 +94,10 @@ It also updates the provenance of all columns.
 .. warning::
    ``filter()`` mutates the ``TrackedColumns`` in place.
    After filtering, ``columns.events`` will have fewer entries.
+
+.. danger:: 
+    
+    In practive you generally should not filter directly, instead write selections (see below) to achieve the same effect.
 
 
 The Selection Pattern
@@ -146,7 +154,7 @@ Every ``TrackedColumns`` object carries a ``metadata`` dictionary that contains 
         triggers = meta["era"]["trigger_names"]
 
 This metadata is constructed by merging the dataset definition, sample definition, and era configuration.
-It is available in both ``run()`` and ``inputs()``/``outputs()``, which means modules can change their behavior based on the dataset they are processing.
+It is available in both ``run()`` and ``inputs()``/``outputs()``, so modules can change their behavior based on the dataset they are processing.
 
 
 Pipeline Data
