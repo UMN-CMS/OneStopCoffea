@@ -81,6 +81,29 @@ Data Flow
 
 Here is how a single dataset sample gets processed, step by step:
 
+.. graphviz::
+
+    digraph dataflow {
+        rankdir=LR;
+        bgcolor="transparent";
+        node [shape=box, style="rounded,filled", fillcolor="#f8fafc", color="#cbd5e1", fontname="Helvetica", penwidth=1.5];
+        edge [color="#64748b", fontname="Helvetica", fontsize=10, penwidth=1.2];
+        
+        Executor [label="Executor\n(Chunking & Distribution)", fillcolor="#f1f5f9"];
+        Analyzer [label="Analyzer\n(Pipeline Execution)", fillcolor="#f1f5f9"];
+        LoadColumns [label="LoadColumns\n(Read NanoAOD)", fillcolor="#e0f2fe"];
+        Module [label="Analysis Module\n(Filter, Calculate)", fillcolor="#e0f2fe"];
+        Cache [shape=cylinder, fillcolor="#fef3c7", color="#fcd34d", label="Cache\n(Provenance Check)"];
+        ResultGroup [label="ResultGroup\n(.result file)", fillcolor="#dcfce7", color="#86efac"];
+        
+        Executor -> Analyzer [label=" chunk task "];
+        Analyzer -> LoadColumns [label=" starts pipeline "];
+        LoadColumns -> Module [label=" TrackedColumns "];
+        Module -> Cache [label=" Check execution key "];
+        Cache -> Module [label=" Cached output (if hit) ", color="#f59e0b", fontcolor="#b45309"];
+        Module -> ResultGroup [label=" Results "];
+    }
+
 1. The **Executor** receives the analysis configuration and a list of tasks (one per sample).
    For each task, it determines the files to process and how to chunk them.
 

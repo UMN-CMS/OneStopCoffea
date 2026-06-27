@@ -14,6 +14,29 @@ A module is a Python class that:
 2. Uses the ``@define`` decorator from ``attrs``.
 3. Implements ``inputs()``, ``outputs()``, and ``run()``.
 
+.. graphviz::
+
+    digraph lifecycle {
+        rankdir=LR;
+        bgcolor="transparent";
+        node [shape=box, style="rounded,filled", fillcolor="#f8fafc", color="#cbd5e1", fontname="Helvetica", penwidth=1.5];
+        edge [color="#64748b", fontname="Helvetica", fontsize=10, penwidth=1.2];
+        
+        Start [shape=oval, fillcolor="#f1f5f9", label="Module Execution"];
+        Inputs [label="inputs()\nDetermine dependencies", fillcolor="#e0f2fe"];
+        CacheCheck [shape=diamond, fillcolor="#fef3c7", color="#fcd34d", label="Cache\nHit?"];
+        Run [label="run()\nProcess columns", fillcolor="#dbeafe", color="#60a5fa"];
+        Outputs [label="outputs()\nDeclare new columns", fillcolor="#e0f2fe"];
+        End [shape=oval, fillcolor="#f1f5f9", label="Return Columns & Results"];
+        
+        Start -> Inputs;
+        Inputs -> CacheCheck;
+        CacheCheck -> End [label=" Yes ", color="#10b981", fontcolor="#059669"];
+        CacheCheck -> Run [label=" No "];
+        Run -> Outputs;
+        Outputs -> End;
+    }
+
 Here is a minimal example:
 
 .. code-block:: python

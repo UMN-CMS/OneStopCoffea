@@ -18,6 +18,7 @@ extensions = [
     "sphinx.ext.mathjax",
     "sphinx_autodoc_typehints",
     "yaml_links",
+    "sphinx.ext.graphviz",
 ]
 
 autosummary_generate = True
