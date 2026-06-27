@@ -11,6 +11,38 @@ The Result Tree
 
 Results are organized in a tree of ``ResultGroup`` objects:
 
+.. graphviz::
+
+    digraph results_tree {
+        rankdir=LR;
+        bgcolor="transparent";
+        node [shape=folder, style="filled", fillcolor="#f8fafc", color="#cbd5e1", fontname="Helvetica", penwidth=1.5];
+        edge [color="#64748b", fontname="Helvetica", fontsize=10, penwidth=1.2];
+        
+        ROOT [fillcolor="#f1f5f9"];
+        Dataset [label="dataset: qcd_ht_2018", fillcolor="#e0f2fe", color="#7dd3fc"];
+        Sample [label="sample: QCD_HT-500to700", fillcolor="#e0f2fe", color="#7dd3fc"];
+        
+        node [shape=note, fillcolor="#ffffff"];
+        Provenance [label="_provenance\n(chunk tracking)"];
+        
+        node [shape=folder, fillcolor="#fef3c7", color="#fcd34d"];
+        Pipelines [label="pipelines"];
+        SignalRegion [label="SignalRegion"];
+        
+        node [shape=component, fillcolor="#dcfce7", color="#86efac"];
+        HT [label="HT (Histogram)"];
+        Selection [label="selection (SelectionFlow)"];
+        
+        ROOT -> Dataset;
+        Dataset -> Sample;
+        Sample -> Provenance;
+        Sample -> Pipelines;
+        Pipelines -> SignalRegion;
+        SignalRegion -> HT;
+        SignalRegion -> Selection;
+    }
+
 .. code-block:: text
 
     ROOT

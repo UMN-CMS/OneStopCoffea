@@ -18,6 +18,36 @@ When a downstream module (typically a histogram builder) requests a "multi-run,"
 3. Re-runs the pipeline once for each combination, producing a set of event collections.
 4. Passes all event collections to the requesting module (a ``PureResultModule``), which aggregates them into a single result with a ``variation`` axis.
 
+.. graphviz::
+
+    digraph systematics {
+        rankdir=LR;
+        bgcolor="transparent";
+        node [shape=box, style="rounded,filled", fillcolor="#f8fafc", color="#cbd5e1", fontname="Helvetica", penwidth=1.5];
+        edge [color="#64748b", fontname="Helvetica", fontsize=10, penwidth=1.2];
+        
+        InputChunk [shape=oval, fillcolor="#f1f5f9", label="Input Chunk\n(TrackedColumns)"];
+        RunBuilder [shape=diamond, fillcolor="#fef3c7", color="#fcd34d", label="RunBuilder\nGenerates Variations"];
+        
+        PipelineCentral [label="Pipeline (Central)", fillcolor="#e0f2fe", color="#7dd3fc"];
+        PipelineJECUp [label="Pipeline (JEC Up)", fillcolor="#fee2e2", color="#fca5a5"];
+        PipelineJECDn [label="Pipeline (JEC Down)", fillcolor="#dcfce7", color="#86efac"];
+        
+        HistogramBuilder [label="HistogramBuilder\n(PureResultModule)", fillcolor="#f3e8ff", color="#d8b4fe"];
+        FinalResult [shape=note, fillcolor="#ffffff", label="Histogram\n(with variation axis)"];
+        
+        InputChunk -> RunBuilder;
+        RunBuilder -> PipelineCentral;
+        RunBuilder -> PipelineJECUp;
+        RunBuilder -> PipelineJECDn;
+        
+        PipelineCentral -> HistogramBuilder;
+        PipelineJECUp -> HistogramBuilder;
+        PipelineJECDn -> HistogramBuilder;
+        
+        HistogramBuilder -> FinalResult;
+    }
+
 The caching system ensures that modules whose inputs did not change across variations are not re-executed.
 
 
