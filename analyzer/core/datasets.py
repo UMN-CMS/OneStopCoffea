@@ -127,6 +127,7 @@ class Dataset:
 
 @cache.memoize(tag="dataset")
 def getDatasetFromPathMTime(path, mtime):
+    print(path)
     with open(path, "r") as fo:
         data = yaml.load(fo, Loader=Loader)
     data = converter.structure(data, list[Dataset])
@@ -160,6 +161,9 @@ class DatasetRepo:
     def addFromDirectory(self, path):
         logger.info(f"Loading datasets recursively from path {path}")
         directory = Path(path)
-        files = list(directory.rglob("*.yaml"))
-        for f in files:
-            self.addFromFile(f)
+        if directory.is_file():
+            self.addFromFile(directory)
+        else:
+            files = list(directory.rglob("*.yaml"))
+            for f in files:
+                self.addFromFile(f)
