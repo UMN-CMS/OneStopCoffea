@@ -1,5 +1,5 @@
 Tips and Troubleshooting
-=========================
+========================
 
 Common Issues
 -------------
@@ -22,13 +22,6 @@ Also verify that the ``module_name`` in your YAML exactly matches the class name
 A dataset matched more than one entry in ``event_collections``.
 Each dataset must match exactly one entry.
 Make your patterns more specific, or use negation (``!signal*``) to exclude datasets from a pattern.
-
-
-**Pickle errors when running with Dask**
-
-Dask serializes the analyzer and tasks using pickle.
-If your custom module contains unpicklable objects (e.g., open file handles, lambda functions stored as attributes), you will get pickle errors.
-Move any file loading into the ``run()`` method, or use ``__getstate__``/``__setstate__`` to control serialization.
 
 
 **Results appear empty or have zero entries**
@@ -61,9 +54,9 @@ If you have many systematic variations, consider using ``reduction_factor: 2`` t
 
 
 Performance Tips
------------------
+----------------
 
-- Use ``NoSystematics`` during development and switch to ``CompleteSysts`` only for production.
+- Use :class:`~analyzer.core.run_builders.NoSystematics` during development and switch to :class:`~analyzer.core.run_builders.CompleteSysts` only for production.
 - The ``--max-sample-events`` flag is your best friend during development. Start with 10000 events and increase as needed.
 - When running postprocessing with many plots, use ``--parallel 4`` (or however many cores you have) to parallelize plot generation.
 - If your analysis produces many large histograms, consider using fewer bins or limiting the number of systematics during development.

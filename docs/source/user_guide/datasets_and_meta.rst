@@ -170,7 +170,7 @@ The ``other_data`` Field
 ------------------------
 
 The ``other_data`` field allows you to attach arbitrary metadata to a dataset.
-This metadata is accessible in module ``run()`` methods via ``columns.metadata["other_data"]`` and in postprocessing pattern matching.
+This metadata is accessible in module :meth:`~analyzer.core.analysis_modules.AnalyzerModule.run` methods via ``columns.metadata["other_data"]`` and in postprocessing pattern matching.
 
 This is commonly used for signal MC to attach mass points and other physics parameters:
 
@@ -220,7 +220,7 @@ The era metadata is accessible in modules via ``columns.metadata["era"]`` and ca
 The ``DatasetRepo``
 -------------------
 
-At runtime, all dataset YAML files are loaded into a ``DatasetRepo`` -- a dictionary-like object keyed by dataset name.
+At runtime, all dataset YAML files are loaded into a :class:`~analyzer.core.datasets.DatasetRepo` -- a dictionary-like object keyed by dataset name.
 The repo is then queried by the ``event_collections`` patterns in your analysis configuration to determine which datasets to process.
 
 .. warning::

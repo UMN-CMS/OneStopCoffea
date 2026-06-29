@@ -82,22 +82,22 @@ Available strategies:
 
    * - Strategy
      - Description
-   * - ``NoSystematics``
+   * - :class:`~analyzer.core.run_builders.NoSystematics`
      - Run only the central value. Good for testing and initial development.
-   * - ``CompleteSysts``
+   * - :class:`~analyzer.core.run_builders.CompleteSysts`
      - Run central + all weight variations + all shape variations.
-   * - ``WeightsOnly``
+   * - :class:`~analyzer.core.run_builders.WeightsOnly`
      - Run central + weight variations only (no shape systematics).
-   * - ``SignalOnlySysts``
+   * - :class:`~analyzer.core.run_builders.SignalOnlySysts`
      - Full systematics for signal datasets, central-only for backgrounds.
-   * - ``LimitSysts``
-     - Like ``CompleteSysts``, but filtered by a pattern. Requires a ``systs`` field with a pattern to match against variation names.
-   * - ``LimitSystsBackground``
-     - Like ``LimitSysts``, but signal datasets always get central-only.
-   * - ``UnscaledOnly``
+   * - :class:`~analyzer.core.run_builders.LimitSysts`
+     - Like :class:`~analyzer.core.run_builders.CompleteSysts`, but filtered by a pattern. Requires a ``systs`` field with a pattern to match against variation names.
+   * - :class:`~analyzer.core.run_builders.LimitSystsBackground`
+     - Like :class:`~analyzer.core.run_builders.LimitSysts`, but signal datasets always get central-only.
+   * - :class:`~analyzer.core.run_builders.UnscaledOnly`
      - Run with the special ``UNSCALED`` tag (produces unweighted histograms).
 
-Example with ``LimitSysts``:
+Example with :class:`~analyzer.core.run_builders.LimitSysts`:
 
 .. code-block:: yaml
 
@@ -141,7 +141,7 @@ Each item in the list is a module configuration.
 The ``module_name`` field identifies which module class to instantiate, and all other fields are passed as configuration parameters to that module's constructor.
 
 .. note::
-   A ``LoadColumns`` module is automatically prepended to every pipeline by the framework.
+   A :class:`~analyzer.modules.common.load_columns.LoadColumns` module is automatically prepended to every pipeline by the framework.
    It is responsible for loading the raw event data from the input files.
 
 
@@ -152,7 +152,7 @@ Each module is an ``attrs`` class, and its fields become the YAML configuration 
 The only required field is ``module_name``, which identifies the module class.
 All other fields are specific to the module.
 
-For example, the ``JetFilter`` module has the following configurable fields:
+For example, the :class:`~analyzer.modules.common.jets.JetFilter` module has the following configurable fields:
 
 .. code-block:: yaml
 
@@ -169,7 +169,7 @@ You can also use ``./osca search-modules "query"`` to search for available modul
 
 
 Conditional Module Execution with ``should_run``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Any module can have a ``should_run`` field that controls whether it executes based on the dataset metadata.
 If the condition evaluates to ``False``, the module is skipped entirely.
@@ -324,7 +324,7 @@ In this example, Tier-0/1/2 sites are preferred, followed by EOS, and then anyth
 
 
 Using Jinja2 Templates
------------------------
+----------------------
 
 Configuration files are rendered as Jinja2 templates before YAML parsing.
 This is a very useful feature for avoiding duplication when you have many pipelines that share common module sequences.
@@ -488,16 +488,16 @@ Here is a complete, realistic configuration that demonstrates all the major feat
 
 
 Understanding the Selection Pattern
-------------------------------------
+-----------------------------------
 
 One of the more subtle aspects of the configuration is how selections work.
-Modules like ``NObjFilter``, ``GoldenLumi``, and ``VetoMap`` do **not** immediately filter events.
+Modules like :class:`~analyzer.modules.common.selection.NObjFilter`, :class:`~analyzer.modules.common.event_level_corrections.GoldenLumi`, and :class:`~analyzer.modules.common.jets.VetoMap` do **not** immediately filter events.
 Instead, they create boolean mask columns under a special ``Selection`` namespace.
 
-The ``SelectOnColumns`` module then applies all pending selections at once by AND-ing the masks and filtering the events.
+The :class:`~analyzer.modules.common.selection.SelectOnColumns` module then applies all pending selections at once by AND-ing the masks and filtering the events.
 This design has several advantages:
 
-1. **Cutflow tracking**: ``SelectOnColumns`` can record how many events pass each cut individually, producing a cutflow table.
+1. **Cutflow tracking**: :class:`~analyzer.modules.common.selection.SelectOnColumns` can record how many events pass each cut individually, producing a cutflow table.
 2. **N-1 plots**: Since selections are stored as separate masks, it is easy to compute N-1 efficiencies. This is not possible if cuts are applied immediately.
 3. **Flexibility**: You can apply selections at different points in the pipeline (e.g., a preselection before corrections, then a final selection after).
 

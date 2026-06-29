@@ -1,5 +1,5 @@
 Results and Provenance
-=======================
+======================
 
 When your analysis runs, each module can produce *results* -- histograms, cutflows, event counts, saved arrays, etc. 
 These results are collected into a tree structure and serialized to disk as ``.result`` files.
@@ -9,7 +9,7 @@ Understanding this system is important for both debugging your analysis and writ
 The Result Tree
 ---------------
 
-Results are organized in a tree of ``ResultGroup`` objects:
+Results are organized in a tree of :class:`~analyzer.core.results.ResultGroup` objects:
 
 .. graphviz::
 
@@ -55,7 +55,7 @@ Results are organized in a tree of ``ResultGroup`` objects:
                     +-- selection    (a SelectionFlow)
                     \-- ...
 
-Each ``ResultGroup`` is a named container that holds other results or sub-groups.
+Each :class:`~analyzer.core.results.ResultGroup` is a named container that holds other results or sub-groups.
 The ``_provenance`` entry is special -- it records exactly which file chunks were processed, which is used by the ``check`` and ``patch`` commands.
 
 
@@ -71,35 +71,35 @@ Each type knows how to merge with another result of the same type (via ``+=``) a
 
    * - Type
      - Description
-     - Responds to ``iscale``?
-   * - ``Histogram``
-     - A ``hist.Hist`` with axes. The standard output from ``makeHistogram()``.
+     - Responds to :meth:`~analyzer.core.results.ResultBase.iscale`?
+   * - :class:`~analyzer.core.results.Histogram`
+     - A ``hist.Hist`` with axes. The standard output from :func:`~analyzer.modules.common.histogram_builder.makeHistogram`.
      - Yes (scales bin contents)
-   * - ``UnscaledHistogram``
-     - Like ``Histogram`` but ignores scaling. Used for raw event counts.
+   * - :class:`~analyzer.core.results.UnscaledHistogram`
+     - Like :class:`~analyzer.core.results.Histogram` but ignores scaling. Used for raw event counts.
      - No
-   * - ``SelectionFlow``
+   * - :class:`~analyzer.core.results.SelectionFlow`
      - Cutflow data: sequential cut yields, N-1 yields, and single-cut yields.
      - Yes
-   * - ``RawSelectionFlow``
-     - Like ``SelectionFlow`` but not scaled. For unweighted cutflows.
+   * - :class:`~analyzer.core.results.RawSelectionFlow`
+     - Like :class:`~analyzer.core.results.SelectionFlow` but not scaled. For unweighted cutflows.
      - No
-   * - ``ScalableArray``
+   * - :class:`~analyzer.core.results.ScalableArray`
      - An awkward or numpy array that scales with luminosity.
      - Yes
-   * - ``RawArray``
+   * - :class:`~analyzer.core.results.RawArray`
      - An array that is not scaled.
      - No
-   * - ``SavedColumns``
+   * - :class:`~analyzer.core.results.SavedColumns`
      - A dictionary of named arrays (e.g., for saving event-level data to disk).
      - Partial (adds a "Scale" column)
-   * - ``SavedFiles``
+   * - :class:`~analyzer.core.results.SavedFiles`
      - References to files written to disk by skimming modules.
      - No
-   * - ``RawEventCount``
+   * - :class:`~analyzer.core.results.RawEventCount`
      - A simple event count, unscaled.
      - No
-   * - ``ScaledEventCount``
+   * - :class:`~analyzer.core.results.ScaledEventCount`
      - A simple event count that scales with luminosity.
      - Yes
 
@@ -145,7 +145,7 @@ When loading results from multiple ``.result`` files, the framework automaticall
 Provenance tracking ensures that overlapping chunks are detected and raise an error.
 
 For postprocessing, results typically need to be **merged and scaled** to physical units.
-The ``mergeAndScale()`` function does this:
+The :func:`~analyzer.core.results.mergeAndScale` function does this:
 
 .. code-block:: python
 
@@ -161,7 +161,7 @@ For each dataset, this function:
 3. For **Data samples**: computes ``expected_events / processed_events`` (should be 1.0 if fully processed).
 4. Merges all scaled samples within a dataset into a single result.
 
-After ``mergeAndScale()``, the result tree has one entry per dataset (rather than one per sample), and histograms contain physically meaningful yields.
+After :func:`~analyzer.core.results.mergeAndScale`, the result tree has one entry per dataset (rather than one per sample), and histograms contain physically meaningful yields.
 
 
 Serialization Format

@@ -1,5 +1,5 @@
 Postprocessing Configuration
-=============================
+============================
 
 This page describes the YAML configuration for the postprocessing system.
 
@@ -54,7 +54,7 @@ Processors
 Each processor is identified by its ``name`` field and has processor-specific parameters, plus the common fields ``inputs``, ``structure``, and ``output_name``.
 
 Histogram1D
-^^^^^^^^^^^^
+^^^^^^^^^^^
 
 Produces a 1D histogram plot.
 
@@ -91,7 +91,7 @@ If the ``structure`` uses ``subgroups`` with ``stacked`` and ``unstacked`` keys,
 
 
 RatioPlot
-^^^^^^^^^^
+^^^^^^^^^
 
 Produces a plot with a ratio panel below the main panel.
 
@@ -122,13 +122,13 @@ Produces a plot with a ratio panel below the main panel.
 The ``subgroups`` must define ``numerator`` and ``denominator``.
 
 RatioOfRatiosPlot
-^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^
 
 Produces a double ratio plot.
 The structure must define nested ``numerator`` and ``denominator`` subgroups, each containing their own ``numerator`` and ``denominator``.
 
 Histogram2D
-^^^^^^^^^^^^
+^^^^^^^^^^^
 
 Produces a 2D histogram (color map) plot.
 
@@ -145,9 +145,9 @@ Produces a 2D histogram (color map) plot.
       output_name: "{prefix}/2d_{era.name}_{dataset_name}_{name}.png"
 
 CutflowTable
-^^^^^^^^^^^^^
+^^^^^^^^^^^^
 
-Produces a cutflow table from ``SelectionFlow`` results.
+Produces a cutflow table from :class:`~analyzer.core.results.SelectionFlow` results.
 
 .. code-block:: yaml
 
@@ -161,12 +161,12 @@ Produces a cutflow table from ``SelectionFlow`` results.
       output_name: "{prefix}/cutflow_{era.name}.tex"
 
 PlotSelectionFlow
-^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^
 
 Produces a visual bar chart of the cutflow.
 
 CombineDatacard
-^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^
 
 Produces a Combine datacard for statistical analysis.
 
@@ -187,7 +187,7 @@ Produces a Combine datacard for statistical analysis.
       output_name: "{prefix}/combine_{era.name}_{dataset_name}"
 
 Significance2D
-^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^
 
 Produces a 2D significance scan plot (e.g., for mass plane scans).
 
@@ -227,10 +227,10 @@ The ``structure`` Field (GroupBuilder)
 --------------------------------------
 
 The ``structure`` field configures how results are organized before being passed to the processor.
-It is a ``GroupBuilder`` with the following sub-fields:
+It is a :class:`~analyzer.postprocessing.grouping.GroupBuilder` with the following sub-fields:
 
 ``select``
-^^^^^^^^^^^
+^^^^^^^^^^
 
 Filters results by metadata:
 
@@ -246,7 +246,7 @@ Only results matching all conditions are kept.
 See :doc:`../concepts/pattern_matching` for the full pattern syntax.
 
 ``group``
-^^^^^^^^^^
+^^^^^^^^^
 
 Groups results by captured metadata values:
 
@@ -266,7 +266,7 @@ Multiple fields can be used for finer grouping:
       group: {"era.name": "*", "pipeline": "*"}
 
 ``transforms``
-^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^
 
 Transformations applied to each group.
 See :doc:`transforms_reference` for all available transforms.
@@ -281,7 +281,7 @@ See :doc:`transforms_reference` for all available transforms.
           rebin: 2
 
 ``subgroups``
-^^^^^^^^^^^^^^
+^^^^^^^^^^^^^
 
 Subdivides each group into named sub-collections:
 
@@ -296,13 +296,13 @@ Subdivides each group into named sub-collections:
           select: {sample_type: MC}
 
 The processor receives a dictionary with the subgroup names as keys.
-This is commonly used by ``RatioPlot`` (requiring ``numerator``/``denominator``) and significance calculations (requiring ``signal``/``background``).
+This is commonly used by :class:`~analyzer.postprocessing.basic_histograms.RatioPlot` (requiring ``numerator``/``denominator``) and significance calculations (requiring ``signal``/``background``).
 
 Subgroups can also be a list, in which case the processor receives a list of results.
 
 
 The ``output_name`` Field
---------------------------
+-------------------------
 
 A template string for the output file path.
 Metadata values are inserted using ``{key}`` syntax:

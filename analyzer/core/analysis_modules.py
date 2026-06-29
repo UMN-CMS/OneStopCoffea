@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from typing import Literal
 from analyzer.core.param_specs import (
     ModuleParameterSpec,
@@ -18,9 +19,7 @@ import contextlib
 import abc
 from typing import Any, TYPE_CHECKING
 import logging
-
-if TYPE_CHECKING:
-    from analyzer.core.adl import ADLBlock
+from analyzer.core.adl import ADLBlock
 
 logger = logging.getLogger("analyzer.core")
 

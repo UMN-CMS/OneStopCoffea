@@ -1,5 +1,5 @@
 OneStopCoffea Analyzer
-===========================
+======================
 
 The OneStopCoffea Analyzer (OSCA) is a modular, columnar analysis framework built on `coffea <https://github.com/CoffeaTeam/coffea>`_ and `dask <https://dask.org/>`_.
 It aims to simplify the more tedious aspects of doing HEP analyses -- dataset management, systematics, distributed execution, and postprocessing -- while providing enough flexibility to meet a variety of analysis goals.
@@ -49,4 +49,4 @@ Where to Start
    postprocessing/postprocessing
    examples/examples
    developer_guide/developer_guide
-   reference
+
