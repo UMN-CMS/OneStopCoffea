@@ -1,3 +1,7 @@
+# Rough replication of the H->4L analysis as implemented in
+# https://github.com/cms-opendata-analyses/HiggsToFourLeptonsNanoAODOutreachAnalysis
+
+
 {% macro muon_maker() -%}
 - module_name: Hto4LExampleGoodMuonMaker
   input_col: Muon
@@ -28,6 +32,9 @@
     sample_type: MC
 {%- endmacro %}
 
+
+
+# We can use jinja macros with arguments to simplify the yaml file
 {% macro higgs_setup(channel) -%}
 {% if channel == '4mu' %}
 - module_name: NObjFilter
@@ -142,13 +149,9 @@ event_collections:
     pipelines: [FourElectron]
   - dataset: 'opendata_ZZTo2e2mu'
     pipelines: [TwoElectronTwoMuon]
-  - dataset: 'opendata_Run2012B_DoubleMuParked'
+  - dataset: 'opendata_DoubleMuParked'
     pipelines: [FourMuon, TwoElectronTwoMuon]
-  - dataset: 'opendata_Run2012C_DoubleMuParked'
-    pipelines: [FourMuon, TwoElectronTwoMuon]
-  - dataset: 'opendata_Run2012B_DoubleElectron'
-    pipelines: [FourElectron]
-  - dataset: 'opendata_Run2012C_DoubleElectron'
+  - dataset: 'opendata_DoubleElectron'
     pipelines: [FourElectron]
 
 extra_dataset_paths: 
