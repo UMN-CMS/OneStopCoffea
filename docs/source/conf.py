@@ -51,7 +51,7 @@ html_theme_options = {
     ],
     "source_repository": "https://github.com/UMN-CMS/OneStopCoffea",
     "source_branch": "master",
-    "source_directory": "docs/",
+    "source_directory": "docs/source/",
 }
 
 autoapi_dirs = [str(Path(__file__).parent.parent.parent / 'analyzer')]
