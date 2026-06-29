@@ -1,5 +1,5 @@
 Styling
-========
+=======
 
 The postprocessing system uses a pattern-based styling system to control the appearance of plots.
 Styles can be set at the postprocessor level, per-processor, or per-item via transforms.
@@ -8,7 +8,7 @@ Styles can be set at the postprocessor level, per-processor, or per-item via tra
 Style Sets
 ----------
 
-A ``StyleSet`` is a list of ``StyleRule`` objects.
+A :class:`~analyzer.postprocessing.style.StyleSet` is a list of :class:`~analyzer.postprocessing.style.StyleRule` objects.
 Each rule has a ``pattern`` and a ``style``.
 When the postprocessor needs to style a result, it checks each rule in order and uses the first matching style, based on the metadata of the object being processed.
 
@@ -213,7 +213,7 @@ If a processor does not specify a ``style_set``, the ``default_style_set`` is us
 Overriding Styles Per-Item
 --------------------------
 
-The ``SetStyle`` transform can override the style for specific items within a group:
+The :class:`~analyzer.postprocessing.transforms.hist_transforms.SetStyle` transform can override the style for specific items within a group:
 
 .. code-block:: yaml
 

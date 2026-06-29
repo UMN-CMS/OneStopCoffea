@@ -1,7 +1,7 @@
 Columns and Data
-=================
+================
 
-The ``TrackedColumns`` object is the central data container in the framework.
+The :class:`~analyzer.core.columns.TrackedColumns` object is the central data container in the framework.
 It is what modules receive as input and return as output (potentially along with results).
 Understanding how it works is important both for writing modules and for debugging unexpected behavior.
 
@@ -9,8 +9,8 @@ Understanding how it works is important both for writing modules and for debuggi
 The ``Column`` Class
 --------------------
 
-A ``Column`` represents a path to a specific field in the event data.
-If you are familiar with NanoAOD, a ``Column`` is essentially a reference like ``Jet.pt`` or ``FatJet.msoftdrop``.
+A :class:`~analyzer.core.columns.Column` represents a path to a specific field in the event data.
+If you are familiar with NanoAOD, a :class:`~analyzer.core.columns.Column` is essentially a reference like ``Jet.pt`` or ``FatJet.msoftdrop``.
 
 Columns are constructed from dot-delimited strings or tuples:
 
@@ -24,15 +24,15 @@ Columns are constructed from dot-delimited strings or tuples:
 
 Columns support a few useful operations:
 
-- **Containment**: ``Column("Jet").contains(Column("Jet.pt"))`` returns ``True``. This means "Jet" is a parent of "Jet.pt".
-- **Concatenation**: ``Column("Jet") + Column("pt")`` gives ``Column("Jet.pt")``.
+- **Containment**: :class:`~analyzer.core.columns.Column` returns ``True``. This means "Jet" is a parent of "Jet.pt".
+- **Concatenation**: :class:`~analyzer.core.columns.Column` gives :class:`~analyzer.core.columns.Column`.
 - **Extraction**: ``col.extract(events)`` navigates the events array to retrieve the data at that path.
 
 
 ``TrackedColumns``
 ------------------
 
-``TrackedColumns`` wraps a coffea NanoEvents array and adds three important capabilities:
+:class:`~analyzer.core.columns.TrackedColumns` wraps a coffea NanoEvents array and adds three important capabilities:
 
 1. **Provenance tracking** for caching (see :doc:`architecture`).
 2. **Lazy column writes** to avoid potentially expensive array synchronization.
@@ -41,7 +41,7 @@ Columns support a few useful operations:
 Reading and Writing Columns
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Inside a module's ``run()`` method, you interact with ``TrackedColumns`` through dictionary-like access:
+Inside a module's :meth:`~analyzer.core.analysis_modules.AnalyzerModule.run` method, you interact with :class:`~analyzer.core.columns.TrackedColumns` through dictionary-like access:
 
 .. code-block:: python
 
@@ -56,14 +56,14 @@ Inside a module's ``run()`` method, you interact with ``TrackedColumns`` through
 
         return columns, []
 
-When you write a column, ``TrackedColumns`` updates the provenance for that column and all its parents, which is how the caching system knows what changed.
+When you write a column, :class:`~analyzer.core.columns.TrackedColumns` updates the provenance for that column and all its parents, which is how the caching system knows what changed.
 
 .. note::
    Writes are lazy by default -- the data is not immediately synchronized to the underlying events array.
-   If you need to read the raw ``events`` array directly (which you generally should not), call ``columns.flush()`` first.
+   If you need to read the raw ``events`` array directly (which you generally should not), call :meth:`~analyzer.core.columns.TrackedColumns.flush` first.
 
 Accessing the Raw Events
-^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 In rare cases, you may need access to the underlying awkward array:
 
@@ -71,17 +71,17 @@ In rare cases, you may need access to the underlying awkward array:
 
     events = columns.events   # Triggers a flush of lazy columns
 
-However, you should prefer using ``columns[col]`` for both reading and writing, as this ensures provenance tracking works correctly.
 
 .. danger:: 
     
-    Manipulating the ``events`` object directly (e.g. using ``columns.events``) can lead to unexpected behavior.  Always prefer using the ``columns[col]`` syntax.
+    Manipulating the ``events`` object directly (e.g. using ``columns.events``) can lead to unexpected behavior.
+    Always prefer using the ``columns[col]`` syntax.
 
 
 Filtering Events
-^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^
 
-To remove events from the collection (e.g., after applying a selection), use ``filter()``:
+To remove events from the collection (e.g., after applying a selection), use :meth:`~analyzer.core.columns.TrackedColumns.filter`:
 
 .. code-block:: python
 
@@ -92,7 +92,7 @@ This removes events where the mask is ``False`` from both the underlying events 
 It also updates the provenance of all columns.
 
 .. warning::
-   ``filter()`` mutates the ``TrackedColumns`` in place.
+   :meth:`~analyzer.core.columns.TrackedColumns.filter` mutates the :class:`~analyzer.core.columns.TrackedColumns` in place.
    After filtering, ``columns.events`` will have fewer entries.
 
 .. danger:: 
@@ -106,7 +106,7 @@ The Selection Pattern
 Selections are a critical part of doing an analysis.
 Rather than having each module immediately filter events, the framework uses a *deferred selection* approach:
 
-1. **Modules create boolean masks** and store them under the ``Selection`` namespace using the ``addSelection()`` helper:
+1. **Modules create boolean masks** and store them under the ``Selection`` namespace using the :func:`~analyzer.core.columns.addSelection` helper:
 
    .. code-block:: python
 
@@ -121,20 +121,20 @@ Rather than having each module immediately filter events, the framework uses a *
 
    This stores the mask at ``Selection.<name>`` and registers it in ``columns.pipeline_data["Selections"]`` as unapplied.
 
-2. **``SelectOnColumns`` applies all pending selections** by AND-ing the masks and filtering events.
+2. :class:`~analyzer.modules.common.selection.SelectOnColumns` applies all pending selections** by AND-ing the masks and filtering events.
    It also records a cutflow (how many events pass each successive cut) and N-1 efficiencies.
 
 This pattern the advantage that **N-1 plots** can be computed since the individual masks are preserved until the selection is applied.
 
 
 The ``pipeline_data["Selections"]`` dictionary tracks which selections have been applied (``True``) and which are still pending (``False``).
-When ``SelectOnColumns`` runs without explicit ``selection_names``, it applies all pending selections.
+When :class:`~analyzer.modules.common.selection.SelectOnColumns` runs without explicit ``selection_names``, it applies all pending selections.
 
 
 Metadata
 --------
 
-Every ``TrackedColumns`` object carries a ``metadata`` dictionary that contains information about the current sample:
+Every :class:`~analyzer.core.columns.TrackedColumns` object carries a ``metadata`` dictionary that contains information about the current sample:
 
 .. code-block:: python
 
@@ -154,13 +154,13 @@ Every ``TrackedColumns`` object carries a ``metadata`` dictionary that contains 
         triggers = meta["era"]["trigger_names"]
 
 This metadata is constructed by merging the dataset definition, sample definition, and era configuration.
-It is available in both ``run()`` and ``inputs()``/``outputs()``, so modules can change their behavior based on the dataset they are processing.
+It is available in both :meth:`~analyzer.core.analysis_modules.AnalyzerModule.run` and :meth:`~analyzer.core.analysis_modules.BaseAnalyzerModule.inputs`/:meth:`~analyzer.core.analysis_modules.AnalyzerModule.outputs`, so modules can change their behavior based on the dataset they are processing.
 
 
 Pipeline Data
 -------------
 
-``TrackedColumns`` has a ``pipeline_data`` dictionary for storing arbitrary state that modules want to share within a pipeline.
+:class:`~analyzer.core.columns.TrackedColumns` has a ``pipeline_data`` dictionary for storing arbitrary state that modules want to share within a pipeline.
 This is used by the framework for a few specific purposes:
 
 - ``pipeline_data["Selections"]``: tracks which selections have been applied.
@@ -172,8 +172,8 @@ You can also use it for your own purposes in custom modules, though you should b
 ``ColumnCollection``
 --------------------
 
-When a module declares its ``inputs()`` or ``outputs()``, it returns a list of ``Column`` objects (or a ``ColumnCollection``).
-A ``ColumnCollection`` is a set of columns that supports containment checks:
+When a module declares its :meth:`~analyzer.core.analysis_modules.BaseAnalyzerModule.inputs` or :meth:`~analyzer.core.analysis_modules.AnalyzerModule.outputs`, it returns a list of :class:`~analyzer.core.columns.Column` objects (or a :class:`~analyzer.core.columns.ColumnCollection`).
+A :class:`~analyzer.core.columns.ColumnCollection` is a set of columns that supports containment checks:
 
 .. code-block:: python
 
@@ -186,4 +186,4 @@ A ``ColumnCollection`` is a set of columns that supports containment checks:
 This is used by the framework to enforce that modules only read from their declared inputs and write to their declared outputs.
 If a module tries to access a column it did not declare, a ``RuntimeError`` is raised.
 
-A special return value of ``"EVENTS"`` from ``inputs()`` or ``outputs()`` means the module operates on the entire event record and no input/output restrictions are applied.
+A special return value of ``"EVENTS"`` from :meth:`~analyzer.core.analysis_modules.BaseAnalyzerModule.inputs` or :meth:`~analyzer.core.analysis_modules.AnalyzerModule.outputs` means the module operates on the entire event record and no input/output restrictions are applied.

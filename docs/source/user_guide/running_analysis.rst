@@ -1,5 +1,5 @@
 Running an Analysis
-====================
+===================
 
 Once you have constructed your configuration file, added your needed datasets, and written and custum modules, it is time to run!
 This page covers the practical workflow of running an analysis, from initial testing through full-scale production and result patching.
@@ -20,7 +20,7 @@ The recommended workflow for developing an analysis is:
 Step 1: Quick Test
 ^^^^^^^^^^^^^^^^^^
 
-Use the ``ImmediateExecutor`` with a small event limit:
+Use the :class:`~analyzer.core.executors.immediate_exec.ImmediateExecutor` with a small event limit:
 
 .. code-block:: bash
 
@@ -62,7 +62,7 @@ This distributes work across many workers using dask-condor.
 
 
 Step 4: Check Completeness
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 After a production run, check that all samples were fully processed:
 
@@ -90,7 +90,7 @@ The new results are written alongside the existing ones.
 
 
 Step 6: Postprocess
-^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^
 
 Generate plots and tables using a postprocessing configuration:
 
@@ -105,7 +105,7 @@ See the :doc:`../postprocessing/postprocessing` section for details on writing p
 
 
 The ``./osca`` Wrapper
------------------------
+----------------------
 
 The ``./osca`` script is a convenience wrapper that handles environment setup automatically.
 When run outside a container, it:
@@ -128,7 +128,7 @@ You can also work directly inside the container manually:
 
 
 Filtering Datasets and Samples
--------------------------------
+------------------------------
 
 The ``--filter-dataset`` and ``--filter-sample`` options accept patterns (see :doc:`../concepts/pattern_matching`) and are available on ``run``, ``check``, and ``patch`` commands:
 
@@ -144,7 +144,7 @@ These are useful for debugging a specific dataset or rerunning a subset of your 
 
 
 Browsing Results
------------------
+----------------
 
 The ``browse`` command provides an interactive terminal UI for exploring result files:
 

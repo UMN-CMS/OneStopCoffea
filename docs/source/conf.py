@@ -7,21 +7,21 @@ author = "Charlie Kapsiak"
 
 import os
 import sys
+from pathlib import Path
 
 sys.path.insert(0, os.path.abspath("../.."))
 sys.path.insert(0, os.path.abspath("_ext"))
 
 extensions = [
     "sphinx.ext.autodoc",
-    "sphinx.ext.autosummary",
     "sphinx.ext.viewcode",
+    "autoapi.extension",
     "sphinx.ext.mathjax",
     "sphinx_autodoc_typehints",
     "yaml_links",
     "sphinx.ext.graphviz",
 ]
 
-autosummary_generate = True
 autodoc_default_options = {
     "members": True,
     "undoc-members": False,
@@ -29,9 +29,13 @@ autodoc_default_options = {
     "show-inheritance": True,
 }
 
+
 templates_path = ["_templates"]
 exclude_patterns = []
 
 #html_theme = "pydata_sphinx_theme"
 html_theme = "furo"
 html_static_path = ["_static"]
+
+
+autoapi_dirs = [str(Path(__file__).parent.parent.parent / 'analyzer')]

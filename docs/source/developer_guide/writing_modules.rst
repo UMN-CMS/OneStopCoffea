@@ -1,5 +1,5 @@
 Writing Modules
-================
+===============
 
 This page walks through how to write custom analysis modules.
 If the built-in modules do not cover your use case, writing a custom module is the primary way to extend the framework.
@@ -10,9 +10,9 @@ Module Basics
 
 A module is a Python class that:
 
-1. Inherits from ``AnalyzerModule`` (or another module base class).
+1. Inherits from :class:`~analyzer.core.analysis_modules.AnalyzerModule` (or another module base class).
 2. Uses the ``@define`` decorator from ``attrs``.
-3. Implements ``inputs()``, ``outputs()``, and ``run()``.
+3. Implements :meth:`~analyzer.core.analysis_modules.BaseAnalyzerModule.inputs`, :meth:`~analyzer.core.analysis_modules.AnalyzerModule.outputs`, and :meth:`~analyzer.core.analysis_modules.AnalyzerModule.run`.
 
 .. graphviz::
 
@@ -76,7 +76,7 @@ In the YAML configuration, it would be used as:
 
 
 Registering Your Module
-------------------------
+-----------------------
 
 The framework discovers modules through Python's import system.
 For modules defined in the ``analyzer/modules/`` directory, they are auto-discovered.
@@ -94,9 +94,9 @@ The ``module_name`` field in the YAML must exactly match the class name.
 
 
 Working with TrackedColumns
-----------------------------
+---------------------------
 
-The ``columns`` argument to ``run()`` is a ``TrackedColumns`` object.
+The ``columns`` argument to :meth:`~analyzer.core.analysis_modules.AnalyzerModule.run` is a :class:`~analyzer.core.columns.TrackedColumns` object.
 See :doc:`../concepts/columns_and_data` for the full API.
 
 Common operations:
@@ -120,9 +120,9 @@ Common operations:
 
 
 Creating Selections
---------------------
+-------------------
 
-To add a selection (boolean mask), use the ``addSelection`` helper:
+To add a selection (boolean mask), use the :func:`~analyzer.core.columns.addSelection` helper:
 
 .. code-block:: python
 
@@ -147,13 +147,13 @@ To add a selection (boolean mask), use the ``addSelection`` helper:
             addSelection(columns, self.selection_name, mask)
             return columns, []
 
-The selection is stored under ``Selection.<name>`` and tracked in ``pipeline_data["Selections"]`` for later application by ``SelectOnColumns``.
+The selection is stored under ``Selection.<name>`` and tracked in ``pipeline_data["Selections"]`` for later application by :class:`~analyzer.modules.common.selection.SelectOnColumns`.
 
 
 Producing Histograms
----------------------
+--------------------
 
-To produce a histogram from your module, use the ``makeHistogram()`` helper:
+To produce a histogram from your module, use the :func:`~analyzer.modules.common.histogram_builder.makeHistogram` helper:
 
 .. code-block:: python
 
@@ -180,7 +180,7 @@ To produce a histogram from your module, use the ``makeHistogram()`` helper:
             )
             return columns, [hist_result]
 
-``makeHistogram`` returns a ``ModuleAddition`` that tells the framework to create a ``HistogramBuilder`` sub-pipeline.
+:func:`~analyzer.modules.common.histogram_builder.makeHistogram` returns a :class:`~analyzer.core.analysis_modules.ModuleAddition` that tells the framework to create a :class:`~analyzer.modules.common.histogram_builder.HistogramBuilder` sub-pipeline.
 The histogram will automatically include:
 
 - A ``variation`` axis with entries for each systematic variation.
@@ -213,9 +213,9 @@ Common defaults:
 
 
 Declaring Dynamic Parameters (Systematics)
--------------------------------------------
+------------------------------------------
 
-If your module introduces a systematic variation, override ``getParameterSpec()``:
+If your module introduces a systematic variation, override :meth:`~analyzer.core.analysis_modules.BaseAnalyzerModule.getParameterSpec`:
 
 .. code-block:: python
 
@@ -257,9 +257,9 @@ See :doc:`../concepts/systematics` for more details on how the parameter spec an
 
 
 Testing Your Module
---------------------
+-------------------
 
-The fastest way to test a module is with the ``ImmediateExecutor`` and a small event count:
+The fastest way to test a module is with the :class:`~analyzer.core.executors.immediate_exec.ImmediateExecutor` and a small event count:
 
 .. code-block:: bash
 

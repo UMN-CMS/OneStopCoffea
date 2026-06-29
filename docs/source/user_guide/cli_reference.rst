@@ -1,5 +1,5 @@
 CLI Reference
-==============
+=============
 
 The primary entry point for the framework is the ``analyzer`` module.
 You can run commands using the ``./osca`` wrapper, which handles container setup and virtual environment management automatically:

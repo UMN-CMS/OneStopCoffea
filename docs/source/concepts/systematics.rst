@@ -1,5 +1,5 @@
 Systematics
-============
+===========
 
 Handling systematic uncertainties is one of the core capabilities of the framework.
 The system is designed so that shape and weight systematics can be included without linearly multiplying the execution time, thanks to the caching system described in :doc:`architecture`.
@@ -13,10 +13,10 @@ A module can declare that it has a parameter with multiple possible values -- fo
 
 When a downstream module (typically a histogram builder) requests a "multi-run," the framework:
 
-1. Collects the ``ParameterSpec`` from all modules in the pipeline.
-2. Uses the ``RunBuilder`` to determine which parameter combinations to execute.
+1. Collects the :class:`~analyzer.core.param_specs.ParameterSpec` from all modules in the pipeline.
+2. Uses the :class:`~analyzer.core.run_builders.RunBuilder` to determine which parameter combinations to execute.
 3. Re-runs the pipeline once for each combination, producing a set of event collections.
-4. Passes all event collections to the requesting module (a ``PureResultModule``), which aggregates them into a single result with a ``variation`` axis.
+4. Passes all event collections to the requesting module (a :class:`~analyzer.core.analysis_modules.PureResultModule`), which aggregates them into a single result with a ``variation`` axis.
 
 .. graphviz::
 
@@ -54,7 +54,7 @@ The caching system ensures that modules whose inputs did not change across varia
 ``ParameterSpec``
 -----------------
 
-Modules declare dynamic parameters by overriding ``getParameterSpec()``:
+Modules declare dynamic parameters by overriding :meth:`~analyzer.core.analysis_modules.BaseAnalyzerModule.getParameterSpec`:
 
 .. code-block:: python
 
@@ -69,7 +69,7 @@ Modules declare dynamic parameters by overriding ``getParameterSpec()``:
             )
         }
 
-The key fields of ``ParameterSpec``:
+The key fields of :class:`~analyzer.core.param_specs.ParameterSpec`:
 
 .. list-table::
    :header-rows: 1
@@ -86,14 +86,14 @@ The key fields of ``ParameterSpec``:
    * - ``driven_by``
      - A dictionary mapping driver parameter names to mapping functions. See "Driven Parameters" below.
 
-The ``tags`` field is how the ``RunBuilder`` knows which parameters are weight systematics vs shape systematics.
+The ``tags`` field is how the :class:`~analyzer.core.run_builders.RunBuilder` knows which parameters are weight systematics vs shape systematics.
 
 
 Run Builders
 ------------
 
-A ``RunBuilder`` determines which parameter combinations to actually execute.
-It receives the complete ``ParameterSpec`` from all modules in the pipeline and returns a list of ``(name, parameter_dict)`` tuples.
+A :class:`~analyzer.core.run_builders.RunBuilder` determines which parameter combinations to actually execute.
+It receives the complete :class:`~analyzer.core.param_specs.ParameterSpec` from all modules in the pipeline and returns a list of ``(name, parameter_dict)`` tuples.
 
 The ``default_run_builder`` in your configuration selects the strategy:
 
@@ -120,7 +120,7 @@ Available strategies:
     Central-only for everything else.
 
 **LimitSysts**
-    Like ``CompleteSysts`` but filtered: only variations whose names match a given pattern are included.
+    Like :class:`~analyzer.core.run_builders.CompleteSysts` but filtered: only variations whose names match a given pattern are included.
 
     .. code-block:: yaml
 
@@ -129,7 +129,7 @@ Available strategies:
           systs: "JES*"
 
 **LimitSystsBackground**
-    Like ``LimitSysts`` but signal datasets always get central-only.
+    Like :class:`~analyzer.core.run_builders.LimitSysts` but signal datasets always get central-only.
 
 **UnscaledOnly**
     Returns ``[("UNSCALED", {})]``. Used to produce unweighted histograms.
@@ -138,12 +138,12 @@ You can also combine multiple builders using the ``+`` operator in Python, thoug
 
 
 Driven Parameters
-------------------
+-----------------
 
 Sometimes one systematic is correlated with another.
 For example, certain b-tagging systematics only apply when a specific JES variation is active.
 
-This is handled through the ``driven_by`` field of ``ParameterSpec``:
+This is handled through the ``driven_by`` field of :class:`~analyzer.core.param_specs.ParameterSpec`:
 
 .. code-block:: python
 
@@ -179,5 +179,5 @@ These are cheap to compute because they only require re-weighting, not re-proces
 Examples: JEC/JER variations, MET corrections.
 These are more expensive because any downstream computation depending on the modified objects must be re-run.
 
-The framework handles both types uniformly through the dynamic parameter system, but the ``RunBuilder`` uses the tags to decide which to include.
+The framework handles both types uniformly through the dynamic parameter system, but the :class:`~analyzer.core.run_builders.RunBuilder` uses the tags to decide which to include.
 A module that produces a weight variation should tag its parameter with ``weight_variation``, while one that modifies object quantities should use ``shape_variation``.

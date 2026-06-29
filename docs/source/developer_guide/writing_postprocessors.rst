@@ -1,13 +1,13 @@
 Writing Custom Postprocessors
-==============================
+=============================
 
-If the built-in postprocessors (``Histogram1D``, ``RatioPlot``, etc.) do not meet your needs, you can write custom postprocessors and transforms.
+If the built-in postprocessors (:class:`~analyzer.postprocessing.basic_histograms.Histogram1D`, :class:`~analyzer.postprocessing.basic_histograms.RatioPlot`, etc.) do not meet your needs, you can write custom postprocessors and transforms.
 
 
 Custom Postprocessor
 --------------------
 
-A postprocessor is a class that inherits from ``BasePostprocessor`` and implements ``getRunFuncs()``.
+A postprocessor is a class that inherits from :class:`~analyzer.postprocessing.processors.BasePostprocessor` and implements :meth:`~analyzer.postprocessing.processors.BasePostprocessor.getRunFuncs`.
 
 .. code-block:: python
 
@@ -44,16 +44,16 @@ A postprocessor is a class that inherits from ``BasePostprocessor`` and implemen
 
 Key points:
 
-- ``getRunFuncs`` is a generator that yields callables (typically built using ``functools.partial``).
+- :meth:`~analyzer.postprocessing.processors.BasePostprocessor.getRunFuncs` is a generator that yields callables (typically built using ``functools.partial``).
 - Each callable will be executed by the postprocessing framework, potentially in parallel.
-- The ``group`` parameter contains the data structured by the ``GroupBuilder`` (selected, grouped, transformed, and sub-grouped).
+- The ``group`` parameter contains the data structured by the :class:`~analyzer.postprocessing.grouping.GroupBuilder` (selected, grouped, transformed, and sub-grouped).
 - The callables must be picklable if ``--parallel`` is used.
 
 Registration
-^^^^^^^^^^^^^
+^^^^^^^^^^^^
 
 Custom postprocessors are automatically discovered through Python's subclass mechanism.
-As long as your class inherits from ``BasePostprocessor`` and is imported before the postprocessing configuration is loaded, it will be available.
+As long as your class inherits from :class:`~analyzer.postprocessing.processors.BasePostprocessor` and is imported before the postprocessing configuration is loaded, it will be available.
 
 The ``name`` field in the YAML configuration must match the class name.
 The class is resolved via ``cattrs`` tagged union with ``tag_name="name"``.
@@ -90,10 +90,10 @@ Transforms operate on lists of ``ItemWithMeta`` objects and return modified list
 
 Transform base classes:
 
-- ``Transform``: Generic base class.
-- ``TransformHistogram``: For transforms operating on histograms.
-- ``TransformSavedColumns``: For transforms operating on saved column data.
-- ``TransformGroup``: For transforms operating on groups.
+- :class:`~analyzer.postprocessing.transforms.registry.Transform`: Generic base class.
+- :class:`~analyzer.postprocessing.transforms.registry.TransformHistogram`: For transforms operating on histograms.
+- :class:`~analyzer.postprocessing.transforms.registry.TransformSavedColumns`: For transforms operating on saved column data.
+- :class:`~analyzer.postprocessing.transforms.registry.TransformGroup`: For transforms operating on groups.
 
 Like postprocessors, custom transforms are discovered via subclass resolution and the ``name`` field in YAML.
 

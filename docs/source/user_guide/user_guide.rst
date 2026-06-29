@@ -11,3 +11,4 @@
    running_analysis
    cli_reference
    tips_and_troubleshooting
+   builtin_modules

@@ -3,7 +3,7 @@ Higgs to 4 Leptons (H->4L) Analysis
 =======================================
 
 Intro
----------------------
+-----
 This document walks through a complete end-to-end physics analysis using the OneStopCoffea framework, based on the `CMS OpenData H$\\rightarrow$4L tutorial <http://doi.org/10.7483/OPENDATA.CMS.F7HD.P3K4>`_.
 A user will interact primarily with analyzer modules and postprocessors, and the vast majority of their efforts will be in programming modules to suit their needs when the existing systems are lacking.
 Here, we demonstrate how to write bespoke modules when the premade solutions are insufficient.
@@ -17,7 +17,7 @@ The top level description of an analysis is declarative.
 This is handled by a central YAML configuration, in thise case ``examples/higgs_to_4l/configuration.yaml``.
 
 Pipelines and Modules
-^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
 The configuration declares three pipelines: ``FourMuon``, ``FourElectron``, and ``TwoElectronTwoMuon``. 
 These pipelines are seaprate analysis regions, corresponding to the 3 possible leptonic ZZ decay channels detectable by CMS as leptons. 
 
@@ -25,13 +25,13 @@ These pipelines are seaprate analysis regions, corresponding to the 3 possible l
 * For MC samples, we apply a scale factor module.
 * Depending on the channel we select for the desired number of leptons, among other properties.
 * We then use these leptons to reconstruct the Z and H bosons.
-* Finally, the ``SimpleHistogram`` module simply books histograms for ``HiggsMass``, ``Z1Mass``, and ``Z2Mass``.
+* Finally, the :class:`~analyzer.modules.common.histogram_builder.SimpleHistogram` module simply books histograms for ``HiggsMass``, ``Z1Mass``, and ``Z2Mass``.
 
 
 Custom Modules and Physics Logic
 --------------------------------
 While the framework provides many common modules, it is all but guaranteed that something will be missing.
-In ``examples/higgs_to_4l/higgs_to_4l.py``, we define the custom ``AnalyzerModule`` classes specific to this example.
+In ``examples/higgs_to_4l/higgs_to_4l.py``, we define the custom :class:`~analyzer.core.analysis_modules.AnalyzerModule` classes specific to this example.
 
 Postprocessing
 --------------

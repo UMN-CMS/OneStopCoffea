@@ -6,7 +6,7 @@ By the end, you will have run an analysis, inspected the results, and produced a
 
 
 Step 1: The Example Configuration
-----------------------------------
+---------------------------------
 
 Let us start by looking at the example configuration at ``configurations/example.yaml``:
 
@@ -60,7 +60,7 @@ Let us start by looking at the example configuration at ``configurations/example
 
 Let us break this down:
 
-- **``analyzer``**: Defines one pipeline called ``MyPipeline`` with ``NoSystematics`` (central values only).
+- **``analyzer``**: Defines one pipeline called ``MyPipeline`` with :class:`~analyzer.core.run_builders.NoSystematics` (central values only).
 - **``MyPipeline``**: A sequence of modules that:
   1. Filters jets to those with pT > 30 GeV and :math:`|\eta|` < 2.4.
   2. Identifies medium b-tagged jets.
@@ -70,9 +70,9 @@ Let us break this down:
   6. Produces a histogram of HT.
 - **``event_collections``**: Processes signal datasets matching the pattern ``signal_2018_312_*15*0``.
 
-Notice that there is no explicit ``SelectOnColumns`` module -- the ``NObjFilter`` creates a selection mask, but it is not applied.
+Notice that there is no explicit :class:`~analyzer.modules.common.selection.SelectOnColumns` module -- the :class:`~analyzer.modules.common.selection.NObjFilter` creates a selection mask, but it is not applied.
 The histogram is filled with all events.
-To actually cut events, you would add a ``SelectOnColumns`` module before the histogram.
+To actually cut events, you would add a :class:`~analyzer.modules.common.selection.SelectOnColumns` module before the histogram.
 
 
 Step 2: Run the Analysis
@@ -119,7 +119,7 @@ This opens a  TUI where you can navigate the result tree and inspect the HT hist
     
 
 Step 4: Write a Postprocessing Configuration
----------------------------------------------
+--------------------------------------------
 
 Create a file called ``my_postprocessing.yaml``:
 
@@ -143,7 +143,7 @@ Create a file called ``my_postprocessing.yaml``:
 This configuration tells the postprocessing system to:
 
 1. Find all results matching the path ``*/*/*/HT`` (any dataset, any sample, any pipeline, result named "HT").
-2. Select only ``Histogram`` type results.
+2. Select only :class:`~analyzer.core.results.Histogram` type results.
 3. Group by era name.
 4. Select only the "central" variation from the histogram's variation axis.
 5. Produce a 1D histogram plot saved as a PNG.
