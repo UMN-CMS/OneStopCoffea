@@ -47,5 +47,6 @@ Where to Start
    concepts/concepts
    user_guide/user_guide
    postprocessing/postprocessing
+   examples/examples
    developer_guide/developer_guide
    reference
