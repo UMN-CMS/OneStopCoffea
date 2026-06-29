@@ -16,7 +16,6 @@ Since these manipulate actual objects in an event, any calculation using these o
 Therefore, to compute the effect of a shape systematic, any calculation done on an affected object must be recomputed.
 
 **Multiple Regions** correspond to different event-level selections.
-Almost all analyses have several of them.
 A naive approach is to run each region independently, but regions generally contain significant overlap and we would like to avoid needlessly redoing computations.
 
 **Bookkeeping** is perhaps the most underappreciated challenge.
@@ -30,7 +29,7 @@ Iteration time is a major challenge -- if one is not careful, the inclusion of m
 
 
 How the Architecture Addresses These
---------------------------------------
+------------------------------------
 
 **Bookkeeping** is handled by always keeping the metadata associated with a given input coupled to the output, and allowing for flexible queries of this metadata.
 When a sample is processed, the output contains the complete metadata corresponding to said sample, including the information associated with its era, the exact chunks it ran over, and which correction files were used.
@@ -48,7 +47,7 @@ This means that when re-running a pipeline with a different systematic, only the
 
 
 Key Abstractions
------------------
+----------------
 
 .. list-table::
    :header-rows: 1
@@ -63,11 +62,11 @@ Key Abstractions
    * - **Pipeline**
      - An ordered sequence of modules. Events flow through each module in order.
    * - **Module**
-     - A unit of analysis logic. Reads input columns, optionally modifies data or produces results, writes output columns. Three types: ``AnalyzerModule``, ``EventSourceModule``, ``PureResultModule``.
+     - A unit of analysis logic. Reads input columns, optionally modifies data or produces results, writes output columns. Three types: `AnalyzerModule`, :class:`~analyzer.core.analysis_modules.EventSourceModule`, :class:`~analyzer.core.analysis_modules.PureResultModule`.
    * - **TrackedColumns**
      - The data container passed between modules. Wraps a coffea NanoEvents array with provenance tracking and lazy column management.
    * - **Column**
-     - A reference to a specific field in the event data (e.g., ``Jet.pt``, ``HT``, ``Selection.njets``).
+     - A reference to a specific field in the event data (e.g., ``Jet.pt``, :class:`~analyzer.modules.common.jets.HT`, ``Selection.njets``).
    * - **ResultGroup**
      - A tree structure that collects analysis outputs (histograms, cutflows, arrays). Organized as ROOT  ->  dataset  ->  sample  ->  pipeline  ->  results.
    * - **Executor**
@@ -79,7 +78,7 @@ Key Abstractions
 Data Flow
 ---------
 
-Here is how a single dataset sample gets processed, step by step:
+The below graphic shows a very simplified view of how data is processed.
 
 .. graphviz::
 
@@ -107,28 +106,33 @@ Here is how a single dataset sample gets processed, step by step:
 1. The **Executor** receives the analysis configuration and a list of tasks (one per sample).
    For each task, it determines the files to process and how to chunk them.
 
-2. For each chunk, the Executor calls ``Analyzer.run()``, which iterates over the pipelines assigned to this dataset.
+2. For each chunk, the Executor calls :meth:`~analyzer.core.analyzer.Analyzer.run`, which iterates over the pipelines assigned to this dataset.
 
 3. Within a pipeline, events flow through modules sequentially:
 
-   a. The implicit ``LoadColumns`` module loads the chunk from disk and creates a ``TrackedColumns`` object.
+   a. The implicit :class:`~analyzer.modules.common.load_columns.LoadColumns` module loads the chunk from disk and creates a :class:`~analyzer.core.columns.TrackedColumns` object.
    b. Each subsequent module's ``__call__`` method is invoked:
 
       - The module's ``should_run`` condition is checked. If false, the module is skipped.
-      - The module's ``inputs()`` are used to compute a cache key.
+      - The module's :meth:`~analyzer.core.analysis_modules.BaseAnalyzerModule.inputs` are used to compute a cache key.
       - If a cached result exists, it is returned without re-executing.
-      - Otherwise, ``run()`` is called, which reads from and writes to the ``TrackedColumns``.
+      - Otherwise, :meth:`~analyzer.core.analysis_modules.AnalyzerModule.run` is called, which reads from and writes to the :class:`~analyzer.core.columns.TrackedColumns`.
       - The module returns the (potentially modified) columns and a list of results.
 
-   c. If a module returns a ``ModuleAddition`` (used by histogram builders), the framework may trigger a **multi-run**: re-executing the pipeline with different parameter values and passing all resulting event collections to the aggregator module.
+   c. If a module returns a :class:`~analyzer.core.analysis_modules.ModuleAddition` (used by histogram builders), the framework may trigger a **multi-run**: re-executing the pipeline with different parameter values and passing all resulting event collections to the aggregator module.
 
-4. Results from all modules in all pipelines are collected into a ``ResultGroup`` tree.
+4. Results from all modules in all pipelines are collected into a :class:`~analyzer.core.results.ResultGroup` tree.
 
-5. The ``ResultGroup`` is serialized (with LZ4 compression) and written to a ``.result`` file.
+5. The :class:`~analyzer.core.results.ResultGroup` is serialized (with LZ4 compression) and written to a ``.result`` file. 
+
+
+.. note::
+
+   The ``task`` nomenclature is poorly chosen and should probably be changed.
 
 
 Configuration to Code Mapping
-------------------------------
+-----------------------------
 
 Understanding how the YAML configuration maps to Python classes can help when debugging or extending the system.
 
@@ -153,9 +157,8 @@ Understanding how the YAML configuration maps to Python classes can help when de
    * - ``extra_executors.name``
      - Subclass of ``analyzer.core.executors.Executor``
 
-The ``module_name`` field in module configurations corresponds to the class name of an ``AnalyzerModule`` subclass.
+The ``module_name`` field in module configurations corresponds to the class name of an :class:`~analyzer.core.analysis_modules.AnalyzerModule` subclass.
 The framework uses ``cattrs`` tagged unions to automatically resolve the correct class based on this tag.
-This is also why custom modules need to be loaded via ``extra_module_paths`` before the configuration is parsed -- they need to be registered with the type system.
 
 
 Caching in Detail
@@ -163,21 +166,21 @@ Caching in Detail
 
 Caching is fundamental to the framework's efficiency.
 Without it, running an analysis with 20 systematic variations would naively require 20x the computation.
-With caching, only the modules whose inputs actually change are re-executed.
+The combination of caching and input/output tracking turns the linear pipelines into an implicit DAG, so only the modules whose inputs actually change are re-executed.
 
-The caching system works through **provenance tracking** in ``TrackedColumns``:
+The caching system works through **provenance tracking** in :class:`~analyzer.core.columns.TrackedColumns`:
 
-1. Every column in ``TrackedColumns`` has a *provenance key* -- a hash that changes whenever the column is modified.
+1. Every column in :class:`~analyzer.core.columns.TrackedColumns` has a *provenance key* -- a hash that changes whenever the column is modified.
 2. When a module runs, the framework computes an *execution key* from the module's identity, its dynamic parameters, and the provenance keys of its input columns.
 3. Before running, the framework checks if this execution key exists in the cache. If so, the cached output is returned.
 4. After running, the module's output columns receive provenance keys derived from the execution key.
 
 This means that if you re-run a pipeline with a different JEC systematic:
 
-- ``LoadColumns`` returns cached results (same chunk, same metadata).
+- :class:`~analyzer.modules.common.load_columns.LoadColumns` returns cached results (same chunk, same metadata).
 - Selection modules return cached results (same input events).
 - ``JetCorrection`` re-runs (different systematic parameter).
-- ``JetFilter`` re-runs (its input column ``Jet`` changed).
-- ``PileupSF`` returns cached results (it does not depend on ``Jet``).
+- :class:`~analyzer.modules.common.jets.JetFilter` re-runs (its input column ``Jet`` changed).
+- :class:`~analyzer.modules.common.event_level_corrections.PileupSF` returns cached results (it does not depend on ``Jet``).
 
-This is why declaring correct ``inputs()`` and ``outputs()`` in your modules is important: it is what enables the caching system to determine which modules need re-execution.
+This is why declaring correct :meth:`~analyzer.core.analysis_modules.BaseAnalyzerModule.inputs` and :meth:`~analyzer.core.analysis_modules.AnalyzerModule.outputs` in your modules is important: it is what enables the caching system to determine which modules need re-execution.

@@ -1,5 +1,5 @@
 Built-in Modules
-=================
+================
 
 The framework provides a library of built-in modules for common analysis tasks.
 These are organized by category below.
@@ -56,7 +56,7 @@ Selection and Filtering
 
 
 Event-Level Corrections (MC)
------------------------------
+----------------------------
 
 - :class:`~analyzer.modules.common.event_level_corrections.PileupSF`: Applies pileup scale factors.
 - :class:`~analyzer.modules.common.event_level_corrections.L1PrefiringSF`: Applies L1 prefiring corrections.

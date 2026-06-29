@@ -1,5 +1,5 @@
 Project Structure
-==================
+=================
 
 This page provides a map of the codebase for developers who need to understand or modify the framework internals.
 
@@ -100,21 +100,21 @@ The most important files for understanding the framework:
    * - File
      - Role
    * - ``core/analysis_modules.py``
-     - Module base class, lifecycle, ``should_run``, ``ModuleAddition``
+     - Module base class, lifecycle, ``should_run``, :class:`~analyzer.core.analysis_modules.ModuleAddition`
    * - ``core/columns.py``
-     - ``Column``, ``TrackedColumns``, provenance tracking, ``addSelection``
+     - :class:`~analyzer.core.columns.Column`, :class:`~analyzer.core.columns.TrackedColumns`, provenance tracking, :func:`~analyzer.core.columns.addSelection`
    * - ``core/analyzer.py``
      - Pipeline execution, caching logic, multi-run orchestration
    * - ``core/results.py``
-     - All result types, serialization, ``mergeAndScale``
+     - All result types, serialization, :func:`~analyzer.core.results.mergeAndScale`
    * - ``core/run_builders.py``
-     - ``RunBuilder`` strategies, systematic variation construction
+     - :class:`~analyzer.core.run_builders.RunBuilder` strategies, systematic variation construction
    * - ``core/serialization.py``
      - ``cattrs`` converter setup, tagged union configuration
    * - ``utils/querying.py``
-     - Pattern matching DSL (``Pattern``, ``DeepPattern``, etc.)
+     - Pattern matching DSL (:class:`~analyzer.utils.querying.Pattern`, :class:`~analyzer.utils.querying.DeepPattern`, etc.)
    * - ``postprocessing/grouping.py``
-     - ``GroupBuilder``: select, group, transform, subgroup pipeline
+     - :class:`~analyzer.postprocessing.grouping.GroupBuilder`: select, group, transform, subgroup pipeline
    * - ``cli/cli.py``
      - All CLI commands
 
@@ -128,7 +128,7 @@ This is the mechanism that makes the configuration-driven approach work.
 A central ``Converter`` is set up in ``core/serialization.py``, with hooks registered for:
 
 - **Tagged unions**: Module classes are resolved by ``module_name``, executors by ``executor_name``, run builders by ``strategy_name``, transforms by ``name``, and postprocessors by ``name``.
-- **Custom types**: ``Column``, ``Pattern``, ``MetadataExpr``, ``SampleType``, etc., have custom structure/unstructure hooks.
+- **Custom types**: :class:`~analyzer.core.columns.Column`, :class:`~analyzer.utils.querying.Pattern`, :class:`~analyzer.core.analysis_modules.MetadataExpr`, :class:`~analyzer.core.datasets.SampleType`, etc., have custom structure/unstructure hooks.
 - **Subclass resolution**: ``include_subclasses`` from ``cattrs.strategies`` automatically discovers all subclasses of base types.
 
 This is why importing module files (via ``extra_module_paths``) before parsing the configuration is essential -- the subclass list is built at import time.

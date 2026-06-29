@@ -1,5 +1,5 @@
 Pattern Matching
-=================
+================
 
 The framework uses a pattern matching system in several places:
 
@@ -8,7 +8,7 @@ The framework uses a pattern matching system in several places:
 - The ``select`` and ``group`` fields in postprocessing configurations.
 - Style rules in postprocessing.
 - The ``drop_sample_pattern`` in postprocessing.
-- The ``systs`` field in ``LimitSysts`` run builders.
+- The ``systs`` field in :class:`~analyzer.core.run_builders.LimitSysts` run builders.
 
 We summarize here the basics of the system. 
 
@@ -65,7 +65,7 @@ This is the most common usage in postprocessing configurations:
       pipeline: "Signal*"        # Match pipelines starting with "Signal"
       dataset_name: "!signal*"   # Exclude signal datasets
 
-Each key-value pair becomes a ``DeepPattern``: the key specifies the path in the metadata dictionary, and the value is a pattern matched against the value at that path.
+Each key-value pair becomes a :class:`~analyzer.utils.querying.DeepPattern`: the key specifies the path in the metadata dictionary, and the value is a pattern matched against the value at that path.
 
 When multiple keys are specified, they are combined with AND -- all must match.
 
@@ -132,7 +132,7 @@ For more details on how grouping works in postprocessing, see :doc:`../postproce
 
 
 Summary of Pattern Syntax
---------------------------
+-------------------------
 
 .. list-table::
    :header-rows: 1

@@ -1,18 +1,18 @@
 Transforms Reference
-=====================
+====================
 
 Transforms modify results within a postprocessing group before they are passed to the processor.
-They are specified in the ``transforms`` field of a ``GroupBuilder``.
+They are specified in the ``transforms`` field of a :class:`~analyzer.postprocessing.grouping.GroupBuilder`.
 Transformations can perform a variety manipulations, from simply slicing histogram axes to doing complex rescaling of systematics.
 
 
 Histogram Transforms
 --------------------
 
-These operate on ``Histogram`` results and modify the underlying ``hist.Hist`` object.
+These operate on :class:`~analyzer.core.results.Histogram` results and modify the underlying ``hist.Hist`` object.
 
 SelectAxesValues
-^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^
 
 Select specific values from categorical or string axes.
 This is the most commonly used transform -- nearly every postprocessing configuration uses it to select the "central" variation.
@@ -35,7 +35,7 @@ You can select from multiple axes and multiple values simultaneously:
 When multiple values are specified for an axis, the transform produces one output item per combination of values.
 
 MergeAxes
-^^^^^^^^^^
+^^^^^^^^^
 
 Sum over one or more axes, collapsing them.
 This is commonly used to merge binned category axes like ``HT_Cat`` into a single bin.
@@ -46,10 +46,10 @@ This is commonly used to merge binned category axes like ``HT_Cat`` into a singl
       merge_axis_names: [HT_Cat]
 
 SplitAxes
-^^^^^^^^^^
+^^^^^^^^^
 
 Split a histogram along one or more axes, producing one result per bin value.
-The opposite of ``MergeAxes``.
+The opposite of :class:`~analyzer.postprocessing.transforms.hist_transforms.MergeAxes`.
 
 .. code-block:: yaml
 
@@ -65,7 +65,7 @@ You can optionally limit which values are split using a pattern:
       limit_pattern: "central"
 
 RebinAxes
-^^^^^^^^^^
+^^^^^^^^^
 
 Rebin histogram axes by an integer factor.
 
@@ -82,7 +82,7 @@ Rebin histogram axes by an integer factor.
         jet_pt: 2
 
 SliceAxes
-^^^^^^^^^^
+^^^^^^^^^
 
 Slice histogram axes to a sub-range.
 Values are specified as ``[low, high]`` in the axis's coordinate space (not bin indices).
@@ -95,7 +95,7 @@ Values are specified as ``[low, high]`` in the axis's coordinate space (not bin 
         jet_pt: [30, null]     # Keep jet_pt >= 30 (null = no upper bound)
 
 MultiSliceAxes
-^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^
 
 Produce multiple slices of an axis in one step.
 Specify the start, stop, and number of bins, and the transform produces one result per adjacent pair of bin edges.
@@ -107,7 +107,7 @@ Specify the start, stop, and number of bins, and the transform produces one resu
         mass: [500, 2500, 5]    # [start, stop, n_bins]
 
 SumHistograms
-^^^^^^^^^^^^^^
+^^^^^^^^^^^^^
 
 Sum together histograms matching a pattern, producing a single combined histogram.
 Items not matching the pattern are passed through unchanged.
@@ -122,7 +122,7 @@ Items not matching the pattern are passed through unchanged.
         dataset_title: "QCD (combined)"
 
 FormatTitle
-^^^^^^^^^^^^
+^^^^^^^^^^^
 
 Set the display title for each result using a template string:
 
@@ -132,7 +132,7 @@ Set the display title for each result using a template string:
       title_format: "{dataset_title} ({era.name})"
 
 SetStyle
-^^^^^^^^^
+^^^^^^^^
 
 Override the plot style for all items passing through this transform:
 
@@ -145,7 +145,7 @@ Override the plot style for all items passing through this transform:
         linewidth: 2
 
 StatMaker
-^^^^^^^^^^
+^^^^^^^^^
 
 Compute summary statistics (integral, mean, median, standard deviation) for each histogram and attach them to the metadata.
 Useful for including statistics in plot labels or output file names.
@@ -155,7 +155,7 @@ Useful for including statistics in plot labels or output file names.
     - name: StatMaker
 
 OrBinaryAxes
-^^^^^^^^^^^^^
+^^^^^^^^^^^^
 
 Combine multiple binary (0/1) categorical axes using logical OR.
 
@@ -165,7 +165,7 @@ Combine multiple binary (0/1) categorical axes using logical OR.
       or_axis_names: [trigger_A, trigger_B]
 
 NormalizeSystematicByProjection
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Normalize systematic variations so that their total yield matches the nominal, preserving the shape difference.
 
@@ -176,7 +176,7 @@ Normalize systematic variations so that their total yield matches the nominal, p
       pre_sf_name: "central"
 
 ABCDTransformer
-^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^
 
 Transform a 2D histogram into a 1D categorical histogram with ABCD regions based on x and y cuts.
 The cut values are read from a CSV file.
@@ -194,10 +194,10 @@ The cut values are read from a CSV file.
 Data Transforms
 ---------------
 
-These operate on ``SavedColumns`` results rather than histograms.
+These operate on :class:`~analyzer.core.results.SavedColumns` results rather than histograms.
 
 MaskData
-^^^^^^^^^
+^^^^^^^^
 
 Apply a boolean mask to saved column data.
 The mask is specified as a Python expression evaluated with the column names available as variables.
@@ -208,7 +208,7 @@ The mask is specified as a Python expression evaluated with the column names ava
       mask: "jet_pt > 30"
 
 AddData
-^^^^^^^^
+^^^^^^^
 
 Add a new computed column to the saved data.
 The expression has access to existing column names.
@@ -220,7 +220,7 @@ The expression has access to existing column names.
       func: "jet_pt / HT"
 
 MakeHistogram
-^^^^^^^^^^^^^^
+^^^^^^^^^^^^^
 
 Create a histogram from saved column data (as opposed to the histograms produced during the analysis).
 
@@ -238,7 +238,7 @@ Create a histogram from saved column data (as opposed to the histograms produced
 
 
 Applying Transforms Conditionally
-----------------------------------
+---------------------------------
 
 Any transform can be restricted to specific items using the ``should_run`` field:
 

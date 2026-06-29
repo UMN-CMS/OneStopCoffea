@@ -82,7 +82,7 @@ If you prefer not to use the ``./osca`` wrapper, you can set up the environment 
 
 
 Troubleshooting Installation
------------------------------
+----------------------------
 
 **"uv: command not found"**
 
