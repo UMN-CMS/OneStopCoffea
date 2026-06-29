@@ -1,3 +1,8 @@
+"""
+Rough replication of the H->4L analysis as implemented in
+https://github.com/cms-opendata-analyses/HiggsToFourLeptonsNanoAODOutreachAnalysis
+"""
+
 from analyzer.core.analysis_modules import AnalyzerModule
 from analyzer.core.columns import Column, addSelection
 from attrs import define
