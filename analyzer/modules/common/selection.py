@@ -203,39 +203,30 @@ class SelectAllTriggers(AnalyzerModule):
 @define
 class ScalarSelection(AnalyzerModule):
     """
-    Select events based on the number of objects in a collection.
+    Select events based on value in column. 
 
-    This analyzer filters events according to the number of objects
-     in a given column, requiring the count to be within specified limits.
+    This analyzer filters events according to the values in a given column, requiring the value to be within specified limits.
 
     Parameters
     ----------
     selection_name : str
         Name of the selection to store the result.
     input_col : Column
-        Column containing the collection of...
-    min_count : int or None, optional
-        Minimum number of objects required to pass, by default None.
-    max_count : int or None, optional
-        Maximum number of objects allowed to pass, by default None.
+        Column containing the collection of objects to cut.
+    cut_val : float 
+        The specified cutoff value.
+    above : Defaults to True
+        Specifies the direction of the cut. 
+        (Above the value or below?) 
     """
 
     selection_name: str
     input_col: Column
-    min_count: int | None = None
-    max_count: int | None = None
-
+    cut_val: float
+    
     def run(self, columns, params):
         objs = columns[self.input_col]
-        count = ak.num(objs, axis=1)
-        sel = None
-        if self.min_count is not None:
-            sel = count >= self.min_count
-        if self.max_count is not None:
-            if sel is not None:
-                sel = sel & (count <= self.max_count)
-            else:
-                sel = count <= self.max_count
+        sel = objs >= self.cut_val           
         addSelection(columns, self.selection_name, sel)
         return columns, []
 
