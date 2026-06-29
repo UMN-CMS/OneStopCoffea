@@ -1,0 +1,66 @@
+- name: opendata_SMHiggsToZZTo4L
+  sample_type: MC
+  title: SM Higgs to ZZ to 4L (OpenData)
+  era: opendata2012
+  x_sec: 0.0065
+  files:
+  - root://eospublic.cern.ch//eos/opendata/cms/derived-data/AOD2NanoAODOutreachTool/ForHiggsTo4Leptons/SMHiggsToZZTo4L.root
+  n_events: 299973
+- name: opendata_ZZTo4mu
+  sample_type: MC
+  title: ZZ to 4mu (OpenData)
+  era: opendata2012
+  x_sec: 0.077
+  other_data:
+    scaleFactorZZTo4l: 1.386
+  files:
+  - root://eospublic.cern.ch//eos/opendata/cms/derived-data/AOD2NanoAODOutreachTool/ForHiggsTo4Leptons/ZZTo4mu.root
+  n_events: 1499064
+- name: opendata_ZZTo4e
+  sample_type: MC
+  title: ZZ to 4e (OpenData)
+  era: opendata2012
+  x_sec: 0.077
+  other_data:
+    scaleFactorZZTo4l: 1.386
+  files:
+  - root://eospublic.cern.ch//eos/opendata/cms/derived-data/AOD2NanoAODOutreachTool/ForHiggsTo4Leptons/ZZTo4e.root
+  n_events: 1499093
+- name: opendata_ZZTo2e2mu
+  sample_type: MC
+  title: ZZ to 2e2mu (OpenData)
+  era: opendata2012
+  x_sec: 0.18
+  other_data:
+    scaleFactorZZTo4l: 1.386
+  files:
+  - root://eospublic.cern.ch//eos/opendata/cms/derived-data/AOD2NanoAODOutreachTool/ForHiggsTo4Leptons/ZZTo2e2mu.root
+  n_events: 1497445
+- name: opendata_Run2012B_DoubleMuParked
+  sample_type: Data
+  title: Run2012B DoubleMuParked (OpenData)
+  era: opendata2012
+  files:
+  - root://eospublic.cern.ch//eos/opendata/cms/derived-data/AOD2NanoAODOutreachTool/ForHiggsTo4Leptons/Run2012B_DoubleMuParked.root
+  n_events: 26084708
+- name: opendata_Run2012C_DoubleMuParked
+  sample_type: Data
+  title: Run2012C DoubleMuParked (OpenData)
+  era: opendata2012
+  files:
+  - root://eospublic.cern.ch//eos/opendata/cms/derived-data/AOD2NanoAODOutreachTool/ForHiggsTo4Leptons/Run2012C_DoubleMuParked.root
+  n_events: 35455705
+- name: opendata_Run2012B_DoubleElectron
+  sample_type: Data
+  title: Run2012B DoubleElectron (OpenData)
+  era: opendata2012
+  files:
+  - root://eospublic.cern.ch//eos/opendata/cms/derived-data/AOD2NanoAODOutreachTool/ForHiggsTo4Leptons/Run2012B_DoubleElectron.root
+  n_events: 21474287
+- name: opendata_Run2012C_DoubleElectron
+  sample_type: Data
+  title: Run2012C DoubleElectron (OpenData)
+  era: opendata2012
+  files:
+  - root://eospublic.cern.ch//eos/opendata/cms/derived-data/AOD2NanoAODOutreachTool/ForHiggsTo4Leptons/Run2012C_DoubleElectron.root
+  n_events: 32537541
