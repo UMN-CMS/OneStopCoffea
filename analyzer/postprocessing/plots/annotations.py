@@ -53,13 +53,14 @@ def addCMSBits(
     info_text = plot_configuration.lumi_text
 
     if info_text is None:
-        lumis = set(str(x["era"]["lumi"]) for x in all_meta)
-        energies = set(str(x["era"]["energy"]) for x in all_meta)
-        era = set(str(x["era"]["name"]) for x in all_meta)
-        era_text = f"{'/'.join(era)}"
+        lumis = dict.fromkeys(str(x["era"]["lumi"]) for x in all_meta)
+        energies = dict.fromkeys(str(x["era"]["energy"]) for x in all_meta)
+        era = dict.fromkeys(str(x["era"]["name"]) for x in all_meta)
+
+        era_text = f"{'+'.join(era)}"
         lumi_text = (
             plot_configuration.lumi_text
-            or f"{'/'.join(lumis)} fb$^{{-1}}$ ({'/'.join(energies)} TeV)"
+            or f"{'+'.join(lumis)} fb$^{{-1}}$ ({'+'.join(energies)} TeV)"
         )
         info_text = era_text + ", " + lumi_text
 

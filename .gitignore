@@ -71,7 +71,7 @@ oldpkl/
 /*forjoe*/
 /docs/source/api/
 nn_models/
-postprocessing/
+/postprocessing/
 
 .bash_history
 .cmslpc-local-conf

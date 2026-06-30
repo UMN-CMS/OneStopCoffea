@@ -285,7 +285,7 @@ def plotMultiNumerators(
     ratio_type,
     x_values,
     ratio_func=computeRatio,
-    show_den_unc=True,
+    show_den_unc=False,
     xsec_normalize=False,
 ):
 
@@ -409,6 +409,7 @@ def plotRatio(
     plot_configuration=None,
     no_stack=False,
     ratio_hlines=(1.0,),
+    ratio_vlines=None,
     ratio_height=0.3,
     xsec_normalize=False,
 ):
@@ -464,11 +465,16 @@ def plotRatio(
 
     for y in ratio_hlines:
         ratio_ax.axhline(y, color="black", linestyle="dashed", linewidth=1.0)
+    if ratio_vlines is not None:
+        for x in ratio_vlines:
+            ratio_ax.axvline(x, ymin=ratio_ylim[0], ymax=ratio_ylim[1], color="black", linestyle="dashed", linewidth=1.0)
 
     ratio_ax.set_xlim(left_edge, right_edge)
     ratio_ax.set_ylim(*ratio_ylim)
     if ratio_type == "significance":
         rylabel = "Significance"
+    elif ratio_type == "efficiency":
+        rylabel = "Efficiency"
     else:
         rylabel = "Ratio"
     ratio_ax.set_ylabel(rylabel)

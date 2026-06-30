@@ -76,7 +76,6 @@ def saveFigVariants(
 
     cms_texts = pc.cms_text if isinstance(pc.cms_text, list) else [pc.cms_text or ""]
     suffix_text = len(cms_texts) > 1
-
     raw_types = (
         pc.image_type if isinstance(pc.image_type, list) else [pc.image_type or ".pdf"]
     )

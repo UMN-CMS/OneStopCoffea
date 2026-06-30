@@ -642,24 +642,33 @@ class JetScaleCorrections(AnalyzerModule):
     def run(self, columns, params):
         metadata = columns.metadata
         jets = columns[self.input_col]
+        run = columns['run']
         corrections = self.getCorrection(metadata)
-        systematic = params["jes-variation"]
+        systematic = params[f"jes-variation-{self.jet_type}"]
         real_syst_name = re.sub(r"(up|down)_jes", "", systematic)
         logger.debug(
             f'Running JEC with systematic "{systematic}". Real name is "{real_syst_name}"'
         )
 
-        if systematic == "central":
-            columns[self.output_col] = jets
-            return columns, []
-
         pt_raw = (1 - jets.rawFactor) * jets.pt
-        (1 - jets.rawFactor) * jets.mass
-        (
+        mass_raw = (1 - jets.rawFactor) * jets.mass
+        rho = (
             columns["fixedGridRhoFastjetAll"]
             if "fixedGridRhoFastjetAll" in columns.fields
             else columns["Rho.fixedGridRhoFastjetAll"]
         )
+
+        if systematic == "central":
+            k_l1 = JetScaleCorrections.getKeyJec('L1FastJet', self.jet_type, metadata)
+            k_l2 = JetScaleCorrections.getKeyJec('L2Relative', self.jet_type, metadata)
+            k_l2l3res = JetScaleCorrections.getKeyJec('L2L3Residual', self.jet_type, metadata)
+            factor = corrections[k_l1].evaluate(jets.area, jets.eta, pt_raw, rho)
+            factor2 = corrections[k_l2].evaluate(jets.eta, pt_raw*factor)
+            factor3 = corrections[k_l2l3res].evaluate(run, jets.eta, pt_raw*factor*factor2)
+            corrected = ak.with_field(jets, pt_raw*factor*factor2*factor3, "pt")
+            corrected = ak.with_field(corrected, mass_raw*factor*factor2*factor3, "mass")
+            columns[self.output_col] = corrected
+            return columns, []
 
         k = JetScaleCorrections.getKeyJec(real_syst_name, self.jet_type, metadata)
         evaluator = corrections[k]
@@ -693,7 +702,7 @@ class JetScaleCorrections(AnalyzerModule):
         ]
         return ModuleParameterSpec(
             {
-                "jes-variation": ParameterSpec(
+                f"jes-variation-{self.jet_type}": ParameterSpec(
                     default_value="central",
                     possible_values=possible_values,
                     tags={
@@ -712,6 +721,7 @@ class JetScaleCorrections(AnalyzerModule):
             self.input_col,
             Column("fixedGridRhoFastjetAll"),
             Column("Rho.fixedGridRhoFastjetAll"),
+            Column("run"),
         ]
 
     def outputs(self, metadata):
