@@ -60,16 +60,17 @@
   jet_corrections:
     jet_names:
       AK4: AK4PFPuppi
+      AK8: AK8PFPuppi
     files:
       #AK4: /cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/JME/2022_Summer22/jet_jerc.json.gz
       AK4: /cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run3-22CDSep23-Summer22-NanoAODv12/latest/jet_jerc.json.gz
       #AK8: /cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/JME/2022_Summer22/fatjet_jerc.json.gz
-      AK8: /cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run3-22CDSep23-Summer22-NanoAODv12/latest/fatjet_jerc.json.gz
+      AK8: /cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run3-22CDSep23-Summer22-NanoAODv12/latest/fatJet_jerc.json.gz
       #smear: /cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/JME/jer_smear.json.gz
       smear: /cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run3-22CDSep23-Summer22-NanoAODv12/latest/jer_smear.json.gz
     jec:
       campaign: Summer22_22Sep2023
-      version: V2
+      version: V4
       systematics:
         - AbsoluteMPFBias
         - AbsoluteScale

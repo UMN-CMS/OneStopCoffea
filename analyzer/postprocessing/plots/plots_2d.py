@@ -36,7 +36,6 @@ def plot2D(
 ):
     pc = plot_configuration or PlotConfiguration()
     fig, ax = plt.subplots(layout="constrained")
-
     if type(histogram) is list:
         h = histogram[0].item.histogram
         meta_to_save = [histogram[0].metadata]
@@ -190,7 +189,7 @@ def plot2DPulls(
     if color_scale == "log":
         pulls_hist.plot2d(norm=matplotlib.colors.LogNorm(), ax=ax)
     else:
-        pulls_hist.plot2d(ax=ax, norm=matplotlib.colors.TwoSlopeNorm(vmin=-10,vmax=10,vcenter=0), cmap='bwr')
+        pulls_hist.plot2d(ax=ax, norm=matplotlib.colors.TwoSlopeNorm(vmin=-100,vmax=100,vcenter=0), cmap='bwr')
 
     common_meta = commonDict([meta1, meta2], key=lambda x: x)
     #import re

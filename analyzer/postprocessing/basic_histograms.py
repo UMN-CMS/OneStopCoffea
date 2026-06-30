@@ -104,6 +104,7 @@ class RatioPlot(BasePostprocessor):
     normalize: bool = False
     ratio_ylim: tuple[float, float] = (0, 2)
     ratio_hlines: list[float] = field(factory=lambda: [1.0])
+    ratio_vlines: list[float] | None = None
     ratio_height: float = 0.5
     ratio_type: Literal["poisson", "poisson-ratio", "efficiency", "significance"] = (
         "poisson"
@@ -130,6 +131,7 @@ class RatioPlot(BasePostprocessor):
             ratio_type=self.ratio_type,
             scale=self.scale,
             ratio_hlines=self.ratio_hlines,
+            ratio_vlines=self.ratio_vlines,
             ratio_height=self.ratio_height,
             no_stack=self.no_stack,
             plot_configuration=pc,
