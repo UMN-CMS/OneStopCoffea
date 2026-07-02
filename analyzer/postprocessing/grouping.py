@@ -65,6 +65,7 @@ class GroupBuilder:
         Returns:
             The processed groups. The exact return type depends on the structure
             of `subgroups`:
+
             - If `subgroups` is None, returns the list of transformed groups.
             - If `subgroups` is a dict, returns a list of dictionaries containing
               the subgroup results.
