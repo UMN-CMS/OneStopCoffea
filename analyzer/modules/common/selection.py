@@ -235,27 +235,3 @@ class ScalarSelection(AnalyzerModule):
 
     def outputs(self, metadata):
         return [Column(("Selection", self.selection_name))]
-
-    def adlExport(self, metadata):
-        statements = []
-        col_name = self.input_col.adl_name
-        if (
-            self.min_count is not None
-            and self.max_count is not None
-            and self.min_count == self.max_count
-        ):
-            statements.append(
-                ADLStatement("select", f"size({col_name}) == {self.min_count}")
-            )
-        else:
-            if self.min_count is not None:
-                statements.append(
-                    ADLStatement("select", f"size({col_name}) >= {self.min_count}")
-                )
-            if self.max_count is not None:
-                statements.append(
-                    ADLStatement("select", f"size({col_name}) <= {self.max_count}")
-                )
-
-        return [ADLBlock(block_type="region_statement", name="", statements=statements)]
-
