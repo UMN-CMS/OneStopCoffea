@@ -116,7 +116,7 @@ def makeSignificance2D(
 class EfficiencyCalculation(str, enum.Enum):
     regular_eff = "efficiency"
 
-def efficiency(all_events, passing_events):
+def efficiency(passing_events, all_events):
     return passing_events/all_events
 
 def makeEfficiency2D(
@@ -151,6 +151,12 @@ def makeEfficiency2D(
         passing_h = passing_lookup.get(xy)
         if passing_h is None:
             continue
+
+        eff = (
+        )
+
+    effs.append((*xy, eff))
+    effs = np.array(effs)
 
     fig, ax = plt.subplots()
 
