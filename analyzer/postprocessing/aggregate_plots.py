@@ -152,7 +152,11 @@ def makeEfficiency2D(
         if passing_h is None:
             continue
 
-        eff = (
+        eff = (,
+            h.values(),
+            background_hist.values(),
+        )
+        sigs.append((*xy, sig))
         )
 
     effs.append((*xy, eff))
