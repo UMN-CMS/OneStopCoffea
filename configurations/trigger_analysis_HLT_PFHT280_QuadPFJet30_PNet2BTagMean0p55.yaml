@@ -71,20 +71,29 @@ analyzer:
       output_col: FourthGoodJet
       index: 3
 
-        #    - module_name: SimpleHistogram
-        #hist_name: PTFourth
-        #input_cols: [FourthGoodJet]
-        #axes:
-        #- name: PT4
-        #  start: 0
-        #  stop: 350
-        #  bins: 50
-        #  unit: GeV
+    - module_name: SimpleHistogram
+      hist_name: PTFourth
+      input_cols: [FourthGoodJet]
+      axes:
+        name: PT4
+        start: 0
+        stop: 350
+        bins: 50
+        unit: GeV
 
     - module_name: BQuarkMaker
       input_col: GoodJet
       output_col: BGoodJet
       working_point: 'T'
+
+    - module_name: NObjFilter
+      selection_name: TwoBJets
+      input_col: BGoodJet
+      min_count: 2
+
+    - module_name: SelectOnColumns
+      selection_name: 'TwoTightBJets'
+
 
 event_collections:
   - dataset: '*run3hlt*'
