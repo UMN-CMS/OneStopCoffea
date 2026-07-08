@@ -113,9 +113,6 @@ def makeSignificance2D(
     saveFig(fig, output_path, extension=pc.image_type)
     plt.close(fig)
 
-class EfficiencyCalculation(str, enum.Enum):
-    regular_eff = "efficiency"
-
 def efficiency(passing_events, all_events):
     return passing_events/all_events
 
@@ -134,7 +131,11 @@ def makeEfficiency2D(
     from .plots.utils import saveFig
 
     passing_lookup = {}
+
+    
+
     for item, meta in passing_group:
+        pass_h = item.histogram
         xy = (
             float(deepLookup(meta, xy_pattern[0])),
             float(deepLookup(meta, xy_pattern[1])),
@@ -148,22 +149,16 @@ def makeEfficiency2D(
             float(deepLookup(meta, xy_pattern[1])),
         )
         total_h = item.histogram
-        passing_h = passing_lookup.get(xy)
-        if passing_h is None:
+
+        eff = (efficiency(pass_h.values(), total_h.values())
+        )
+        effs.append((*xy, eff)) 
+        if pass_h is None:
             continue
 
-        eff = (,
-            h.values(),
-            background_hist.values(),
-        )
-        sigs.append((*xy, sig))
-        )
-
-    effs.append((*xy, eff))
     effs = np.array(effs)
 
     fig, ax = plt.subplots()
-
     sc = ax.scatter(
         effs[:, 0],
         effs[:, 1],
@@ -229,6 +224,7 @@ class Efficiency2D(BasePostprocessor):
     def getRunFuncs(self, group, prefix=None):    # The stuff I want needs to be in a group
         total = group["total"]
         passing = group["passing"]
+        common_meta = commonDict(it.chain(total, passing))
         output_path = dotFormat(
             self.output_name, **dict(dictToDot(common_meta)), prefix=prefix
         )
@@ -237,7 +233,7 @@ class Efficiency2D(BasePostprocessor):
         yield ft.partial(
             makeEfficiency2D,
             total_group=total,
-            passing_group = passing,
+            passing_group=passing,
             output_path=output_path,
             xy_pattern=self.group_xy_patterns,
             xyz_labels=self.xyz_labels,
