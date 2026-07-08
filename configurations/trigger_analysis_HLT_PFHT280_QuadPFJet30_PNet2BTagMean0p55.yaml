@@ -95,9 +95,9 @@ Postprocessing:
   processors:
    - name: RatioPlot
      inputs:
-       - "*/*/*/HT"
+       - "*/*/*/HT_before_selection"
      structure:
-       group: {pipeline: "*", dataset_name: "*"}
+       group: {pipeline: "supercool_first_pipeline", dataset_name: "*"}
        subgroups:
          denominator:
            transforms:
@@ -113,20 +113,19 @@ Postprocessing:
 
    - name: Efficiency2D
      inputs: 
-       - "*/*/*/HT"
-     group_xy_patterns: ["other_data":"stop_mass", "other_data" : "chargino_mass"]
+       - "*/*/*/HT_before_selection"
+     group_xy_patterns: [["other_data","stop_mass"],["other_data","chargino_mass"]]
      xyz_labels: ["ms", "mx", "efficiencies"] 
      structure: 
-       group: {pipeline: "*", dataset_name: "*"}
+       group: {pipeline: "supercool_first_pipeline", dataset_name: "*"}
        subgroups:
-         passing_events:
+         passing:
            transforms: 
-             - name: SelectAxesValues
-               select_axes_values: {"variation":"central"}
              - name: MergeAxes
-               merge_axis_names: ["PassHT"]
-         all_events:
+               merge_axis_names: [PassHT]
+             - name: SplitAxes
+               split_axis_names: []
+         total:
            transforms:
-             - name: SelectAxesValues
-               select_axes_values: {"variation":"central"}
+
      output_name: "{prefix}/{pipeline}/{dataset_name}/{name}.png"
