@@ -28,9 +28,9 @@ analyzer:
       hist_name: HT_before_selection
       input_cols: [ht]
       axes:
-        - name: HT
-          start: 0
-          stop: 2000
+        - name: "HT"
+          start: 0.0
+          stop: 2000.0
           bins: 60
           unit: GeV
 
@@ -41,9 +41,9 @@ analyzer:
       hist_name: HTGood
       input_cols: [ht]
       axes:
-        - name: HT
-          start: 0
-          stop: 2000
+        - name: "HT"
+          start: 0.0
+          stop: 2000.0
           bins: 60
           unit: GeV
 
@@ -60,9 +60,9 @@ analyzer:
       hist_name: HT_aftercutHTFlat
       input_cols: [ht]
       axes:
-        - name: HT
-          start: 0
-          stop: 2000
+        - name: "HT"
+          start: 0.0
+          stop: 2000.0
           bins: 60
           unit: GeV
 
@@ -73,27 +73,26 @@ analyzer:
 
     - module_name: SimpleHistogram
       hist_name: PTFourth
-      input_cols: [FourthGoodJet]
+      input_cols: [FourthGoodJet.pt]
       axes:
-        name: PT4
-        start: 0
-        stop: 350
-        bins: 50
-        unit: GeV
+        - name: "PT4"
+          start: 0.0
+          stop: 350.0
+          bins: 50
+          unit: GeV
 
     - module_name: BQuarkMaker
       input_col: GoodJet
       output_col: BGoodJet
       working_point: 'T'
 
-    - module_name: NObjFilter
-      selection_name: TwoBJets
-      input_col: BGoodJet
-      min_count: 2
+        #    - module_name: NObjFilter
+        #      selection_name: TwoBJets
+        #      input_col: BGoodJet
+        #      min_count: 2
 
-    - module_name: SelectOnColumns
-      selection_name: 'TwoTightBJets'
-
+        #    - module_name: SelectOnColumns
+        #      selection_name: 'TwoTightBJets'
 
 event_collections:
   - dataset: '*run3hlt*'
@@ -129,12 +128,14 @@ Postprocessing:
        group: {pipeline: "supercool_first_pipeline", dataset_name: "*"}
        subgroups:
          passing:
-           transforms: 
-             - name: MergeAxes
-               merge_axis_names: [PassHT]
-             - name: SplitAxes
-               split_axis_names: []
+           transforms:
+             - name: SelectAxesValues
+               select_axis_values: {"variation":"central","PassHT":[1]}    
          total:
            transforms:
+             - name: SelectAxesValues
+               select_axis_values: {"variation":"central"}
+             - name: MergeAxes
+               merge_axis_names: ["PassHT"]
 
      output_name: "{prefix}/{pipeline}/{dataset_name}/{name}.png"
