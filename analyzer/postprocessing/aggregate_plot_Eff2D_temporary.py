@@ -15,8 +15,8 @@ from attrs import define, field
 import numpy as np
 import enum
 
-def efficiency(passing_events, all_events):
-    return passing_events/all_events
+def efficiency(passing, all_events):
+    return passing/all_events
 
 def makeEfficiency2D(
     total_group,
