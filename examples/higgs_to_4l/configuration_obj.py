@@ -1,6 +1,7 @@
 from analyzer.core.analysis import Analysis, DatasetDescription
 from analyzer.core.analyzer import Analyzer
 from analyzer.core.run_builders import NoSystematics
+from analyzer.core.analysis_modules import IsSampleType
 
 import sys
 from pathlib import Path
@@ -20,6 +21,7 @@ from analyzer.modules.common.selection import SelectOnColumns
 from analyzer.modules.common.histogram_builder import SimpleHistogram
 from analyzer.modules.singlestop.selections import VecDRSelection
 from analyzer.core.columns import Column
+from analyzer.modules.common.axis import RegularAxis
 from analyzer.utils.querying import Pattern
 
 
@@ -56,7 +58,7 @@ def electronMaker():
 def zzScaleFactor():
     return [
         Hto4LExampleApplyZZScaleFactor(
-            should_run={"sample_type": "MC"},
+            should_run=IsSampleType(sample_type="MC"),
             weight_name="zz_scale_factor",
         )
     ]
@@ -133,33 +135,28 @@ def plotHistograms():
             hist_name="HiggsMass",
             input_cols=[Column("Higgs_mass")],
             axes=[
-                {
-                    "name": "Higgs_mass",
-                    "start": 70,
-                    "stop": 180,
-                    "bins": 36,
-                    "unit": "GeV",
-                }
+                RegularAxis(
+                    name="Higgs_mass",
+                    start=70,
+                    stop=180,
+                    bins=36,
+                    unit="GeV",
+                )
             ],
         ),
         SimpleHistogram(
             hist_name="Z1Mass",
             input_cols=[Column("Z1_mass")],
-            axes=[
-                {"name": "Z1_mass", "start": 40, "stop": 120, "bins": 40, "unit": "GeV"}
-            ],
+            axes=[RegularAxis(name="Z1_mass", start=40, stop=120, bins=40, unit="GeV")],
         ),
         SimpleHistogram(
             hist_name="Z2Mass",
             input_cols=[Column("Z2_mass")],
-            axes=[
-                {"name": "Z2_mass", "start": 12, "stop": 120, "bins": 40, "unit": "GeV"}
-            ],
+            axes=[RegularAxis(name="Z2_mass", start=12, stop=120, bins=40, unit="GeV")],
         ),
     ]
 
 
-# Construct the Analyzer explicitly
 analyzer = Analyzer(default_run_builder=NoSystematics())
 
 analyzer.addPipeline(
