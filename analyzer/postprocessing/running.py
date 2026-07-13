@@ -19,7 +19,8 @@ from rich import print
 from distributed import (
     WorkerPlugin,
 )
-from analyzer.utils.yamlload import loadTemplateYaml
+from analyzer.utils.config_loading import loadConfigData
+from analyzer.configuration import CONFIG
 from analyzer.utils.querying import BasePattern
 import analyzer.utils.querying
 import analyzer.postprocessing.basic_histograms  # noqa
@@ -113,7 +114,11 @@ def maximalSubgroups(groups: set[frozenset]) -> set[frozenset]:
     return ret
 
 
-def loadPostprocessor(path):
+def loadPostprocessor(path, variable_name=None):
+
+    if variable_name is None:
+        variable_name = CONFIG.post_var
+
     converter = Converter()
     setupConverter(converter)
 
@@ -123,24 +128,27 @@ def loadPostprocessor(path):
 
     loadStyles()
 
-    data = loadTemplateYaml(path)
+    data = loadConfigData(path, variable_name)
 
-    if "Postprocessing" in data:
-        data = data["Postprocessing"]
+    if isinstance(data, PostprocessorConfig):
+        postprocessor = data
+    else:
+        if "Postprocessing" in data:
+            data = data["Postprocessing"]
 
-    try:
-        postprocessor = converter.structure(data, PostprocessorConfig)
-    except Exception as e:
-        from cattrs.errors import BaseValidationError
-        from cattrs.v import transform_error
+        try:
+            postprocessor = converter.structure(data, PostprocessorConfig)
+        except Exception as e:
+            from cattrs.errors import BaseValidationError
+            from cattrs.v import transform_error
 
-        if isinstance(e, BaseValidationError):
-            errors = transform_error(e)
-            error_msg = "\n".join([f"  - {err}" for err in errors])
-            raise ValueError(
-                f"Failed to load postprocessor due to configuration validation errors:\n{error_msg}"
-            ) from None
-        raise
+            if isinstance(e, BaseValidationError):
+                errors = transform_error(e)
+                error_msg = "\n".join([f"  - {err}" for err in errors])
+                raise ValueError(
+                    f"Failed to load postprocessor due to configuration validation errors:\n{error_msg}"
+                ) from None
+            raise
 
     for processor in postprocessor.processors:
         if processor.style_set is None:
