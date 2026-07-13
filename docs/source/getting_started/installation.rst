@@ -4,7 +4,7 @@ Installation
 Prerequisites
 -------------
 
-If you are just doing local work, you can simply work with the framework in your host OS.
+If you are just doing local work, you can simply work with the framework in your host OS, and can install it like any other python project.
 However, if you intend to do distributed job submission, then to ensure a consistent software environment, you will want to use a container.
 The framework generally runs inside an Apptainer (Singularity) container to ensure consistency between workers nodes and your local environment.
 
@@ -15,6 +15,7 @@ You will need:
 - **uv** for Python package management. Install it from `astral.sh <https://docs.astral.sh/uv/getting-started/installation/>`_ if not already available.
 
 The container image is hosted on CVMFS and does not need to be downloaded manually.
+If you don't have access to CVMFS you could use another container that is available on both your interactive machine and the remote workers.
 
 
 Setup
@@ -28,7 +29,8 @@ Clone the repository:
     cd OneStopCoffea
 
 That's it.
-The ``./osca`` wrapper script handles the rest -- it will automatically launch the container, create a virtual environment on first run, sync dependencies, and execute your command.
+The ``./osca`` wrapper will automatically launch the container, create a virtual environment on first run, sync dependencies, and execute your command.
+If you prefer to handle things yourself, you can manually set up your container and install the packages using uv manually.
 
 
 First Run
@@ -62,6 +64,10 @@ On the LPC (``cmslpc`` hosts), the ``./osca`` script automatically:
 - Binds the necessary filesystem paths (scratch space, CVMFS, Condor configuration).
 
 No additional configuration is needed.
+
+.. note::
+
+   In the future this should be extended to other common CMS hosts, especially lxplus.
 
 
 Manual Environment Setup
@@ -105,14 +111,15 @@ Ensure CVMFS is mounted and the path exists:
     ls /cvmfs/unpacked.cern.ch/registry.hub.docker.com/coffeateam/
 
 If CVMFS is not available then the modify the osca script to change the apptainer bindings.
+Also make sure to propagate any relevant container changes to the executors.
 
 
-**Permission errors in .venv**
+**Other environment errors**
 
-If you see permission errors, try removing the ``.venv`` directory and letting ``./osca`` recreate it:
+Try removing the ``.venv`` directory and letting ``./osca`` recreate it:
 
 .. code-block:: bash
 
     rm -rf .venv
-    ./osca run ...
+    ./osca --help
 
