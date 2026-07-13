@@ -14,7 +14,7 @@ The code is provided in the ``examples/higgs_to_4l/`` directory.
 The Analysis Configuration
 --------------------------
 The top level description of an analysis is declarative.
-This is handled by a central YAML configuration, in thise case ``examples/higgs_to_4l/configuration.yaml``.
+This is handled by a central configuration file. In this example, we provide three equivalents: a standard YAML configuration (``examples/higgs_to_4l/configuration.yaml``), a dictionary-based Python configuration (``examples/higgs_to_4l/configuration.py``), and an object-based Python configuration (``examples/higgs_to_4l/configuration_obj.py``).
 
 Pipelines and Modules
 ^^^^^^^^^^^^^^^^^^^^^
@@ -35,10 +35,10 @@ In ``examples/higgs_to_4l/higgs_to_4l.py``, we define the custom :class:`~analyz
 
 Postprocessing
 --------------
-The psotprocessing configuration in ``examples/higgs_to_4l/postprocessor.yaml`` shows a complex configuration for producing a "model plot," which shows how background and signal compare to data.
+The postprocessing configuration in ``examples/higgs_to_4l/postprocessor.yaml`` shows a complex configuration for producing a "model plot," which shows how background and signal compare to data.
 There are a number of complex features showcased, such as transforms and subgrouping.
 
-The final output of the postprocessor is hown below.
+The final output of the postprocessor is shown below.
 
 .. image:: /_static/higgs_reco.png
    :alt: Higgs Mass Reconstruction
