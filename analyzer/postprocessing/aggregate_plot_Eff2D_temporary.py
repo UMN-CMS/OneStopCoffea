@@ -9,6 +9,8 @@ from analyzer.utils.structure_tools import (
     dictToDot,
     dotFormat,
 )
+from rich import print
+from itertools import zip_longest
 from .processors import BasePostprocessor
 from analyzer.utils.querying import deepLookup
 from attrs import define, field
@@ -37,9 +39,10 @@ def makeEfficiency2D(
 
     for item, meta in passing_group:
         pass_h = item.histogram
+
         xy = (
-            float(deepLookup(meta, xy_pattern[0])),
-            float(deepLookup(meta, xy_pattern[1])),
+         float(deepLookup(meta, xy_pattern[0])),
+         float(deepLookup(meta, xy_pattern[1])),
         )
         passing_lookup[xy] = item.histogram
 
@@ -55,6 +58,7 @@ def makeEfficiency2D(
         )
         effs.append((*xy, eff))
     
+    print(effs)
     effs = np.array(effs)
 
     fig, ax = plt.subplots()
@@ -85,9 +89,9 @@ class Efficiency2D(BasePostprocessor):
     xyz_labels: tuple[str, str, str]
     style: Style = field(factory=Style)
 
-    def getRunFuncs(self, group, prefix=None):    # The stuff I want needs to be in a group
-        total = group["total"]
-        passing = group["passing"]
+    def getRunFuncs(self, Group, prefix=None):
+        total = Group["name_grouping"][1]["total"]
+        passing = Group["name_grouping"][1]["passing"]
         common_meta = commonDict(it.chain(total, passing))
         output_path = dotFormat(
             self.output_name, **dict(dictToDot(common_meta)), prefix=prefix
@@ -98,6 +102,7 @@ class Efficiency2D(BasePostprocessor):
             makeEfficiency2D,
             total_group=total,
             passing_group=passing,
+            common_metadata=common_meta,
             output_path=output_path,
             xy_pattern=self.group_xy_patterns,
             xyz_labels=self.xyz_labels,

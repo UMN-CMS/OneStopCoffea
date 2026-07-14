@@ -26,6 +26,7 @@ import analyzer.postprocessing.basic_histograms  # noqa
 import analyzer.postprocessing.cutflows  # noqa
 import analyzer.postprocessing.combine  # noqa
 import analyzer.postprocessing.aggregate_plots  # noqa
+import analyzer.postprocessing.aggregate_plot_Eff2D_temporary  # noqa
 import analyzer.postprocessing.exporting  # noqa
 import analyzer.postprocessing.corrections  # noqa
 from .style import loadStyles
@@ -133,7 +134,7 @@ def loadPostprocessor(path):
     except Exception as e:
         from cattrs.errors import BaseValidationError
         from cattrs.v import transform_error
-
+        
         if isinstance(e, BaseValidationError):
             errors = transform_error(e)
             error_msg = "\n".join([f"  - {err}" for err in errors])
