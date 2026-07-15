@@ -10,6 +10,8 @@ from analyzer.utils.load import loadModuleFromPath
 from analyzer.utils.querying import Pattern
 
 
+from analyzer.core.linting import LintConfig
+
 @define
 class DatasetDescription:
     pipelines: list[str]
@@ -31,6 +33,7 @@ class Analysis:
     extra_dataset_paths: list[str] = field(factory=list)
     extra_era_paths: list[str] = field(factory=list)
     extra_executors: dict[str, Executor] = field(factory=dict)
+    lint_config: LintConfig = field(factory=LintConfig)
 
     location_priorities: list[str] | None = None
 
