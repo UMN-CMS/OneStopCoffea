@@ -10,12 +10,13 @@ The framework generally runs inside an Apptainer (Singularity) container to ensu
 
 You will need:
 
-- **Git** for cloning the repository.
-- **Apptainer** (or Singularity) available on your system. On the LPC, this is already available.
-- **uv** for Python package management. Install it from `astral.sh <https://docs.astral.sh/uv/getting-started/installation/>`_ if not already available.
+- **Git** for cloning the repository (and also for tracking your own work!).
+- **Apptainer** (or Singularity) available on your system. This should be available on most scientific computing clusters. If not, please complain to your local system administrator.
+- **uv** A most excellent Python package manager. Install it from `astral.sh <https://docs.astral.sh/uv/getting-started/installation/>`_ if not already available.
 
-The container image is hosted on CVMFS and does not need to be downloaded manually.
+The default container image is hosted on CVMFS and does not need to be downloaded manually.
 If you don't have access to CVMFS you could use another container that is available on both your interactive machine and the remote workers.
+Ideally choose a container that has some of the heavier dependencies already installed, such as pytorch, xrootd, etc.
 
 
 Setup
@@ -28,15 +29,16 @@ Clone the repository:
     git clone https://github.com/UMN-CMS/OneStopCoffea.git
     cd OneStopCoffea
 
-That's it.
+
 The ``./osca`` wrapper will automatically launch the container, create a virtual environment on first run, sync dependencies, and execute your command.
 If you prefer to handle things yourself, you can manually set up your container and install the packages using uv manually.
+Note though that you will need to be careful when dealing with distributed execution!
 
 
 First Run
 ---------
 
-To verify the installation, run a quick test using the example configuration:
+To verify the installation, check if you can run the program:
 
 .. code-block:: bash
 
@@ -99,7 +101,8 @@ On the LPC, you can typically install it with:
 
     curl -LsSf https://astral.sh/uv/install.sh | sh
 
-Then add ``$HOME/.cargo/bin`` to your ``PATH`` (or source your ``.bashrc``).
+
+Make sure it is added to your ``PATH``.
 
 
 **Container image not found**

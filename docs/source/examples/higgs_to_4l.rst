@@ -35,10 +35,10 @@ In ``examples/higgs_to_4l/higgs_to_4l.py``, we define the custom :class:`~analyz
 
 Postprocessing
 --------------
-The postprocessing configuration in ``examples/higgs_to_4l/postprocessor.yaml`` shows a complex configuration for producing a "model plot," which shows how background and signal compare to data.
+The psotprocessing configuration in ``examples/higgs_to_4l/postprocessor.yaml`` shows a complex configuration for producing a "model plot," which shows how background and signal compare to data.
 There are a number of complex features showcased, such as transforms and subgrouping.
 
-The final output of the postprocessor is shown below.
+The final output of the postprocessor is hown below.
 
 .. image:: /_static/higgs_reco.png
    :alt: Higgs Mass Reconstruction
