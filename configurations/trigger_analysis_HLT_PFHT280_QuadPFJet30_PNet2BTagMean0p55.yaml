@@ -101,6 +101,53 @@ location_priorities: [".*(T0|T1|T2).*","eos"]
 
 Postprocessing: 
   processors:
+    - name: Histogram1D
+      inputs: 
+        - "*/*/*/PTFourth"
+      structure:
+        group: {"pipeline": "*"}
+        transforms: 
+          - name: SelectAxesValues
+            select_axes_values: {"variation": "central"}
+      output_name: "{prefix}/{era.name}/{name}.png"
+
+    - name: RatioPlot
+      inputs: 
+        - "*/*/*/HTGood"
+      structure: 
+        group: 
+        subgroups: 
+          numerator: 
+            transforms: 
+              - name: SelectAxesValues
+                select_axes_values: {"variation":["central"],"PassHT":[1]}
+          denominator: 
+            transforms: 
+              - name: SelectAxesValues
+                select_axes_values: {"variation":["central"]}
+              - name: MergeAxes
+                merge_axis_names: {"PassHT"} 
+      output_name: ""
+
+    - name: RatioPlot
+      inputs:
+        - "*/*/*/HTGreaterHTFlat"
+      structure:
+        group:
+        subgroups:
+          numerator: 
+            transforms:
+              - name: SelectAxesValues
+                select_axes_values: {"variation":["central"],"PassHT":[1]}
+          denominator: 
+            transforms:
+              - name: SelectAxesValues
+                select_axes_values: {"variation":"central"}
+              - name: MergeAxes
+                merge_axis_names: {"PassHT"}
+      output_name: "{prefix}/ratio_{era.name}_{name}.png"
+
+
     - name: Efficiency2D
       inputs: 
         - "*/*/*/HT_before_selection"
@@ -115,11 +162,11 @@ Postprocessing:
               passing: 
                 transforms: 
                   - name: SelectAxesValues
-                    select_axes_values: {"variation":"central","PassHT":[1]}
+                    select_axes_values: {"variation":["central"],"PassHT":[1]}
               total:  
                 transforms: 
                   - name: SelectAxesValues
-                    select_axes_values: {"variation":"central"}
+                    select_axes_values: {"variation":["central"]}
                   - name: MergeAxes
                     merge_axis_names: ["PassHT"]
       output_name: "{prefix}/{pipeline}/{name}.png"
