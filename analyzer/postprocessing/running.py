@@ -26,7 +26,7 @@ import analyzer.postprocessing.basic_histograms  # noqa
 import analyzer.postprocessing.cutflows  # noqa
 import analyzer.postprocessing.combine  # noqa
 import analyzer.postprocessing.aggregate_plots  # noqa
-import analyzer.postprocessing.aggregate_plot_Eff2D_temporary  # noqa
+import analyzer.postprocessing.Efficiency2D_plot  # noqa
 import analyzer.postprocessing.exporting  # noqa
 import analyzer.postprocessing.corrections  # noqa
 from .style import loadStyles
