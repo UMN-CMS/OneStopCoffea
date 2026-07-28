@@ -14,6 +14,8 @@ import pickle as pkl
 import lz4.frame
 import dask_awkward as dak
 import functools as ft
+import json
+import datetime
 from cattrs.strategies import include_subclasses, configure_tagged_union
 from analyzer.core.event_collection import FileSet
 from analyzer.core.serialization import converter
@@ -29,6 +31,40 @@ from typing import Any, Literal, ClassVar
 import logging
 
 logger = logging.getLogger("analyzer")
+
+FORMAT_VERSION = 2
+
+@ft.cache
+def buildFileHeader():
+    import sys
+    from importlib.metadata import version, PackageNotFoundError
+
+    def ver(dist):
+        try:
+            return version(dist)
+        except PackageNotFoundError:
+            return None
+
+    return {
+        "format_version": FORMAT_VERSION,
+        "created": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+        "writer": "OneStopCoffea",
+        "writer_version": ver("OneStopCoffea"),
+        "python": sys.version.split()[0],
+        "packages": {
+            name: ver(name)
+            for name in (
+                "hist",
+                "boost-histogram",
+                "uhi",
+                "awkward",
+                "numpy",
+                "coffea",
+                "dask-awkward",
+                "lz4",
+            )
+        },
+    }
 
 
 def getArrayMem(array):
@@ -89,7 +125,24 @@ class ResultBase(abc.ABC):
 
 
 @define
+class ResultFileParts:
+    """The blocks of a result file, before any of them are decoded."""
+
+    format_version: int
+    header: dict[str, Any]
+    peek: bytes | None
+    core: bytes
+    compressed: bool
+
+
+@define
 class ResultGroup(ResultBase):
+    """
+    version 0: a bare pickle, with no magic bytes.
+    version 1: ``MAGIC | peek_len:u32 | peek | lz4(payload)``.
+    version 2: ``MAGIC | version:u8 | header_len:u32 | header | peek_len:u32 | peek | lz4(payload)``, where ``header`` is JSON.
+    """
+
     _MAGIC_ID: ClassVar[Literal[b"sstopresult"]] = b"sstopresult"
     _HEADER_SIZE: ClassVar[Literal[4]] = 4
 
@@ -101,67 +154,123 @@ class ResultGroup(ResultBase):
         return globWithMeta(self, pattern)
 
     @classmethod
+    def _encodeLength(cls, value: int) -> bytes:
+        if (value.bit_length() + 7) // 8 > cls._HEADER_SIZE:
+            raise RuntimeError(
+                f"Block of {value} bytes does not fit in a "
+                f"{cls._HEADER_SIZE} byte length field"
+            )
+        return value.to_bytes(cls._HEADER_SIZE, byteorder="big")
+
+    @classmethod
+    def _parseVersioned(cls, data: bytes, pos: int) -> ResultFileParts:
+        version = data[pos]
+        pos += 1
+        header_size = int.from_bytes(data[pos : pos + cls._HEADER_SIZE], byteorder="big")
+        pos += cls._HEADER_SIZE
+        header = json.loads(data[pos : pos + header_size])
+        pos += header_size
+        if not isinstance(header, dict) or "format_version" not in header:
+            raise ValueError("Block is not a result file header")
+        peek_size = int.from_bytes(data[pos : pos + cls._HEADER_SIZE], byteorder="big")
+        pos += cls._HEADER_SIZE
+        return ResultFileParts(
+            format_version=version,
+            header=header,
+            peek=data[pos : pos + peek_size],
+            core=data[pos + peek_size :],
+            compressed=True,
+        )
+
+    @classmethod
+    def _parseBytes(cls, data: bytes) -> ResultFileParts:
+        if data[: len(cls._MAGIC_ID)] != cls._MAGIC_ID:
+            return ResultFileParts(0, {}, None, data, False)
+
+        pos = len(cls._MAGIC_ID)
+        if data[pos]:
+            try:
+                return cls._parseVersioned(data, pos)
+            except Exception:
+                logger.debug(
+                    "Versioned header parse failed, falling back to format version 1",
+                    exc_info=True,
+                )
+
+        peek_size = int.from_bytes(data[pos : pos + cls._HEADER_SIZE], byteorder="big")
+        pos += cls._HEADER_SIZE
+        return ResultFileParts(
+            format_version=1,
+            header={},
+            peek=data[pos : pos + peek_size],
+            core=data[pos + peek_size :],
+            compressed=True,
+        )
+
+    @classmethod
+    def readHeader(cls, data: bytes) -> dict[str, Any]:
+        return cls._parseBytes(data).header
+
+    @classmethod
     def peekFile(cls, f):
-        maybe_magic = f.read(len(cls._MAGIC_ID))
-        if maybe_magic == cls._MAGIC_ID:
+        magic = f.read(len(cls._MAGIC_ID))
+        if magic != cls._MAGIC_ID:
+            return cls.peekBytes(magic + f.read())
+
+        marker = f.read(1)
+        if marker and marker[0]:
+            header_size = int.from_bytes(f.read(cls._HEADER_SIZE), byteorder="big")
+            raw_header = f.read(header_size)
+            try:
+                header = json.loads(raw_header)
+                if not isinstance(header, dict) or "format_version" not in header:
+                    raise ValueError("Block is not a result file header")
+            except Exception:
+                logger.debug(
+                    "Versioned header parse failed, re-reading whole file",
+                    exc_info=True,
+                )
+                f.seek(0)
+                return cls.peekBytes(f.read())
             peek_size = int.from_bytes(f.read(cls._HEADER_SIZE), byteorder="big")
-            ret = converter.unstructure(pkl.loads(f.read(peek_size)), ResultGroup)
-            return ret
-        else:
-            return converter.structure(pkl.loads(maybe_magic + f.read())).summary()
+            return converter.structure(pkl.loads(f.read(peek_size)), cls)
+
+        peek_size = int.from_bytes(
+            marker + f.read(cls._HEADER_SIZE - 1), byteorder="big"
+        )
+        return converter.structure(pkl.loads(f.read(peek_size)), cls)
 
     @classmethod
     def peekBytes(cls, data: bytes):
-        if data[0 : len(cls._MAGIC_ID)] == cls._MAGIC_ID:
-            header_value = data[
-                len(cls._MAGIC_ID) : len(cls._MAGIC_ID) + cls._HEADER_SIZE
-            ]
-            peek_size = int.from_bytes(header_value, byteorder="big")
-            peek = data[
-                len(cls._MAGIC_ID) + cls._HEADER_SIZE : len(cls._MAGIC_ID)
-                + cls._HEADER_SIZE
-                + peek_size
-            ]
-            return converter.structure(pkl.loads(peek), ResultGroup)
-        else:
-            return converter.structure(pkl.loads(data)).summary()
+        parts = cls._parseBytes(data)
+        if parts.peek is None:
+            return cls.fromBytes(data).summary()
+        return converter.structure(pkl.loads(parts.peek), cls)
 
     @classmethod
     def fromBytes(cls, data: bytes):
-        if data[0 : len(cls._MAGIC_ID)] == cls._MAGIC_ID:
-            header_value = data[
-                len(cls._MAGIC_ID) : len(cls._MAGIC_ID) + cls._HEADER_SIZE
-            ]
-            peek_size = int.from_bytes(header_value, byteorder="big")
-            data[
-                len(cls._MAGIC_ID) + cls._HEADER_SIZE : len(cls._MAGIC_ID)
-                + cls._HEADER_SIZE
-                + peek_size
-            ]
-            core_data = lz4.frame.decompress(
-                data[len(cls._MAGIC_ID) + cls._HEADER_SIZE + peek_size :]
-            )
-            ret = converter.structure(pkl.loads(core_data), cls)
-        else:
-            ret = converter.structure(pkl.loads(data), cls)
-        return ret
+        parts = cls._parseBytes(data)
+        core = lz4.frame.decompress(parts.core) if parts.compressed else parts.core
+        return converter.structure(pkl.loads(core), cls)
 
     def toBytes(self, packed_mode=True) -> bytes:
-        if packed_mode:
-            peek = pkl.dumps(converter.unstructure(self.summary()))
-            core_data = lz4.frame.compress(pkl.dumps(converter.unstructure(self)))
-            pl = len(peek)
-            plb = (pl.bit_length() + 7) // 8
-            if plb > self._HEADER_SIZE:
-                raise RuntimeError
-            return (
-                self._MAGIC_ID
-                + pl.to_bytes(self._HEADER_SIZE, byteorder="big")
-                + peek
-                + core_data
-            )
-        else:
+        if not packed_mode:
             return pkl.dumps(converter.unstructure(self))
+
+        header = json.dumps(buildFileHeader()).encode()
+        peek = pkl.dumps(converter.unstructure(self.summary()))
+        core = lz4.frame.compress(pkl.dumps(converter.unstructure(self)))
+        return b"".join(
+            (
+                self._MAGIC_ID,
+                bytes([FORMAT_VERSION]),
+                self._encodeLength(len(header)),
+                header,
+                self._encodeLength(len(peek)),
+                peek,
+                core,
+            )
+        )
 
     def summary(self):
         return ResultGroup(
@@ -551,14 +660,49 @@ class RawSelectionFlow(ResultBase):
         pass
 
 
+PORTABLE_TAG = "__osca_portable__"
+UNPORTABLE_STORAGES = ("Mean", "WeightedMean")
+
+def histToPortable(histogram):
+    storage = histogram.storage_type.__name__
+    if storage in UNPORTABLE_STORAGES or not hasattr(histogram, "_to_uhi_"):
+        logger.warning(
+            f"Pickling a live histogram object ({storage} storage): reading this "
+            "result will require a compatible build of hist."
+        )
+        return histogram
+    return {PORTABLE_TAG: "hist", "ir": histogram._to_uhi_()}
+
+
+def histFromPortable(data):
+    return hist.Hist._from_uhi_(data["ir"])
+
+
+def awkwardToPortable(array):
+    form, length, container = ak.to_buffers(array)
+    return {
+        PORTABLE_TAG: "awkward",
+        "form": form.to_json(),
+        "length": length,
+        "container": container,
+    }
+
+
+def awkwardFromPortable(data):
+    return ak.from_buffers(data["form"], data["length"], data["container"])
+
+
+def isPortable(value, kind):
+    return isinstance(value, dict) and value.get(PORTABLE_TAG) == kind
+
 def configureConverter(conv):
     @conv.register_structure_hook
     def _(val: Any, _) -> hist.Hist:
-        return val
+        return histFromPortable(val) if isPortable(val, "hist") else val
 
     @conv.register_unstructure_hook
     def _(val: hist.Hist) -> hist.Hist:
-        return val
+        return histToPortable(val)
 
     @conv.register_structure_hook
     def _(val: Scalar, _) -> Scalar:
@@ -570,10 +714,12 @@ def configureConverter(conv):
 
     @conv.register_structure_hook
     def _(val: Array, _) -> Array:
-        return val
+        return awkwardFromPortable(val) if isPortable(val, "awkward") else val
 
     @conv.register_unstructure_hook
     def _(val: Array) -> Array:
+        if isinstance(val, ak.highlevel.Array):
+            return awkwardToPortable(val)
         return val
 
     union_strategy = ft.partial(configure_tagged_union, tag_name="result_type")
