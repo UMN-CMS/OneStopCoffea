@@ -145,12 +145,26 @@ analyzer:
           bins: 50
           unit: GeV
 
+    - module_name: EventLevelSumColumn
+      input_cols: ["PT2", "PT3","PT4"]
+      output_col: SumPT2toPT4
+
+    - module_name: SimpleHistogram
+      hist_name: Three_Low_Jets_PtSum
+      input_cols: [SumPT2toPT4]
+      axes:
+        - name: "PT2+PT3+PT4"
+          start: 150.0
+          stop: 800.0
+          bins: 65
+          unit: GeV
+
     - module_name: ScalarSelection
       selection_name: 'PT4GreaterPT4Flat'
       input_col: FourthGoodJet.pt
       cut_val: 60
       above: True
-   
+
     - module_name: SelectOnColumns
       sel_name: 'PT4GreaterPT4Flat'
 
