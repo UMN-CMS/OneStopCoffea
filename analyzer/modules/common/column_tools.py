@@ -159,7 +159,7 @@ class EventLevelSumColumn(AnalyzerModule):
         return columns, []
 
     def inputs(self, metadata):
-        return [self.input_col
+        return [self.input_col]
 
     def outputs(self, metadata):
         return [self.output_col]
