@@ -62,6 +62,7 @@ def plotOne(
             hists,
             ax=ax,
             stack=True,
+            density=normalize,
             **style_kwargs,
             label=titles,  # sort="yield"
         )
@@ -72,6 +73,7 @@ def plotOne(
                 ax=ax,
                 label="Stacked Unc.",
                 histtype="band",
+                density=normalize,
             )
 
     for item, meta in histograms:

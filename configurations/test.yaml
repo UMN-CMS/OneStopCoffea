@@ -1,0 +1,45 @@
+analyzer:
+  default_run_builder:
+    strategy_name: NoSystematics
+
+  MyPipeline:
+    - module_name: JetFilter
+      input_col: Jet
+      output_col: GoodJet
+      include_pu_id: False
+      include_jet_id: False
+      min_pt: 30
+      max_abs_eta: 2.4
+
+    - module_name: BQuarkMaker
+      input_col: GoodJet
+      output_col: MedB
+      working_point: M
+
+    - module_name: HT
+      input_col: GoodJet
+
+    - module_name: Count
+      input_col: GoodJet
+      output_col: NJet
+
+    - module_name: NObjFilter
+      input_col: GoodJet
+      selection_name: njets
+      min_count: 4
+
+    - module_name: SimpleHistogram
+      hist_name: HT
+      input_cols: [HT]
+      axes:
+        - name: HT
+          start: 0
+          stop: 3000
+          bins: 60
+          unit: GeV
+
+location_priorities: [".*(T0|T1|T2).*","eos"]
+
+event_collections:
+  - dataset: 'signal_2018_312_*15*0'
+    pipelines: [MyPipeline]

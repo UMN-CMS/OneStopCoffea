@@ -44,12 +44,16 @@ def makeEfficiency2D(
     print("passing_group has data type: ",type(passing_group))
     
     for item, meta in passing_group:
+        if item is None or item == "":
+            continue  # Skips None and empty strings
         xy = (float(deepLookup(meta, xy_pattern[0])), float(deepLookup(meta, xy_pattern[1])))
         passing_lookup[xy] = item.histogram
     
     print("passing_group has length: ",len(passing_group))
     
     for item, meta in total_group:
+        if item is None or item == "":
+            continue  # Skips None and empty strings
         xy = (float(deepLookup(meta, xy_pattern[0])), float(deepLookup(meta, xy_pattern[1])))
         total_h = item.histogram
         pass_h = passing_lookup.get(xy)

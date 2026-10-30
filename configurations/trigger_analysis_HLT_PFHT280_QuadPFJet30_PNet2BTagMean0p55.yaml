@@ -8,10 +8,9 @@ analyzer:
       input_col: Jet
       output_col: GoodJet
 
-    - module_name: NObjFilter #Spec that I want at least 4 
-      selection_name: 'FourPlusGoodJets'
+    - module_name: HT                    # Make HT values available
       input_col: GoodJet
-      min_count: 4      
+      output_col: ht
 
     - module_name: SimpleCategory
       input_col: "HLT.PFHT280_QuadPFJet30_PNet2BTagMean0p55"
@@ -20,9 +19,20 @@ analyzer:
       start: 0
       stop: 2
 
-    - module_name: HT                    # Make HT values available
+    - module_name: SimpleHistogram                                           
+      hist_name: HT_before_selection_NOCUT 
+      input_cols: [ht]                                                       
+      axes:                                                                  
+        - name: "HT"                                                         
+          start: 0.0        
+          stop: 2000.0                                                       
+          bins: 60                                                       
+          unit: GeV
+
+    - module_name: NObjFilter #Spec that I want at least 4 
+      selection_name: 'FourPlusGoodJets'
       input_col: GoodJet
-      output_col: ht
+      min_count: 4      
 
     - module_name: SimpleHistogram
       hist_name: HT_before_selection
@@ -101,7 +111,7 @@ analyzer:
       axes:
         - name: "PT3"
           start: 0.0
-          stop: 350.0
+          stop: 600.0
           bins: 50
           unit: GeV
 
@@ -111,7 +121,7 @@ analyzer:
       axes:
         - name: "PT2"
           start: 0.0
-          stop: 350.0
+          stop: 400.0
           bins: 50
           unit: GeV
 
@@ -121,7 +131,7 @@ analyzer:
       axes:
         - name: "PT1"
           start: 0.0
-          stop: 350.0
+          stop: 400.0
           bins: 50
           unit: GeV
 
@@ -131,7 +141,7 @@ analyzer:
       axes:
         - name: "PT4"
           start: 0.0
-          stop: 350.0
+          stop: 400.0
           bins: 50
           unit: GeV
 
@@ -155,7 +165,7 @@ analyzer:
       min_count: 2
 
     - module_name: SelectTopN
-      input_col: GoodJet        # FIX STARTS HERE - Of the good jets, not just the bjets
+      input_col: GoodJet      
       sort_field: pt
       n: 4
       output_col: GoodJet_top4pt
@@ -181,13 +191,13 @@ analyzer:
       output_col: 'btag_discriminant'
 
     - module_name: SimpleHistogram
-      hist_name: BtagDisc
+      hist_name: Highest_2_Btag_Avg
       input_cols: ['btag_discriminant']
       axes:
-        - name: "BtagDisc"
+        - name: "Average of Btag1 & Btag2 per event"
           start: 0.0
           stop: 1.0
-          bins: 50
+          bins: 20
           unit: score
 
     - module_name: SimpleHistogram
@@ -226,12 +236,125 @@ analyzer:
 event_collections:
   - dataset: '*run3hlt*'
     pipelines: [supercool_first_pipeline]
-  - dataset: 'qcd_inclusive_2023_preBPix*'
+  - dataset: '*qcd*2023*preB*'
     pipelines: [supercool_first_pipeline]
+
 location_priorities: [".*(T0|T1|T2).*","eos"]
 
 Postprocessing: 
+  default_plot_config:
+    cms_text: ""
+    image_type: ".png"
+  default_style_set:
+    styles:
+      - pattern:
+          dataset_name: "qcd*"
+        style:
+          plottype: fill
+
   processors:
+    - name: Histogram1D
+      inputs:
+        - "*/*/*/HT_before_selection"
+      normalize: True
+      structure:
+        group: {name: "*"}
+        subgroups:
+          stacked:
+            select: {dataset_name: "*qcd*2023*preB*"}
+          unstacked:
+            select: {dataset_name: "signal*"}
+        transforms:
+          - name: SelectAxesValues
+            select_axes_values: {variation: ["central"], "PassHT":[1]}
+          - name: SetStyle
+            style:
+              plottype: fill
+              color: blue
+              alpha: 0.5
+            should_run:
+              dataset_name: "qcd*"
+      output_name: "{prefix}/QCD_Comparisons_HT_nosel/QCDCompare_{name}.png"
+
+    - name: Histogram1D
+      inputs: 
+        - "*/*/*/PTFirst"
+        - "*/*/*/PTSecond"
+        - "*/*/*/PTThird"
+        - "*/*/*/PTFourth"
+      normalize: True
+      structure:
+        group: {name: "*"}
+        subgroups:
+          stacked:
+            select: {dataset_name: "*qcd*2023*preB*"}
+          unstacked:
+            select: {dataset_name: "signal*"}
+        transforms:
+          - name: SelectAxesValues
+            select_axes_values: {variation: ["central"], "PassHT":[1]}
+          - name: SetStyle
+            style:
+              plottype: fill
+              color: blue
+              alpha: 0.5 
+            should_run: 
+              dataset_name: "qcd*"
+      output_name: "{prefix}/QCD_Comparisons_PT/QCDCompare_{name}.png"
+
+    - name: Histogram1D
+      inputs:
+        - "*/*/*/PTSecond"
+        - "*/*/*/PTThird"
+        - "*/*/*/PTFourth"
+      normalize: True
+      structure:
+        group: {pipeline: "*"}
+        subgroups:
+          stacked:
+            select: {dataset_name: "qcd_inclusive_2023_preBPi*"}
+          unstacked:
+            select: {dataset_name: "signal*"}
+            transforms:
+              - name: SumHistograms
+                sum_match_pattern: {pipeline: "*"}
+                new_meta_fields: {title: "2nd through 4th leading jet Pt sum"}
+        transforms:
+          - name: SelectAxesValues
+            select_axes_values: {variation: ["central"], "PassHT":[1]}
+          - name: SetStyle
+            style:
+              plottype: fill
+              color: blue
+              alpha: 0.5
+            should_run:
+              dataset_name: "qcd*"
+      output_name: "{prefix}/QCD_Comparisons_PT2thru4/QCDCompare.png"
+
+    - name: Histogram1D
+      inputs:
+        - "*/*/*/Btag_1"
+        - "*/*/*/Btag_2"
+      normalize: True
+      structure:
+        group: {name: "*"}
+        subgroups:
+          stacked:
+            select: {dataset_name: "*qcd*2023*preB*"}
+          unstacked:
+            select: {dataset_name: "signal*"}
+        transforms:
+          - name: SelectAxesValues
+            select_axes_values: {variation: ["central"], "PassHT":[1]}
+          - name: SetStyle
+            style:
+              plottype: fill
+              color: blue
+              alpha: 0.5
+            should_run:
+              dataset_name: "qcd*"
+      output_name: "{prefix}/QCD_Comparisons_BtagScore/QCDCompare_{name}.png"
+
     - name: RatioPlot
       inputs: 
         - "*/*/*/HTGood"
@@ -242,11 +365,11 @@ Postprocessing:
           numerator: 
             transforms: 
               - name: SelectAxesValues
-                select_axes_values: {"variation":["central"],"PassHT":[1]}
+                select_axes_values: {"variation": ["central"],"PassHT":[1]}
           denominator:
             transforms: 
               - name: SelectAxesValues
-                select_axes_values: {"variation":["central"]}
+                select_axes_values: {"variation": ["central"]}
               - name: MergeAxes
                 merge_axis_names: ["PassHT"] 
       output_name: "{prefix}/Ht_plots/{dataset_name}/ratio_{era.name}_{name}.png"
@@ -264,18 +387,18 @@ Postprocessing:
           numerator:
             transforms:
               - name: SelectAxesValues
-                select_axes_values: {"variation":["central"],"PassHT":[1]}
+                select_axes_values: {"variation": ["central"],"PassHT":[1]}
           denominator:
             transforms:
               - name: SelectAxesValues
-                select_axes_values: {"variation":"central"}
+                select_axes_values: {"variation": ["central"]}
               - name: MergeAxes
-                merge_axis_names: {"PassHT"}
+                merge_axis_names: ["PassHT"]
       output_name: "{prefix}/jet_pt_plots/{dataset_name}/ratio_{era.name}_{name}.png"
 
     - name: RatioPlot
       inputs:
-        - "*/*/*/BtagDisc"
+        - "*/*/*/Highest_2_Btag_Avg"
       ratio_type: "efficiency"
       structure:
         group: {dataset_name: "*"}
@@ -283,14 +406,14 @@ Postprocessing:
           numerator:
             transforms:
               - name: SelectAxesValues
-                select_axes_values: {"variation":["central"],"PassHT":[1]}
+                select_axes_values: {"variation": ["central"],"PassHT":[1]}
           denominator:
             transforms:
               - name: SelectAxesValues
-                select_axes_values: {"variation":"central"}
+                select_axes_values: {"variation": ["central"]}
               - name: MergeAxes
-                merge_axis_names: {"PassHT"}
-      output_name: "{prefix}/btag_plots/{dataset_name}/mean_ratio_{era.name}_{name}.png"
+                merge_axis_names: ["PassHT"]
+      output_name: "{prefix}/btag_avghighesttwo_plots/{dataset_name}/mean_ratio_{era.name}_{name}.png"
 
     - name: RatioPlot
       inputs:
@@ -303,58 +426,11 @@ Postprocessing:
           numerator:
             transforms:
               - name: SelectAxesValues
-                select_axes_values: {"variation":["central"],"PassHT":[1]}
+                select_axes_values: {"variation": ["central"],"PassHT":[1]}
           denominator:
             transforms:
               - name: SelectAxesValues
-                select_axes_values: {"variation":"central"}
+                select_axes_values: {"variation": ["central"]}
               - name: MergeAxes
-                merge_axis_names: {"PassHT"}
-      output_name: "{prefix}/btag_rank1_plots/{dataset_name}/rank1_ratio_{era.name}_{name}.png"
-
-
-    - name: Efficiency2D
-      inputs: 
-        - "*/*/*/HT_before_selection"
-      group_xy_patterns: [["other_data","stop_mass"],["other_data","chargino_mass"]]
-      xyz_labels: ["ms", "mx", "efficiencies"] 
-      structure: 
-        group: {pipeline: "*"}
-        subgroups: 
-          name_grouping: 
-            group: {dataset_name: "*"}
-            subgroups:  
-              passing: 
-                transforms: 
-                  - name: SelectAxesValues
-                    select_axes_values: {"variation":["central"],"PassHT":[1]}
-              total:  
-                transforms: 
-                  - name: SelectAxesValues
-                    select_axes_values: {"variation":["central"]}
-                  - name: MergeAxes
-                    merge_axis_names: ["PassHT"]
-      output_name: "{prefix}/presel_overall_Eff/{pipeline}/{name}.png"
-
-    - name: Efficiency2D
-      inputs:
-        - "*/*/*/HT_after_all_sel"
-      group_xy_patterns: [["other_data","stop_mass"],["other_data","chargino_mass"]]
-      xyz_labels: ["ms", "mx", "efficiencies"]
-      structure:
-        group: {pipeline: "*"}
-        subgroups:
-          name_grouping:
-            group: {dataset_name: "*"}
-            subgroups:
-              passing:
-                transforms:
-                  - name: SelectAxesValues
-                    select_axes_values: {"variation":["central"],"PassHT":[1]}
-              total:
-                transforms:
-                  - name: SelectAxesValues
-                    select_axes_values: {"variation":["central"]}
-                  - name: MergeAxes
-                    merge_axis_names: ["PassHT"]
-      output_name: "{prefix}/Overall_Eff/{pipeline}/{name}.png"
+                merge_axis_names: ["PassHT"]
+      output_name: "{prefix}/btag_rank_plots/{dataset_name}/rank1_ratio_{era.name}_{name}.png"
