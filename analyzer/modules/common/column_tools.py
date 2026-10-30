@@ -141,3 +141,25 @@ class Zip(AnalyzerModule):
                 statements=[ADLStatement("take", f"record({fields})")]
             )
         ]
+
+@define
+class EventLevelSumColumn(AnalyzerModule):
+    """
+    Takes a list of columns with one input per event, like Leading-jet Pt 
+    and adds the values per event. Output is a column of those sums.
+
+    WARNING: Each event must have one value in each column to utilize 
+    this module.
+    """
+    input_cols: list[Column]
+    output_col: Column
+
+    def run(self, columns, params):
+        columns[self.output_col] = ak.sum([columns[c] for c in self.input_cols], axis=0)
+        return columns, []
+
+    def inputs(self, metadata):
+        return [self.input_col]
+
+    def outputs(self, metadata):
+        return [self.output_col]
